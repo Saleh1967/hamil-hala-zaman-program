@@ -275,6 +275,23 @@ def huffman(cells):
     assert H <= L < H + 1, "هوفمان خارج حدّه — مستحيلٌ إلا بخللٍ في التنفيذ"
     return codes, H, L
 
+# ---------- ١١) الترخيص فوق 112 بالتردد المقيس — العزل بالختم الخاصّ ----------
+LICENSED4 = ("فتحة", "كسرة", "ضمة", "سكون")                 # حصّة 112 المرخَّصة
+SEALED4 = ("عري", "تنوين فتح", "تنوين كسر", "تنوين ضم")      # ما سواها: لا يُسرَّب — يُعزَل بختم
+
+def peel112_measured(cells):
+    """فوق إطار 112: الحركات الأربع تُرخَّص بالتردد المقيس (هوفمان)، وما سواها يُعزَل بختمٍ خاصّ —
+    رمزٌ خامسٌ في الشجرة الخارجية، وداخل الختم ترخيصٌ مقيسٌ ثانٍ بالتردد أيضًا.
+    الفاتورة الكاملة: L = L_خارجي + P(ختم)·L_داخلي — وتُقاس على هوفمان §١٧ المباشر بلا ابتلاع."""
+    outer = Counter({k: cells[k] for k in LICENSED4})
+    outer["ختم"] = sum(cells[k] for k in SEALED4)
+    assert sum(outer.values()) == sum(cells.values()), "مفقودٌ بين المرخَّص والمختوم — ابتلاع"
+    c_out, H_out, L_out = huffman(outer)                                     # 5 رموز: 4 + ختم
+    c4, H4, L4 = huffman(Counter({k: cells[k] for k in LICENSED4}))          # داخل الحصّة وحدها
+    c_in, H_in, L_in = huffman(Counter({k: cells[k] for k in SEALED4}))      # داخل الختم
+    p_seal = outer["ختم"] / sum(cells.values())
+    return (c_out, H_out, L_out), (c4, H4, L4), (c_in, H_in, L_in), p_seal, L_out + p_seal * L_in
+
 # ---------- ٨) الفحص المشغَّل (يُدار عند الاستدعاء) ----------
 if __name__ == "__main__":
     assert len(UNITS) == 256 and len({pack(*u) for u in UNITS}) == 256
@@ -322,5 +339,11 @@ if __name__ == "__main__":
               f"(المسطَّح 3.0000 — فائض {3 - L_h:.4f} بت/موضع) | ترتيبه: "
               + "، ".join(f"{k}={len(codes[k])}" for k in sorted(codes, key=lambda k: len(codes[k])))
               + f" | Δضبط = H(حالة|حرف) = {H_j - H_l:.4f} بت (على 36×8 معلنًا)")
+        (c_out, H_out, L_out), (c4, H4, L4), (c_in, H_in, L_in), p_s, L_t = peel112_measured(cells)
+        print(f"112↑مقيس بالختم: خارجي L={L_out:.4f} (H={H_out:.4f}) "
+              f"[{', '.join(f'{k}={c_out[k]}' for k in c_out)}] | داخل الحصّة L={L4:.4f} (H={H4:.4f}؛ "
+              f"المسطَّح 2.0000 — فائض {2 - L4:.4f}) | داخل الختم L={L_in:.4f} "
+              f"[{', '.join(f'{k}={c_in[k]}' for k in c_in)}] | الفاتورة L={L_t:.4f} = {L_out:.4f}+{p_s:.6f}×{L_in:.4f} — "
+              f"ثمن العزل على §١٧ المباشر ({L_h:.4f}): +{L_t - L_h:.4f} بت/موضع")
     else:
         print(f"مجمَّد: غائب عن القرص — القياس مؤجَّل ببصمته {MUJAMMAD_SHA256[:12]}… (لا قياس على بديلٍ صامت)")
