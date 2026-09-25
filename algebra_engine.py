@@ -287,7 +287,7 @@ def peel112_measured(cells):
     outer["ختم"] = sum(cells[k] for k in SEALED4)
     assert sum(outer.values()) == sum(cells.values()), "مفقودٌ بين المرخَّص والمختوم — ابتلاع"
     c_out, H_out, L_out = huffman(outer)                                     # 5 رموز: 4 + ختم
-    c4, H4, L4 = huffman(Counter({k: cells[k] for k in LICENSED4}))          # داخل الحصّة وحدها
+    c4, H4, L4 = huffman(Counter({k: cells[k]} for k in LICENSED4))          # داخل الحصّة وحدها
     c_in, H_in, L_in = huffman(Counter({k: cells[k] for k in SEALED4}))      # داخل الختم
     p_seal = outer["ختم"] / sum(cells.values())
     return (c_out, H_out, L_out), (c4, H4, L4), (c_in, H_in, L_in), p_seal, L_out + p_seal * L_in
@@ -297,7 +297,7 @@ def assign_stats(cells, lengths):
     """الربح الجشع بالتباديل: الأطوال ثابتة (نتيجة هوفمان المقيس)، والتخصيص يُبدَّل.
     الأفضل: الأعلى ترددًا ⟵ الأقصر (متراجحة الترتيب — قاعدة معلنة). الأردأ: المعاكس تمامًا.
     التخصيصات المتميِّزة = n! / Π م! (م = تكرار كل طول — التوافيق: مَن يأخذ أيّ طول)؛
-    المثلى = Π م! (التباديل داخل الأطوال المتساوية لا تغيّر السعر — الربح كله في التوافيق)؛
+    المثلى = Π م! (التباديل داخل الأطوال المتساوية لا تغيّر السعر — الربح كله في التوافيق).
     والمسطَّح: n! تبديلًا كلّها بسعرٍ واحد — رهن الترتيب فيها = صفر، أي إنّه أعمى عن الجشع أصلًا."""
     ks = sorted(cells, key=lambda k: -cells[k])
     ls = sorted(lengths)
