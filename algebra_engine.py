@@ -297,7 +297,7 @@ def assign_stats(cells, lengths):
     """الربح الجشع بالتباديل: الأطوال ثابتة (نتيجة هوفمان المقيس)، والتخصيص يُبدَّل.
     الأفضل: الأعلى ترددًا ⟵ الأقصر (متراجحة الترتيب — قاعدة معلنة). الأردأ: المعاكس تمامًا.
     التخصيصات المتميِّزة = n! / Π م! (م = تكرار كل طول — التوافيق: مَن يأخذ أيّ طول)؛
-    المثلى = Π م! (التباديل داخل الأطوال المتساوية لا تغيّر السعر — الربح كله في التوافيق).
+    المثلى = Π م! (التباديل داخل الأطوال المتساوية لا تغيّر السعر — الربح كله في التوافيق)؛
     والمسطَّح: n! تبديلًا كلّها بسعرٍ واحد — رهن الترتيب فيها = صفر، أي إنّه أعمى عن الجشع أصلًا."""
     ks = sorted(cells, key=lambda k: -cells[k])
     ls = sorted(lengths)
@@ -342,6 +342,133 @@ def bigram_states(path=MUJAMMAD_PATH):
         per_prev[a] = h
         Hc += (tot_a / Np) * h
     return Hc, per_prev, Np, big, prev_m
+
+# ---------- ١٣) محطة الاسم والفعل والحرف — توقف الجشع وتحوّله (قياس على مستوى الكلمة) ----------
+def word_positions(w):
+    """كلمة مشكولة ⟼ قائمة (حرف، حالة) — نفس اتفاقات العدّ الموضعيّ (الخنجرية = فتحة موسومة)."""
+    pos, i, n = [], 0, len(w)
+    while i < n:
+        ch = w[i]
+        if AR_LET(ch):
+            marks = []
+            while i + 1 < n and (0x064B <= ord(w[i + 1]) <= 0x0652 or ord(w[i + 1]) == DAGGER):
+                i += 1
+                marks.append(ord(w[i]))
+            vs = [m for m in marks if m in VOWM]
+            ts = [m for m in marks if m in TANM]
+            pos.append((ch, TANM[ts[0]] if ts else VOWM[vs[0]] if vs
+                        else "فتحة" if DAGGER in marks else "عري"))
+        i += 1
+    return pos
+
+def station(pos):
+    """المحطة السطحية (موسومة — ليست التصنيف النحوي)، الأولوية T > A > B:
+    T بوّابة التنوين (خاتمةٌ، أو تنوين فتح قبل خاتمةٍ عاريةٍ ا/ى — معدودة 3,153 بالقياس لا مفترَضة) ·
+    A بوّابة «ال» (مدخل ا+ل — تبتلع 10 من الفواتح المقطّعة، معدودًا في before_sentence) · B عارٍ."""
+    if pos[-1][1] in TANM.values():
+        return "T"
+    if len(pos) >= 2 and pos[-2][1] == "تنوين فتح" and pos[-1][0] in ("ا", "ى") and pos[-1][1] == "عري":
+        return "T"
+    if len(pos) >= 2 and pos[0][0] == "ا" and pos[1][0] == "ل":
+        return "A"
+    return "B"
+
+def word_station(path=MUJAMMAD_PATH):
+    """الاتفاقات المعلنة: الكلمة = ما بين مسافتين داخل السطر؛ حدُّ السطر لا يُعبَر (كما في ماركوف ON).
+    ف1/ف2 فرضيتان موسومتان ببوّابة نقض: «تنوين ⟹ اسم» و«ال ⟹ اسم» — والبوّابة ممارَسةً: T∩A = 0
+    (لا كلمةَ تحمل ال وتنوينًا معًا على 77,801 كلمة) — اتساقٌ مقيس لا برهان؛ التحقيق دَين المعجم."""
+    blob = open(path, "rb").read()
+    assert hashlib.sha256(blob).hexdigest() == MUJAMMAD_SHA256, "ليس المجمَّد"
+    lines = [l for l in blob.decode("utf-8-sig").strip().split("\n") if l.strip()]
+
+    Nw = 0
+    cls, init_c = Counter(), Counter()
+    entry, exit_ = defaultdict(Counter), defaultdict(Counter)
+    skel_forms = defaultdict(Counter)
+    cls2, cls_prev, fwd, fwd_prev = Counter(), Counter(), Counter(), Counter()
+    overlap = 0
+    wlen = []
+    for ln in lines:
+        seq = []
+        for w in [w for w in ln.split(" ") if w.strip()]:
+            pos = word_positions(w)
+            if not pos:
+                continue
+            c = station(pos)
+            Nw += 1
+            cls[c] += 1
+            wlen.append(len(pos))
+            entry[c][pos[0][1]] += 1
+            exit_[c][pos[-1][1]] += 1
+            init_c[pos[0][1]] += 1
+            skel_forms["".join(ch for ch, _ in pos)][tuple(st for _, st in pos)] += 1
+            if c == "T" and len(pos) >= 2 and pos[0][0] == "ا" and pos[1][0] == "ل":
+                overlap += 1                                    # بوّابة النقض: يجب أن يبقى صفرًا
+            seq.append((c, pos[0][1]))
+        for (c1, _), (c2, st2) in zip(seq, seq[1:]):
+            cls2[(c1, c2)] += 1
+            cls_prev[c1] += 1
+            fwd[(c1, st2)] += 1
+            fwd_prev[c1] += 1
+    assert overlap == 0, "كلمةٌ تحمل ال وتنوينًا — بوّابة النقض صرخت"
+
+    H_cls = -sum(v / Nw * log2(v / Nw) for v in cls.values())
+    amb = {s: c for s, c in skel_forms.items() if len(c) > 1}
+    mass = sum(sum(c.values()) for c in amb.values())
+    Nc2 = sum(cls2.values())
+    Hc_cls = sum(cls_prev[a] / Nc2 * (-sum((v / cls_prev[a]) * log2(v / cls_prev[a])
+                 for (x, _), v in cls2.items() if x == a)) for a in "TAB")
+    Ni = sum(init_c.values())
+    H_init = -sum(v / Ni * log2(v / Ni) for v in init_c.values())
+    Nf = sum(fwd.values())
+    Hc_fwd = sum(fwd_prev[a] / Nf * (-sum((v / fwd_prev[a]) * log2(v / fwd_prev[a])
+                 for (x, _), v in fwd.items() if x == a)) for a in "TAB")
+    return dict(Nw=Nw, cls=cls, H_cls=H_cls, amb=amb, mass=mass, skel=skel_forms,
+                Hc_cls=Hc_cls, H_init=H_init, Hc_fwd=Hc_fwd, entry=entry, exit=exit_,
+                wlen=sum(wlen) / len(wlen), pairs=Nc2)
+
+# ---------- ١٤) قبل ترخيص الجملة — العتبة: الوحدة المحدَّدة الوحيدة فوق الكلمة ----------
+def before_sentence(path=MUJAMMAD_PATH):
+    """قبل ترخيص الجملة: الترخيص يشترط وحدةً محدَّدةً معلنةً وجردَ ظواهرَ معلنًا — وكلاهما دَينان
+    عند الجملة. الوحدة المحدَّدة الوحيدة فوق الكلمة في المجمَّد هي السطر=الآية (6,236) —
+    ويُثبَت بالعدّ أنها ليست حدًّا جمليًّا (46.31% منها تبدأ موصولًا بـوَ/فَ).
+    اتفاقات معلنة: أسطر الترويسة العشرة (#) موسومةٌ خارج العدّ الآييّ (عدّ §١٧ الموضعيّ لم يمسسها —
+    لا حروفَ عربيةً فيها)؛ المسافة الطرفية الزائدة في أول آيات الفواتح أثرُ ملفٍّ موسوم تُطرح.
+    بوّابتا العدّ: عدد الآيات 6,236، وبسم = 4 — إن تبدّلا صرخ المحرك."""
+    blob = open(path, "rb").read()
+    assert hashlib.sha256(blob).hexdigest() == MUJAMMAD_SHA256, "ليس المجمَّد"
+    lines = [l for l in blob.decode("utf-8-sig").strip().split("\n") if l.strip()]
+    verses = [ln for ln in lines if any(AR_LET(c) for c in ln)]
+    assert len(verses) == 6236 and len(lines) - len(verses) == 10, "بصمة الأسطر خُالفت"
+
+    w_per_v, vfinal, vfirst, first_words, conj, final_all = [], Counter(), Counter(), Counter(), Counter(), Counter()
+    Nw = 0
+    vopen_conj = bsm = 0
+    one_word, mq_inA = [], 0
+    for ln in verses:
+        poss = [p for p in (word_positions(w) for w in ln.split(" ") if w.strip()) if p]
+        w_per_v.append(len(poss)); Nw += len(poss)
+        vfinal[poss[-1][-1][1]] += 1
+        vfirst[station(poss[0])] += 1
+        first_words["".join(ch for ch, _ in poss[0])] += 1
+        if poss[0][0] in (("و", "فتحة"), ("ف", "فتحة")):
+            vopen_conj += 1
+        for p in poss:
+            final_all[p[-1][1]] += 1
+            if p[0][0] == "و" and p[0][1] == "فتحة": conj["وَ"] += 1
+            if p[0][0] == "ف" and p[0][1] == "فتحة": conj["فَ"] += 1
+        if len(poss) == 1:
+            one_word.append("".join(ch for ch, _ in poss[0]))
+            if station(poss[0]) == "A":
+                mq_inA += 1                       # عمى بوّابة A عن الفواتح — معدودٌ بالاسم
+        bsm += sum(1 for p in poss if "".join(ch for ch, _ in p) == "بسم")
+    assert bsm == 4, "بسم خُالفت — 27:30 منقوصةٌ في المجمَّد والغيبة معدودة (4 لا 5)"
+    H_len = -sum(v / 6236 * log2(v / 6236) for v in Counter(w_per_v).values())
+    H_vf = -sum(v / 6236 * log2(v / 6236) for v in vfinal.values())
+    H_wf = -sum(v / Nw * log2(v / Nw) for v in final_all.values())
+    return dict(Nv=6236, Nw=Nw, w_per_v=w_per_v, H_len=H_len, vfinal=vfinal, final_all=final_all,
+                H_vf=H_vf, H_wf=H_wf, vfirst=vfirst, first_words=first_words, conj=conj,
+                vopen_conj=vopen_conj, one_word=one_word, mq_inA=mq_inA, bsm=bsm)
 
 # ---------- ٨) الفحص المشغَّل (يُدار عند الاستدعاء) ----------
 if __name__ == "__main__":
@@ -425,5 +552,37 @@ if __name__ == "__main__":
               f"ربح الذاكرة {H_s - Hc:.4f} بت/موضع | لكل سابقة: "
               f"[{', '.join(f'{k}={v:.3f}' for k, v in sorted(per_prev.items(), key=lambda kv: -prev_m[kv[0]]))}] | "
               f"ماركوف FOR (مثال الاشتقاق الموسوم): H(π)=2.8729 ⟷ معدل 1.0340 — ربح {2.8729 - 1.0340:.4f}")
+        # محطة الاسم والفعل والحرف — توقف الجشع وتحوّله (مستوى الكلمة)
+        st = word_station()
+        top_amb = sorted(st["amb"].items(), key=lambda kv: -sum(kv[1].values()))[:4]
+        print(f"محطة الاسم/الفعل/الحرف: كلمات {st['Nw']:,} (متوسط الطول {st['wlen']:.4f} موضعًا) | "
+              f"السطحية الموسومة: تنوين T={st['cls']['T']:,} · ال A={st['cls']['A']:,} · عارٍ B={st['cls']['B']:,} "
+              f"({100 * st['cls']['B'] / st['Nw']:.2f}% بلا بوّابة — هنا يقف الجشع) | "
+              f"H(محطة)={st['H_cls']:.4f} ⟷ مسطَّح {log2(3):.4f} — فائض {log2(3) - st['H_cls']:.4f}")
+        print(f"توقف الجشع معروضًا: هياكل {len(st['skel']):,} — غامضة {len(st['amb']):,} "
+              f"({100 * len(st['amb']) / len(st['skel']):.2f}%) تحمل {st['mass']:,} كلمة "
+              f"({100 * st['mass'] / st['Nw']:.2f}%) — الحرف لا يعيّن الصنف | أمثلة بالعدّ: "
+              + " · ".join(f"{s}: {sum(c.values()):,} على {len(c)} أنماط" for s, c in top_amb)
+              + f" | بوّابة النقض T∩A=0 ✓ (ال+تنوين لا يجتمعان على {st['Nw']:,} كلمة)")
+        print(f"التحوّل: العضوية عند T مدفوعةٌ بأغلى علامةٍ في §١٧ (تنوين 4–5 بت) وعند A بمقشورٍ بنيويٍّ "
+              f"(مدخل عري {st['entry']['A'].get('عري', 0):,}/{st['cls']['A']:,} = همزة وصل ق4)، وعند B لا علامة — "
+              f"بتُّ العضوية يُحفَظ بالاسم في المعجم (دَين قائم) | نتيجةٌ سالبةٌ معروضة: المحطة لا تدفع أماميًّا — "
+              f"ربح الصنف→الصنف {st['H_cls'] - st['Hc_cls']:+.4f} والصنف→المدخل {st['H_init'] - st['Hc_fwd']:+.4f} بت؛ "
+              f"ربح الذاكرة قُبض موضعيًّا عند التنوين في §١٩")
+        # قبل ترخيص الجملة — العتبة (مستوى الآية)
+        bs = before_sentence()
+        tv = sum(v for s, v in bs["vfinal"].items() if "تنوين" in s)
+        tw = sum(v for s, v in bs["final_all"].items() if "تنوين" in s)
+        print(f"قبل ترخيص الجملة: آيات {bs['Nv']:,} (+10 أسطر ترويسةٍ موسومة) | كلمات/آية: متوسط "
+              f"{sum(bs['w_per_v']) / bs['Nv']:.4f} (1–{max(bs['w_per_v'])})، H(طول)={bs['H_len']:.4f} | "
+              f"آية ≠ جملة بالعدّ: {bs['vopen_conj']:,} آية ({100 * bs['vopen_conj'] / bs['Nv']:.2f}%) تبدأ موصولًا "
+              f"بـوَ/فَ | بوّابة العطف (حدٌّ أعلى موسوم — الجذرية لا تُفصل): وَ={bs['conj']['وَ']:,} "
+              f"فَ={bs['conj']['فَ']:,} = {100 * (bs['conj']['وَ'] + bs['conj']['فَ']) / bs['Nw']:.2f}% من الكلمات")
+        print(f"إشارة الحدّ الظاهرة: خاتمة الآية فتحة {100 * bs['vfinal']['فتحة'] / bs['Nv']:.2f}% ⟷ خاتمة الكلمة "
+              f"{100 * bs['final_all']['فتحة'] / bs['Nw']:.2f}% · تنوين {100 * tv / bs['Nv']:.2f}% ⟷ {100 * tw / bs['Nw']:.2f}% · "
+              f"H: {bs['H_vf']:.4f} ⟷ {bs['H_wf']:.4f} (الحدّ يكثّف) | وحيدةُ الكلمة: {len(bs['one_word'])} آيةً "
+              f"(20 فواتحَ مقطّعةً + 8 عادية) — منها {bs['mq_inA']} تبتلعها بوّابة A (عمًى معدود) | "
+              f"بسم = {bs['bsm']} (27:30 منقوصةٌ في المجمَّد — الغيبة معدودة) | أول كلمة: B={bs['vfirst']['B']:,} "
+              f"A={bs['vfirst']['A']} T={bs['vfirst']['T']} | ⟹ ترخيص الجملة موقوفٌ على دَينين: حدودٌ معلنة + المعجم")
     else:
         print(f"مجمَّد: غائب عن القرص — القياس مؤجَّل ببصمته {MUJAMMAD_SHA256[:12]}… (لا قياس على بديلٍ صامت)")
