@@ -470,6 +470,76 @@ def before_sentence(path=MUJAMMAD_PATH):
                 H_vf=H_vf, H_wf=H_wf, vfirst=vfirst, first_words=first_words, conj=conj,
                 vopen_conj=vopen_conj, one_word=one_word, mq_inA=mq_inA, bsm=bsm)
 
+# ---------- ١٥) عتبة حدود الجملة: الاسمية والفعلية وشبه الجملة — صعود بتٍّ جشعٍ ----------
+JARR_SKEL = {"من", "عن", "على", "الى", "في"}   # هياكل جرٍّ قائمةٌ معلنة بالاسم (خمسة — ثمنها دَينٌ كولموغوروفيّ)
+JARR_PREF = {"ب", "ل", "ك"}                     # الجارُّ الملتصق المكسور — امتداد ق6 الموسومة في ت2 (§٠)
+
+def sentence_threshold(path=MUJAMMAD_PATH):
+    """العتبة الجملية — قياسٌ على مداخل الآيات (الوحدة المحدَّدة الوحيدة فوق الكلمة، §٢١)، لا على جملٍ
+    حقيقية: حدودُ الجملة دَينٌ قائم، فالآية هنا وكيلٌ موسوم لا مدّعًى. البوّابات سطحيةٌ معلنة بالأولوية:
+    C عطف (وَ/فَ فتحية أوّلًا — معدود 2,888 في §٢١) · J جرّ (هيكلٌ في القائمة المعلنة، أو ب/ل/ك مكسورٌ
+    بامتداد ق6 الموسومة) ⟹ شبه جملة مرشَّحة · A (ال) وT (تنوين) ⟹ اسمية مرشَّحة · B أعمى (الفعلية دَينُ
+    المعجم). اتفاق القلع المعلن: في الآية المعطوفة يُقلَع الموضع الأول (و/ف فتحية) وتُقاس البوّابة على
+    الباقي — وعمى القلع عن و القسم (وَالطُّورِ…) معدودٌ بالاسم في وحيدات وَ. بوّابة العدّ: الأصناف تسدّ 6,236."""
+    blob = open(path, "rb").read()
+    assert hashlib.sha256(blob).hexdigest() == MUJAMMAD_SHA256, "ليس المجمَّد"
+    lines = [l for l in blob.decode("utf-8-sig").strip().split("\n") if l.strip()]
+    verses = [ln for ln in lines if any(AR_LET(c) for c in ln)]
+    assert len(verses) == 6236, "بصمة الأسطر خُالفت"
+
+    def jgate(pos):
+        if "".join(ch for ch, _ in pos) in JARR_SKEL:
+            return "قائمة"
+        if pos[0][0] in JARR_PREF and pos[0][1] == "كسرة":
+            return "ق6"
+        return None
+
+    def gate(pos):                                   # الأولوية المعلنة: J ثم A ثم T ثم B
+        j = jgate(pos)
+        if j:
+            return ("J", j)
+        s = station(pos)
+        if s in ("A", "T"):
+            return (s, None)
+        return ("B", None)
+
+    raw, strip = Counter(), Counter()                # raw: بخلية C · strip: بعد قلع العطف
+    raw_j, strip_j = Counter(), Counter()
+    topB_raw, topB_strip = Counter(), Counter()
+    oath_1w = redir_T = chain_T = 0                  # وحيدات وَ = قسمٌ ظاهر مبتلَع في C · تفكيك T=209 (§٢١): خام T + J∩T + C∩T
+    for ln in verses:
+        poss = [p for p in (word_positions(w) for w in ln.split(" ") if w.strip()) if p]
+        p0 = poss[0]
+        chained = p0[0] in (("و", "فتحة"), ("ف", "فتحة"))
+        g, gj = gate(p0)
+        raw["C" if chained else g] += 1
+        if gj and not chained:
+            raw_j[gj] += 1
+            if station(p0) == "T":
+                redir_T += 1                         # مدخلٌ تنوينيٌّ جارٌّ (بِ…ٍ/لِ…ٍ…) — T §٢١ تقدّمه J هنا
+        if chained and station(p0) == "T":
+            chain_T += 1                             # معطوفةٌ تنوينيةُ الخاتمة (وَالصَّافَّاتِ…) — ابتلعتها C خامًا
+        if not chained and g == "B":
+            topB_raw["".join(ch for ch, _ in p0)] += 1
+        rest = p0[1:] if (chained and len(p0) >= 2) else (poss[1] if chained else p0)
+        g2, gj2 = gate(rest)
+        strip[g2] += 1
+        if gj2:
+            strip_j[gj2] += 1
+        if g2 == "B":
+            topB_strip["".join(ch for ch, _ in rest)] += 1
+        if chained and len(poss) == 1:
+            oath_1w += 1
+    assert sum(raw.values()) == 6236 and sum(strip.values()) == 6236, "الأصناف لا تسدّ الآيات"
+
+    tri = Counter({"شبه": strip["J"], "اسمية": strip["A"] + strip["T"], "أعمى": strip["B"]})
+    H_raw = -sum(v / 6236 * log2(v / 6236) for v in raw.values())
+    H_tri = -sum(v / 6236 * log2(v / 6236) for v in tri.values())
+    return dict(raw=raw, strip=strip, raw_j=raw_j, strip_j=strip_j, tri=tri,
+                H_raw=H_raw, H_tri=H_tri, oath_1w=oath_1w, redir_T=redir_T,
+                topB_raw=topB_raw.most_common(3), topB_strip=topB_strip.most_common(3),
+                chain_T=chain_T)
+
 # ---------- ٨) الفحص المشغَّل (يُدار عند الاستدعاء) ----------
 if __name__ == "__main__":
     assert len(UNITS) == 256 and len({pack(*u) for u in UNITS}) == 256
@@ -577,12 +647,28 @@ if __name__ == "__main__":
               f"{sum(bs['w_per_v']) / bs['Nv']:.4f} (1–{max(bs['w_per_v'])})، H(طول)={bs['H_len']:.4f} | "
               f"آية ≠ جملة بالعدّ: {bs['vopen_conj']:,} آية ({100 * bs['vopen_conj'] / bs['Nv']:.2f}%) تبدأ موصولًا "
               f"بـوَ/فَ | بوّابة العطف (حدٌّ أعلى موسوم — الجذرية لا تُفصل): وَ={bs['conj']['وَ']:,} "
-              f"فَ={bs['conj']['فَ']:,} = {100 * (bs['conj']['وَ'] + bs['conj']['فَ']) / bs['Nw']:.2f}% من الكلمات")
+              ف"فَ={bs['conj']['فَ']:,} = {100 * (bs['conj']['وَ'] + bs['conj']['فَ']) / bs['Nw']:.2f}% من الكلمات")
         print(f"إشارة الحدّ الظاهرة: خاتمة الآية فتحة {100 * bs['vfinal']['فتحة'] / bs['Nv']:.2f}% ⟷ خاتمة الكلمة "
               f"{100 * bs['final_all']['فتحة'] / bs['Nw']:.2f}% · تنوين {100 * tv / bs['Nv']:.2f}% ⟷ {100 * tw / bs['Nw']:.2f}% · "
               f"H: {bs['H_vf']:.4f} ⟷ {bs['H_wf']:.4f} (الحدّ يكثّف) | وحيدةُ الكلمة: {len(bs['one_word'])} آيةً "
               f"(20 فواتحَ مقطّعةً + 8 عادية) — منها {bs['mq_inA']} تبتلعها بوّابة A (عمًى معدود) | "
               f"بسم = {bs['bsm']} (27:30 منقوصةٌ في المجمَّد — الغيبة معدودة) | أول كلمة: B={bs['vfirst']['B']:,} "
               f"A={bs['vfirst']['A']} T={bs['vfirst']['T']} | ⟹ ترخيص الجملة موقوفٌ على دَينين: حدودٌ معلنة + المعجم")
+        # عتبة حدود الجملة — الثلاثيّ الجمليّ وصعود البتّ الجشع (مستوى المدخل الآييّ — وكيلٌ موسوم)
+        th = sentence_threshold()
+        tb = " · ".join(f"{s}:{v:,}" for s, v in th["topB_raw"])
+        tbs = " · ".join(f"{s}:{v:,}" for s, v in th["topB_strip"])
+        print(f"عتبة الجملة (مداخل 6,236 آية — وكيلٌ موسوم لا جملة): خام C={th['raw']['C']:,} · "
+              ف"J={th['raw']['J']:,} · A={th['raw']['A']:,} · T={th['raw']['T']:,} · B={th['raw']['B']:,} | "
+              f"H(خام5)={th['H_raw']:.4f} ⟷ مسطَّح {log2(5):.4f} | بعد قلع العطف: J={th['strip']['J']:,} "
+              ف"(قائمة {th['strip_j']['قائمة']:,} + ق6 {th['strip_j']['ق6']:,}) · A={th['strip']['A']:,} · "
+              f"T={th['strip']['T']:,} · B={th['strip']['B']:,}")
+        print(f"الثلاثيّ الجمليّ بالوكيل: شبه={th['tri']['شبه']:,} · اسمية مرشَّحة={th['tri']['اسمية']:,} · "
+              f"أعمى={th['tri']['أعمى']:,} | H={th['H_tri']:.4f} ⟷ مسطَّح log₂(3)={log2(3):.4f} — فائض "
+              f"{log2(3) - th['H_tri']:.4f} بت/آية ({(log2(3) - th['H_tri']) * 6236:,.0f} بت على المجمَّد) | "
+              f"تصحيح السلّم موسومًا: 8⟵3⟵3 (شبه الجملة ظاهرةٌ ثالثة معلنة — §٢١ كان بثنائيةٍ فقط) | "
+              f"أعمى B خامًا: {tb} | بعد القلع: {tbs} | وحيدات وَ (قسم ظاهر مبتلَع في C): {th['oath_1w']} | "
+              f"مصالحة T=209 (§٢١): خام {th['raw']['T']} + J∩T {th['redir_T']} + C∩T {th['chain_T']} = "
+              f"{th['raw']['T'] + th['redir_T'] + th['chain_T']} ✓ — الفعلية الحاسمة دَينُ المعجم القائم")
     else:
         print(f"مجمَّد: غائب عن القرص — القياس مؤجَّل ببصمته {MUJAMMAD_SHA256[:12]}… (لا قياس على بديلٍ صامت)")
