@@ -222,6 +222,59 @@ def peel256_strict():
     assert sum(tot.values()) == 120 and tot["■"] == 82
     return tot
 
+# ---------- ١٠) القياس على المجمَّد — الترخيص بالتردد المقيس (هوفمان يعيد الترتيب) ----------
+import heapq, hashlib, os
+MUJAMMAD_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "mujammad.txt")
+MUJAMMAD_SHA256 = "8b387ea811bc8c658e1cab75488ce1aa69606deafd62759eeaf49ffe15c6d215"
+# المجمَّد: نص Tanzil (مرآة GlobalQuran: quran-simple-enhanced.txt) — 6246 سطرًا، 1,306,770 بايتًا.
+# البصمة تُتحقق قبل أيّ عدّ: من خالفها فليس المجمَّد — لا قياس على بديلٍ صامت.
+AR_LET = lambda ch: 0x0621 <= ord(ch) <= 0x063A or 0x0641 <= ord(ch) <= 0x064A
+VOWM = {0x064E: "فتحة", 0x064F: "ضمة", 0x0650: "كسرة", 0x0652: "سكون"}
+TANM = {0x064B: "تنوين فتح", 0x064C: "تنوين ضم", 0x064D: "تنوين كسر"}
+DAGGER = 0x0670                                  # الخنجرية = فتحة موسومة (اتفاق معلن)
+
+def audit_corpus(path=MUJAMMAD_PATH):
+    """عدٌّ معروض: كل موضعٍ حرفيٌّ يُسند إلى إحدى الخلايا الثماني أو يُوسَم تعارضًا — لا ابتلاع."""
+    blob = open(path, "rb").read()
+    assert hashlib.sha256(blob).hexdigest() == MUJAMMAD_SHA256, "ليس المجمَّد — البصمة خُالفت"
+    lines = [l for l in blob.decode("utf-8-sig").strip().split("\n") if l.strip()]
+    cells, letters, joint = Counter(), Counter(), Counter()
+    pos = hamza = conflicts = 0
+    for ln in lines:
+        i, n = 0, len(ln)
+        while i < n:
+            ch = ln[i]
+            if AR_LET(ch):
+                pos += 1
+                if ch == "ء": hamza += 1
+                marks = []
+                while i + 1 < n and (0x064B <= ord(ln[i + 1]) <= 0x0652 or ord(ln[i + 1]) == DAGGER):
+                    i += 1; marks.append(ord(ln[i]))
+                vs = [m for m in marks if m in VOWM]; ts = [m for m in marks if m in TANM]
+                if len(vs) > 1 or len(ts) > 1 or (vs and ts):
+                    conflicts += 1
+                else:
+                    cell = TANM[ts[0]] if ts else VOWM[vs[0]] if vs else "فتحة" if DAGGER in marks else "عري"
+                    cells[cell] += 1; letters[ch] += 1; joint[(ch, cell)] += 1
+            i += 1
+    assert pos == 330728 and hamza == 1578 and conflicts == 0, "بصمة العدّ خُالفت"
+    return cells, letters, joint, pos
+
+def huffman(cells):
+    """الاختيار الجشع المبرهَن: ادمج أقلّ رمزين احتمالًا وكرّر. الحارس: H ≤ L < H+1."""
+    tot = sum(cells.values())
+    heap = [(v, i, [k]) for i, (k, v) in enumerate(sorted(cells.items()))]
+    heapq.heapify(heap); codes = {k: "" for k in cells}; c = len(heap)
+    while len(heap) > 1:
+        v1, _, k1 = heapq.heappop(heap); v2, _, k2 = heapq.heappop(heap)
+        for k in k1: codes[k] = "0" + codes[k]
+        for k in k2: codes[k] = "1" + codes[k]
+        heapq.heappush(heap, (v1 + v2, c, k1 + k2)); c += 1
+    H = -sum(v / tot * log2(v / tot) for v in cells.values())
+    L = sum(cells[k] / tot * len(codes[k]) for k in cells)
+    assert H <= L < H + 1, "هوفمان خارج حدّه — مستحيلٌ إلا بخللٍ في التنفيذ"
+    return codes, H, L
+
 # ---------- ٨) الفحص المشغَّل (يُدار عند الاستدعاء) ----------
 if __name__ == "__main__":
     assert len(UNITS) == 256 and len({pack(*u) for u in UNITS}) == 256
@@ -259,3 +312,15 @@ if __name__ == "__main__":
           f"FOR+جسر: {len(demo)}/{len(demo)} ✓ | تقشير: {peeled}□ مقشور + {kept}■ حامل = {8*len(demo)} بتًّا — استرجاعٌ تامّ | "
           f"112↑: □{t112['□']}/◆{t112['◆']}/■{t112['■']} = {sum(t112.values())} بتًّا — بلا تسريب | "
           f"256↑صارم: □{t256['□']}/◆{t256['◆']}/■{t256['■']} = {sum(t256.values())} — الترخيص بتٌّ واحدٌ للأعلى")
+    if os.path.exists(MUJAMMAD_PATH):                     # القياس على المجمَّد — بالبصمة أو لا قياس
+        cells, letters, joint, pos = audit_corpus()
+        codes, H_s, L_h = huffman(cells)
+        N = sum(letters.values())
+        H_l = -sum(v / N * log2(v / N) for v in letters.values())
+        H_j = -sum(v / N * log2(v / N) for v in joint.values())
+        print(f"مجمَّد: {pos} موضعًا، تعارضات 0 ✓ | H(حالة)={H_s:.4f} | هوفمان L={L_h:.4f} "
+              f"(المسطَّح 3.0000 — فائض {3 - L_h:.4f} بت/موضع) | ترتيبه: "
+              + "، ".join(f"{k}={len(codes[k])}" for k in sorted(codes, key=lambda k: len(codes[k])))
+              + f" | Δضبط = H(حالة|حرف) = {H_j - H_l:.4f} بت (على 36×8 معلنًا)")
+    else:
+        print(f"مجمَّد: غائب عن القرص — القياس مؤجَّل ببصمته {MUJAMMAD_SHA256[:12]}… (لا قياس على بديلٍ صامت)")
