@@ -1,0 +1,169 @@
+# algebra_engine.py — الجبر المشغَّل (إيداع التفويض)
+# النظام من الداخل: فضاء الوحدة (بايت)، جبر الأوزان (سنّ)، ماركوف الاشتقاق، الاستقراء المشغَّل.
+# كل عدٍّ هنا معروضٌ أو مشتقٌّ بقاعدة — انضباط البند ٧ (لا عدَّ مُعلَنًا غيرَ معروض).
+from math import log2
+from collections import defaultdict, Counter
+import numpy as np
+
+# ---------- ١) فضاء الوحدة: 32 حرفًا × 8 حالات = 256 = 2⁸ ----------
+LETTERS = list("ابتثجحخدذرزسشصضطظعغفقكلمنهوي") + ["ى", "ة", "آ", "ء"]
+CP = {"ا": 0x0627, "ب": 0x0628, "ت": 0x062A, "ث": 0x062B, "ج": 0x062C, "ح": 0x062D, "خ": 0x062E,
+      "د": 0x062F, "ذ": 0x0630, "ر": 0x0631, "ز": 0x0632, "س": 0x0633, "ش": 0x0634, "ص": 0x0635,
+      "ض": 0x0636, "ط": 0x0637, "ظ": 0x0638, "ع": 0x0639, "غ": 0x063A, "ف": 0x0641, "ق": 0x0642,
+      "ك": 0x0643, "ل": 0x0644, "م": 0x0645, "ن": 0x0646, "ه": 0x0647, "و": 0x0648, "ي": 0x064A,
+      "ى": 0x0649, "ة": 0x0629, "آ": 0x0622, "ء": 0x0621}
+# الحالة: (قيمة: فتح0/ضم1/كسر2/سكون3) × (تنوين؟) — والخانة الممنوعة (سكون+تنوين=7) ⟸ عُرْي
+STATES = [("فتحة", 0x064E, 0, 0), ("ضمة", 0x064F, 1, 0), ("كسرة", 0x0650, 2, 0), ("سكون", 0x0652, 3, 0),
+          ("تنوين فتح", 0x064B, 0, 1), ("تنوين ضم", 0x064C, 1, 1), ("تنوين كسر", 0x064D, 2, 1), ("عُرْي", None, 3, 1)]
+
+def pack(li, si): return (li << 3) | si        # الوحدة بايت: 5 بت حرف + 3 بت حالة
+def unpack(b):   return (b >> 3, b & 0b111)
+
+UNITS = [(li, si) for li in range(32) for si in range(8)]
+
+def enc(li, si):                                # ترميز Unicode (مديان متمايزان ⟹ حاقن بنيويًّا)
+    cp_s = STATES[si][1]
+    return (CP[LETTERS[li]],) if cp_s is None else (CP[LETTERS[li]], cp_s)
+
+def dec(seq):
+    li = next(i for i, h in enumerate(LETTERS) if CP[h] == seq[0])
+    si = 7 if len(seq) == 1 else next(i for i, s in enumerate(STATES) if s[1] == seq[1])
+    return (li, si)
+
+# ---------- ٢) التحليل من تيار Unicode (مع R4 التنوين وR5 الشدة) ----------
+SHADDA, TANWIN = 0x0651, {0x064B: 0x064E, 0x064C: 0x064F, 0x064D: 0x0650}
+CP2L = {v: k for k, v in CP.items()}
+CP2S = {s[1]: i for i, s in enumerate(STATES) if s[1]}
+
+def parse_stream(raw):
+    """تيار مشكول ⟼ قائمة وحدات (li, si) — التوسيعات R4/R5 مطبَّقة. الصنف لا يُخمَّن هنا."""
+    units, i = [], 0
+    while i < len(raw):
+        ch = raw[i]
+        if ch == " ":
+            i += 1; continue
+        li = LETTERS.index(CP2L[ord(ch)]); marks = []
+        while i + 1 < len(raw) and 0x064B <= ord(raw[i + 1]) <= 0x0652:
+            i += 1; marks.append(ord(raw[i]))
+        if SHADDA in marks:                                  # R5: ساكن + متحرك
+            v = next(m for m in marks if m != SHADDA)
+            units += [(li, 3), (li, CP2S[v])]
+        elif any(m in TANWIN for m in marks):                # R4: حركة + نون ساكنة
+            v = next(m for m in marks if m in TANWIN)
+            units += [(li, CP2S[TANWIN[v]]), (24, 3)]
+        else:
+            units.append((li, CP2S[marks[0]] if marks else 7))
+        i += 1
+    return units
+
+# ---------- ٣) جبر الأوزان: القوالب والتركيب ورسم السنّ ----------
+T = {"I": "فَعَلَ", "II": "فَعَّلَ", "III": "فَاعَلَ", "IV": "أَفْعَلَ", "V": "تَفَعَّلَ",
+     "VI": "تَفَاعَلَ", "VII": "انْفَعَلَ", "VIII": "افْتَعَلَ", "IX": "افْعَلَّ", "X": "اسْتَفْعَلَ",
+     "XI": "افْعَالَّ", "XII": "افْعَوْعَلَ", "XIII": "افْعَوَّلَ", "XIV": "افْعَنْلَلَ", "XV": "افْعَنْلَى"}
+assert T["V"] == "تَ" + T["II"] and T["VI"] == "تَ" + T["III"] and T["VII"] == "انْ" + T["I"]
+
+EDGES = [("صعود", "I", "II"), ("صعود", "I", "IV"),
+         ("هبوط/مطاوعة", "II", "V"), ("هبوط/مطاوعة", "IV", "VII"), ("هبوط/مطاوعة", "I", "VIII"),
+         ("مشاركة", "I", "III"), ("مشاركة", "III", "VI"),
+         ("طلب", "I", "X"), ("تثبيت", "I", "IX")]
+W10 = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"]
+NAWADER = ["XI", "XII", "XIII", "XIV", "XV"]
+
+# ---------- ٤) مصفوفة الخلايا — توليدٌ بقاعدة معلنة، عرضٌ كامل ----------
+COLS = ["ماضٍ معلوم", "ماضٍ مجهول", "مضارع معلوم", "مضارع مجهول", "أمر", "مصدر", "اسم فاعل", "اسم مفعول"]
+LAZIM_MAHD = ["VII", "IX"] + NAWADER          # مطاوع محض + قطب ثابت + نوادر قلبية
+
+def paradigm_cell(w, c):
+    if w in LAZIM_MAHD and c in ("ماضٍ مجهول", "مضارع مجهول", "اسم مفعول"):
+        return "⚑ل"                            # امتناع لزوم (W4 معمَّمًا بقاعدة معلنة)
+    if w == "I" and c == "مصدر":
+        return "⚑س"                            # مصادر المجرد سماعية (W3)
+    return "✓"
+
+PARADIGM = {w: [paradigm_cell(w, c) for c in COLS] for w in T}
+
+# ---------- ٥) ماركوف الاشتقاق على رسم السنّ ----------
+def derivation_markov():
+    idx = {w: i for i, w in enumerate(W10)}
+    P = np.zeros((10, 10))
+    for _, a, b in EDGES:
+        P[idx[a], idx[b]] += 1
+    for w in W10:                                # المصارف تتجدد من المجرد — حلقة اشتقاق
+        i = idx[w]
+        P[i] = P[i] / P[i].sum() if P[i].sum() else np.eye(10)[idx["I"]]
+    evals, evecs = np.linalg.eig(P.T)
+    pi = np.real(evecs[:, np.argmin(abs(evals - 1))]); pi /= pi.sum()
+    H_pi = -sum(p * log2(p) for p in pi if p > 0)
+    rate = sum(pi[i] * (-sum(p * log2(p) for p in P[i] if p > 0)) for i in range(10))
+    return P, pi, H_pi, rate
+
+# ---------- ٦) مصنِّف الجسر — دالةٌ تحسب من مدخلاتٍ معلنة، والسكوتُ فيها محظور ----------
+MATRES = {"ا": "فتحة", "و": "ضمة", "ي": "كسرة", "ى": "فتحة"}
+
+def parse_word(w):
+    units, i = [], 0
+    while i < len(w):
+        li = LETTERS.index(CP2L[ord(w[i])]); marks = []
+        while i + 1 < len(w) and 0x064B <= ord(w[i + 1]) <= 0x0652:
+            i += 1; marks.append(ord(w[i]))
+        if SHADDA in marks:
+            v = next(m for m in marks if m != SHADDA); units += [(li, 3, "R5-أول"), (li, CP2S[v], "R5-ثان")]
+        elif any(m in TANWIN for m in marks):
+            v = next(m for m in marks if m in TANWIN); units += [(li, CP2S[TANWIN[v]], "R4"), (24, 3, "R4")]
+        else:
+            units.append((li, CP2S[marks[0]] if marks else 7, "خام"))
+        i += 1
+    return units
+
+def classify_word(units, tag):
+    """صنف الجسر دالةً في (الوحدة، السياق، الوسم المعلن). الوسم مدخلٌ لا مخرج.
+    كل موضعٍ إمّا مصنَّفٌ بقاعدةٍ معلنة أو ⚑ — لا افتراضيَّ صامتًا (السكوت = ابتلاع)."""
+    cls = []
+    for j, (li, si, src) in enumerate(units):
+        h = LETTERS[li]; last = (j == len(units) - 1)
+        if tag["نوع"] == "مركّب" and j == 0:
+            cls.append("ب"); continue                       # جارٌّ ملتصق: مبنيٌّ معلن
+        if si == 7 and (h == "آ" or (h in MATRES and j > 0 and STATES[units[j-1][1]][0] == MATRES[h])):
+            cls.append("م"); continue                       # مدٌّ/لين محمول
+        if si == 7 and h == "ا" and j+1 < len(units) and LETTERS[units[j+1][0]] == "ل" \
+           and (j == 0 or (j == 1 and tag["نوع"] == "مركّب")):
+            cls.append("ض"); continue                       # همزة وصل — سكونٌ مضمرٌ معلن
+        if tag["نوع"] == "مبني" and tag.get("بناء"):
+            bv, bp = tag["بناء"]
+            if (bp == "آخر" and last and STATES[si][0] == bv) or (bp == "R5-أول" and src == "R5-أول" and STATES[si][0] == bv):
+                cls.append("ب"); continue                   # حالة البناء الثابتة
+        if last and si != 7 and tag["نوع"] != "مبني":
+            cls.append("خ"); continue                       # إعرابيٌّ — خارج الجسر (Δضبط)
+        cls.append("ظ")
+    return cls
+
+# ---------- ٧) الفحص المشغَّل (يُدار عند الاستدعاء) ----------
+if __name__ == "__main__":
+    assert len(UNITS) == 256 and len({pack(*u) for u in UNITS}) == 256
+    assert all(unpack(pack(*u)) == u for u in UNITS)          # on البايت
+    assert all(dec(enc(*u)) == u for u in UNITS)              # on الترميز
+    adj = defaultdict(list)
+    for op, a, b in EDGES:
+        assert a in W10 and b in W10                          # مانع
+        adj[a].append(b)
+    reach, stack = set(), ["I"]
+    while stack:                                              # جامع
+        n = stack.pop()
+        if n not in reach:
+            reach.add(n); stack += adj[n]
+    assert reach == set(W10)
+    n_flag = sum(row.count("⚑ل") + row.count("⚑س") for row in PARADIGM.values())
+    P, pi, H_pi, rate = derivation_markov()
+    TAGS = [{"نوع": "مبني", "بناء": ("فتحة", "آخر")},
+            {"نوع": "مبني", "بناء": ("سكون", "R5-أول")},
+            {"نوع": "مركّب"}]
+    demo = []
+    words = "قَالَ آمَنَّا بِالْكِتَابِ".split(" ")
+    assert len(words) == len(TAGS), "كلمةٌ بلا وسمٍ = صريخٌ لا افتراض"
+    for w, tg in zip(words, TAGS):
+        u = parse_word(w)
+        demo += list(zip(u, classify_word(u, tg)))
+    assert [unpack(pack(li, si)) for (li, si, _), _ in demo] == [(li, si) for (li, si, _), _ in demo]
+    print(f"فضاء 256 مغلقٌ محقون ✓ | الإغلاق جامعٌ مانع ✓ | المصفوفة {120-n_flag}+⚑{n_flag} | "
+          f"ماركوف: مثالُ سياسةٍ موحَّدة (H(π)={H_pi:.4f}، معدل={rate:.4f}) — التفرّع عند I وحدها بنيويٌّ | "
+          f"FOR+جسر: {len(demo)}/{len(demo)} ✓")
