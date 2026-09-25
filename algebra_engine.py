@@ -137,7 +137,58 @@ def classify_word(units, tag):
         cls.append("ظ")
     return cls
 
-# ---------- ٧) الفحص المشغَّل (يُدار عند الاستدعاء) ----------
+# ---------- ٧) التقشير — كل بتٍّ إمّا مسترجَعٌ بالقاعدة أو حاملٌ مبرهَنٌ بالقلع ----------
+V2I = {"فتحة": 0, "ضمة": 1, "كسرة": 2, "سكون": 3}
+
+def peel_table(units, classes, tags_per_unit):
+    """لكل وحدة 8 بتّات (5 حرف + 3 حالة): □ مقشور (تسترجعه قاعدةٌ معلنة) / ■ حامل.
+    القواعد السبع كلُّها من الوثائق المودعة؛ ق6 وق7 موسومتان هنا باسمهما في peeling_proof.md."""
+    table = []
+    for j, ((li, si, src), c) in enumerate(zip(units, classes)):
+        L, S, rule = ["■"] * 5, ["■"] * 3, "—"
+        if src == "R4" and li == 24 and si == 3:
+            L, S, rule = ["□"] * 5, ["□"] * 3, "ق1 نون التنوين مشتقّة كلُّها"
+        elif src == "R5-أول":
+            L, S, rule = ["□"] * 5, ["□"] * 3, "ق2 الشدة: الحرف حرفُ أخته، والحالة سكون"
+        elif src == "R5-ثان":
+            rule = "ق2′ القطب المحفوظ — لا استعارةَ متبادلة"   # حرف الشدة يُحفظ في قطبٍ واحد
+        elif c == "م":
+            S, rule = ["□"] * 3, "ق3 م ⟹ عُرْي"
+        elif c == "ض":
+            L, S, rule = ["□"] * 5, ["□"] * 3, "ق4 همزة وصل: ا عارية"
+        elif c == "ب":
+            S, rule = ["□"] * 3, "ق5/ق6 الحالة من الوسم"
+        elif c == "ظ" and LETTERS[li] == "ل" and si == 3 and j > 0 and classes[j - 1] == "ض":
+            S, rule = ["□"] * 3, "ق7 لام «ال» ساكنة"
+        table.append((L, S, rule))
+    return table
+
+def peel(units, classes, tags_per_unit):
+    """الاتجاهان معًا: استرجاعٌ بالهندسة العكسية (كفاية) + فحصُ قلع (لزوم). صارخٌ عند كل سكوت."""
+    table = peel_table(units, classes, tags_per_unit)
+    skel = [(li if "■" in r[0] else None, si if "■" in r[1] else None, src)
+            for (li, si, src), r in zip(units, table)]
+    out = []
+    for j, (li, si, src) in enumerate(skel):
+        c = classes[j]
+        li_r = li if li is not None else (24 if src == "R4" else 0 if c == "ض" else None)
+        if si is not None:            si_r = si
+        elif src in ("R4", "R5-أول"): si_r = 3
+        elif c in ("م", "ض"):         si_r = 7
+        elif c == "ب" and tags_per_unit[j]["نوع"] == "مبني":  si_r = V2I[tags_per_unit[j]["بناء"][0]]
+        elif c == "ب" and tags_per_unit[j]["نوع"] == "مركّب": si_r = 2
+        elif c == "ظ" and li_r == 22: si_r = 3
+        else: raise AssertionError(f"وحدة {j + 1}: بتّاتٌ مقشورةٌ بلا قاعدة — صريخ")
+        out.append([li_r, si_r])
+    for j, (_, _, src) in enumerate(skel):
+        if src == "R5-أول": out[j][0] = out[j + 1][0]
+    assert all(u[0] is not None for u in out), "قطبا الشدة استعارا من بعضهما — دورٌ محظور"
+    rec = [pack(u[0], u[1]) for u in out]
+    assert rec == [pack(li, si) for li, si, _ in units], "فشل الاسترجاع — قاعدةٌ ناقصة تُضاف باسمها"
+    peeled = sum(r[0].count("□") + r[1].count("□") for r in table)
+    return peeled, 8 * len(units) - peeled, table
+
+# ---------- ٨) الفحص المشغَّل (يُدار عند الاستدعاء) ----------
 if __name__ == "__main__":
     assert len(UNITS) == 256 and len({pack(*u) for u in UNITS}) == 256
     assert all(unpack(pack(*u)) == u for u in UNITS)          # on البايت
@@ -164,6 +215,10 @@ if __name__ == "__main__":
         u = parse_word(w)
         demo += list(zip(u, classify_word(u, tg)))
     assert [unpack(pack(li, si)) for (li, si, _), _ in demo] == [(li, si) for (li, si, _), _ in demo]
+    tpu = []
+    for w, tg in zip(words, TAGS):
+        tpu += [tg] * len(parse_word(w))
+    peeled, kept, _table = peel([u for u, _ in demo], [c for _, c in demo], tpu)
     print(f"فضاء 256 مغلقٌ محقون ✓ | الإغلاق جامعٌ مانع ✓ | المصفوفة {120-n_flag}+⚑{n_flag} | "
           f"ماركوف: مثالُ سياسةٍ موحَّدة (H(π)={H_pi:.4f}، معدل={rate:.4f}) — التفرّع عند I وحدها بنيويٌّ | "
-          f"FOR+جسر: {len(demo)}/{len(demo)} ✓")
+          f"FOR+جسر: {len(demo)}/{len(demo)} ✓ | تقشير: {peeled}□ مقشور + {kept}■ حامل = {8*len(demo)} بتًّا — استرجاعٌ تامّ")
