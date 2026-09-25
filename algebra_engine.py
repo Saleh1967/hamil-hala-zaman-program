@@ -676,6 +676,175 @@ def gate_markov_for(path=MUJAMMAD_PATH):
                 greedy_inv=greedy_inv, gpath=gpath, te_uni=te_uni, te_mk=te_mk, te_mg=te_mg,
                 resid=resid, mod_save=mod_save, net=inv_mk - inv_opt, top_pairs=top_pairs)
 
+# ---------- ١٧) مفتاح الجملة والكلمة: المبني والمعرب — دورة الظاهر والمقدر (ماركوف + استقراء الاستقراء FOR) ----------
+CLS4 = ("ث", "ع", "ز", "ق")
+
+def rgs_n(n):
+    """سلاسل النموّ المقيَّد على n — أقسام السوابق كلُّها: بِلّ(4) = 15. استنفادٌ لا جشع (تحفّظ ٢)."""
+    out = []
+    def rec(r):
+        if len(r) == n:
+            out.append(tuple(r)); return
+        for v in range(max(r) + 2):
+            rec(r + [v])
+    rec([0])
+    return out
+
+def bani_muarab_for(path=MUJAMMAD_PATH):
+    """الحكم الوارد: «العلامات المفتاح للجملة والكلمة هو المبني والمعرب، والعلامات الإعرابية الأصلية
+    والفرعية — دورة الظاهر والمقدر». مفتاحٌ سطحيٌّ موسومٌ بلا معجم — تعريفاتُه عدٌّ بالأولوية المعلنة:
+    ز = تنوين فتح على ما قبل الخاتمة وخاتمةٌ عاريةٌ ا/ى — علامةٌ أصليةٌ ظاهرةٌ **مزاحةٌ عن موضعها**
+        (مصالحة §٢٠ بـassert: = 3,153) · ق = خاتمةٌ عاريةٌ بلا تنوينٍ مزاح — فراغٌ/مقدَّرٌ ظاهرًا
+        (الظاهر صفرُ علامة؛ حسمُ التقدير دَينُ المعجم) · ع = سندُ خاتمة الهيكل يتبدّل على المجمَّد
+        (سندان فأكثر) — معربٌ ظاهرًا بالتبديل المقيس · ث = سندٌ واحدٌ وعلامةٌ محقَّقة — مبنيٌّ ظاهرًا.
+    الدورة: ظاهر = ث+ع+ز (علامةٌ محقَّقة، ومنها المزاحة) ⟷ مقدَّر/فراغ = ق. وجهةُ الفرعية
+    (حرفُ جماعةٍ/اثنين، حذفٌ، تقديرٌ على علّة) تسكن ق — تُفكَّك بالخاتمة (ا/ى/و/ي/صحيح) موسومةً.
+    ماركوف على تيار الكلمات داخل السطر — لا يعبر (اتفاق §٢٠ المعلن)، ثم استقراءٌ ثانٍ باستنفاد
+    أقسام السوابق الأربعة كلِّها (بِلّ(4) = 15 — لا جشع)، والفواتير كما في §٢٣: تقسيمٌ متناوبٌ معلن
+    (ل٣/ع٩، تداخلُ الجوار موسوم)، α=1 بلا مانعٍ آليّ، ترميزُ عدٍّ مسطَّح log2(Ntr+1) للخلية،
+    وخريطةُ العناقيد 4×log2(4). ومفتاح الجملة: تقاطعُ بوّابة المدخل الخام (§١٥) مع صنف أوّلِ كلمةٍ —
+    H(بوّابة|صنف) مقيسةٌ لا مدّعاة."""
+    blob = open(path, "rb").read()
+    assert hashlib.sha256(blob).hexdigest() == MUJAMMAD_SHA256, "ليس المجمَّد"
+    lines = [l for l in blob.decode("utf-8-sig").strip().split("\n") if l.strip()]
+    verses = [ln for ln in lines if any(AR_LET(c) for c in ln)]
+    assert len(verses) == 6236, "بصمة الأسطر خُالفت"
+
+    toks_per_v, sup = [], defaultdict(Counter)               # العبور الأول: سندُ الخواتم لكل هيكل
+    for ln in verses:
+        toks = []
+        for w in [w for w in ln.split(" ") if w.strip()]:
+            pos = word_positions(w)
+            if pos:
+                sup["".join(ch for ch, _ in pos)][pos[-1][1]] += 1
+                toks.append(pos)
+        toks_per_v.append(toks)
+    assert len(sup) == 14870, "بصمة الهياكل خالفت §٢٠ — صريخ"
+
+    def cls_of(pos):
+        if len(pos) >= 2 and pos[-2][1] == "تنوين فتح" and pos[-1][0] in ("ا", "ى") and pos[-1][1] == "عري":
+            return "ز"
+        if pos[-1][1] == "عري":
+            return "ق"
+        return "ع" if len(sup["".join(ch for ch, _ in pos)]) >= 2 else "ث"
+
+    cnt, q_split, sup_states = Counter(), Counter(), Counter()
+    n_var = 0
+    for c in sup.values():
+        if len(c) >= 2:
+            n_var += 1
+            for st_ in c:
+                sup_states[st_] += 1                        # السندات المشتركة في التبديل (بالهياكل لا بالكلمات)
+    Nw, z_chk = 0, 0
+    pairs = []
+    gates = gate_sequence(path)                              # مفتاح الجملة — البوّابة الخام لكل آية (نسخة §١٦ المصادَمة)
+    joint = Counter()
+    for iv, toks in enumerate(toks_per_v):
+        seq = []
+        for pos in toks:
+            k = cls_of(pos)
+            cnt[k] += 1; Nw += 1
+            if k == "ز":
+                z_chk += 1
+            if k == "ق":
+                q_split[pos[-1][0]] += 1
+            seq.append(k)
+        pairs += list(zip(seq, seq[1:]))
+        joint[(gates[iv], seq[0])] += 1
+    Np = len(pairs)
+    assert Nw == 77801 and z_chk == 3153 and Np == 71565, "مصالحة §٢٠ خُالفت — صريخ"
+    H_c = -sum(v / Nw * log2(v / Nw) for v in cnt.values())
+    prv, nxt = Counter(), Counter()
+    for a, b in pairs:
+        prv[a] += 1; nxt[(a, b)] += 1
+    H_cc = sum(prv[a] / Np * (-sum((v / prv[a]) * log2(v / prv[a])
+               for (x, _), v in nxt.items() if x == a)) for a in CLS4)
+    train = [p for i, p in enumerate(pairs) if i % 2 == 0]   # تقسيمٌ متناوبٌ معلن — تداخل الجوار موسوم
+    test = [p for i, p in enumerate(pairs) if i % 2 == 1]
+    Ntr, Nte = len(train), len(test)
+    ALPHA = 1                                                # سياسةٌ موسومة — بلا مانعٍ آليّ لقيمتها
+    cell_bits = log2(Ntr + 1)
+    tr_ug = Counter(b for _, b in train)
+    tr_prv, tr_nxt = Counter(), Counter()
+    for a, b in train:
+        tr_prv[a] += 1; tr_nxt[(a, b)] += 1
+
+    def ce_uni(ps):
+        return sum(-log2((tr_ug[b] + ALPHA) / (Ntr + 4 * ALPHA)) for _, b in ps)
+    def ce_mk(ps):
+        return sum(-log2((tr_nxt[(a, b)] + ALPHA) / (tr_prv[a] + 4 * ALPHA)) for a, b in ps)
+
+    data_uni, data_mk = ce_uni(train), ce_mk(train)
+    mod_uni, mod_mk = 4 * cell_bits, 16 * cell_bits
+    inv_uni, inv_mk = data_uni + mod_uni, data_mk + mod_mk
+    te_uni, te_mk = ce_uni(test) / Nte, ce_mk(test) / Nte
+
+    def part_invoice(assign):                                # الفاتورة = بيانات + خريطة + خلايا عناقيد
+        rows = defaultdict(Counter)
+        for (a, b), v in tr_nxt.items():
+            rows[assign[a]][b] += v
+        k = len(set(assign.values()))
+        data = sum(-log2((rows[assign[a]][b] + ALPHA) /
+                   (sum(rows[assign[a]].values()) + 4 * ALPHA)) for a, b in train)
+        return data + 4 * log2(4) + k * 4 * cell_bits, data
+
+    best = None                                              # الاستنفاد الكامل — بِلّ(4) = 15 قسمًا
+    for rgs in rgs_n(4):
+        assign = dict(zip(CLS4, rgs))
+        inv, data = part_invoice(assign)
+        if best is None or inv < best[0] - 1e-12:
+            best = (inv, data, assign)
+    inv_opt, data_opt, assign_opt = best
+    k_opt = len(set(assign_opt.values()))
+    groups = defaultdict(list)
+    for g in CLS4:
+        groups[assign_opt[g]].append(g)
+
+    clusters = {g: frozenset([g]) for g in CLS4}             # الجشع التدريجيّ — للعرض والمحاسبة لا للحكم
+    gpath = []
+    while True:
+        cur_inv, _ = part_invoice(clusters)
+        uniq = list({c for c in clusters.values()})
+        best_t = (cur_inv, None)
+        for i in range(len(uniq)):
+            for j in range(i + 1, len(uniq)):
+                merged = uniq[i] | uniq[j]
+                trial = {g: (merged if clusters[g] in (uniq[i], uniq[j]) else clusters[g]) for g in CLS4}
+                inv, _ = part_invoice(trial)
+                if inv < best_t[0] - 1e-12:
+                    best_t = (inv, trial)
+        if best_t[1] is None:
+            break
+        clusters = best_t[1]
+        gpath.append(best_t[0])
+    greedy_inv = gpath[-1] if gpath else cur_inv
+
+    rows_opt = defaultdict(Counter)                          # FOR: اشتقاق الصفوف من العناقيد المثلى
+    for (a, b), v in tr_nxt.items():
+        rows_opt[assign_opt[a]][b] += v
+    te_mg = sum(-log2((rows_opt[assign_opt[a]][b] + ALPHA) /
+                (sum(rows_opt[assign_opt[a]].values()) + 4 * ALPHA)) for a, b in test) / Nte
+    mod_opt = 4 * log2(4) + k_opt * 4 * cell_bits
+    resid = data_opt - data_mk                               # حامل FOR: فاقد الاسترجاع بالبتّات
+    mod_save = mod_mk - mod_opt                              # مقشور FOR: بتّات النموذج الموفَّرة
+
+    fg_marg = Counter()                                      # مفتاح الجملة: H(بوّابة | صنف أوّل كلمة)
+    g_marg = Counter(gates)
+    for (g, k), v in joint.items():
+        fg_marg[k] += v
+    Nv = len(gates)
+    H_g = -sum(v / Nv * log2(v / Nv) for v in g_marg.values())
+    H_g_fc = sum(fg_marg[k] / Nv * (-sum((v / fg_marg[k]) * log2(v / fg_marg[k])
+                 for (x, kk), v in joint.items() if kk == k)) for k in CLS4)
+    top_pairs = nxt.most_common(4)
+    return dict(cnt=cnt, H_c=H_c, H_cc=H_cc, Nw=Nw, Np=Np, Ntr=Ntr, Nte=Nte,
+                q_split=q_split, n_var=n_var, sup_states=sup_states,
+                inv_uni=inv_uni, inv_mk=inv_mk, inv_opt=inv_opt, k_opt=k_opt,
+                groups=[tuple(sorted(v)) for v in groups.values()],
+                greedy_inv=greedy_inv, te_uni=te_uni, te_mk=te_mk, te_mg=te_mg,
+                resid=resid, mod_save=mod_save, net=inv_mk - inv_opt,
+                H_g=H_g, H_g_fc=H_g_fc, joint=joint, top_pairs=top_pairs)
+
 # ---------- ٨) الفحص المشغَّل (يُدار عند الاستدعاء) ----------
 if __name__ == "__main__":
     assert len(UNITS) == 256 and len({pack(*u) for u in UNITS}) == 256
@@ -822,5 +991,29 @@ if __name__ == "__main__":
               f"FOR: مقشور النموذج {gm['mod_save']:.1f} بت ⟷ حامل الاسترجاع {gm['resid']:.1f} بت — "
               f"صافي {gm['net']:+.1f} | خارج العيّنة (ل٣/ع٩ — {gm['Nte']:,} زوجًا): أحاديّ "
               f"{gm['te_uni']:.4f} · ماركوف {gm['te_mk']:.4f} · مدمج {gm['te_mg']:.4f} بت/زوج")
+        # مفتاح الجملة والكلمة: المبني/المعرب ودورة الظاهر/المقدر — ماركوف + استقراء الاستقراء FOR
+        bm = bani_muarab_for()
+        assert bm["Nw"] == st["Nw"], "كتلة الكلمات خالفت محطة §٢٠ — صريخ"
+        assert abs(bm["H_g"] - gm["H_g"]) < 1e-12, "بوّابات مفتاح الجملة خالفت خام §٢٢/§٢٣ — صريخ"
+        nm = {"ث": "مبنيٌّ ظاهرًا", "ع": "معربٌ متبدّل", "ز": "علامةٌ مزاحة", "ق": "فراغ/مقدَّر"}
+        cs = " · ".join(f"{k}({nm[k]})={bm['cnt'][k]:,}" for k in CLS4)
+        qs = " · ".join(f"{k}={v:,}" for k, v in bm["q_split"].most_common())
+        grp2 = " + ".join("/".join(g) for g in bm["groups"])
+        tops2 = " · ".join(f"{a}→{b}:{v:,}" for (a, b), v in bm["top_pairs"])
+        ss = " · ".join(f"{k}:{v:,}" for k, v in bm["sup_states"].most_common())
+        print(f"دورة الظاهر والمقدر (كلمات {bm['Nw']:,}): {cs} | ظاهر={bm['Nw'] - bm['cnt']['ق']:,} "
+              f"⟷ مقدَّر/فراغ={bm['cnt']['ق']:,} ({qs}) | هياكل متبدّلة السند {bm['n_var']:,}/14,870 — "
+              f"سنداتها: {ss} | ز={bm['cnt']['ز']:,} مصالحةً مع تنوين §٢٠ المزاح ✓")
+        print(f"ماركوف الدورة (داخل السطر — لا يعبر): أزواج {bm['Np']:,} | H(صنف)={bm['H_c']:.4f} · "
+              f"H(صنف|سابقه)={bm['H_cc']:.4f} — ربح {bm['H_c'] - bm['H_cc']:.4f} بت/كلمة | "
+              f"أعلى الانتقالات: {tops2} | خارج العيّنة (ل٣/ع٩ — {bm['Nte']:,}): أحاديّ "
+              f"{bm['te_uni']:.4f} · ماركوف {bm['te_mk']:.4f} · مدمج {bm['te_mg']:.4f}")
+        print(f"استقراء الاستقراء FOR (استنفاد بِلّ(4)=15): فواتير التدريب ({bm['Ntr']:,} زوجًا) — أحاديّ "
+              f"{bm['inv_uni']:.1f} · ماركوف16 {bm['inv_mk']:.1f} · أمثل {bm['inv_opt']:.1f} "
+              f"(k={bm['k_opt']}: {grp2}) | الجشع التدريجيّ {bm['greedy_inv']:.1f} (فارق "
+              f"{bm['greedy_inv'] - bm['inv_opt']:+.2f} معدود — تحفّظ ٢ مفحوصٌ بالعدّ) | FOR: مقشور "
+              f"{bm['mod_save']:.1f} بت ⟷ حامل {bm['resid']:.1f} بت — صافي {bm['net']:+.1f} | "
+              f"مفتاح الجملة: H(بوّابة)={bm['H_g']:.4f} · H(بوّابة|صنف أوّل كلمة)={bm['H_g_fc']:.4f} — "
+              f"ربح المفتاح {bm['H_g'] - bm['H_g_fc']:.4f} بت/آية")
     else:
         print(f"مجمَّد: غائب عن القرص — القياس مؤجَّل ببصمته {MUJAMMAD_SHA256[:12]}… (لا قياس على بديلٍ صامت)")
