@@ -540,6 +540,142 @@ def sentence_threshold(path=MUJAMMAD_PATH):
                 topB_raw=topB_raw.most_common(3), topB_strip=topB_strip.most_common(3),
                 chain_T=chain_T)
 
+# ---------- ١٦) ماركوف بعبور حدِّ الآية + استقراء الاستقراء باتجاه FOR (السجلّ الوارد ممارَسًا) ----------
+GATES5 = ("C", "J", "A", "T", "B")
+
+def gate_sequence(path=MUJAMMAD_PATH):
+    """نسخةٌ ثانيةٌ مستقلّةٌ من منطق بوّابات §١٥ (الأولوية C ثم J ثم A ثم T ثم B، بلا قلع) —
+    تُصادَم بخام sentence_threshold في __main__ بـassert: اتفاقُ تنفيذين مستقلَّين، لا ثقةَ بواحد."""
+    blob = open(path, "rb").read()
+    assert hashlib.sha256(blob).hexdigest() == MUJAMMAD_SHA256, "ليس المجمَّد"
+    lines = [l for l in blob.decode("utf-8-sig").strip().split("\n") if l.strip()]
+    verses = [ln for ln in lines if any(AR_LET(c) for c in ln)]
+    assert len(verses) == 6236, "بصمة الأسطر خُالفت"
+    seq = []
+    for ln in verses:
+        poss = [p for p in (word_positions(w) for w in ln.split(" ") if w.strip()) if p]
+        p0 = poss[0]
+        if p0[0] in (("و", "فتحة"), ("ف", "فتحة")):
+            seq.append("C"); continue
+        skel = "".join(ch for ch, _ in p0)
+        if skel in JARR_SKEL or (p0[0][0] in JARR_PREF and p0[0][1] == "كسرة"):
+            seq.append("J"); continue
+        s = station(p0)
+        seq.append(s if s in ("A", "T") else "B")
+    return seq
+
+def rgs5():
+    """سلاسل النموّ المقيَّد على خمسة — أقسام السوابق الخمسة كلُّها: بِلّ(5) = 52. استنفادٌ لا جشع."""
+    out = []
+    def rec(r):
+        if len(r) == 5:
+            out.append(tuple(r)); return
+        for v in range(max(r) + 2):
+            rec(r + [v])
+    rec([0])
+    assert len(out) == 52
+    return out
+
+def gate_markov_for(path=MUJAMMAD_PATH):
+    """ماركوف العتبة بعبور حدِّ الآية (اتفاقٌ معلن — خلاف ماركوف ON الموضعيّ الذي لا يعبر السطر)،
+    ثم استقراءُ الاستقراء باتجاه FOR: الاستقراء الأوّل = جدول الانتقالات المقيس 5×5؛
+    الاستقراء الثاني = دمجُ سوابق الجدول في عناقيدَ — **باستنفاد الأقسام الـ52 كلِّها** إجابةً عن
+    تحفّظ ٢ الوارد («الجشع يختار ما يضرّه»)، مع عرض الجشع التدريجيّ وفارقه بالعدّ.
+    قوانين السجلّ الوارد ممارَسةً: ل٣/ع٩ تقسيمُ تدريبٍ/اختبارٍ بالتناوب المعلن (الزوجُ زوجيُّ الفهرس
+    تدريبٌ وفرديُّه اختبار — تداخلُ الجوار موسوم) · ع٦ الفاتورة بتّاتُ بياناتٍ فعلية + ثمنِ نموذجٍ
+    معلن لا حدًّا نظريًّا · α=1 سياسةُ تنعيمٍ موسومةٌ بلا مانعٍ آليّ لقيمتها (دَين: مسح α) ·
+    ترميزُ العدّ المسطَّح log2(N+1) لكل خلية تقريبٌ كولموغوروفيٌّ موسوم.
+    FOR مقيسًا: من العناقيد تُشتقَّق الصفوف الخمسة — مقشورُ الاستقراء الثاني = بتّاتُ النموذج
+    الموفَّرة، وحاملُه = فاقدُ البيانات على التدريب — وكلاهما بالبتّات معروض."""
+    seq = gate_sequence(path)
+    pairs = list(zip(seq, seq[1:]))
+    Np = len(pairs)
+    assert Np == 6235, "أزواج العبور خُالفت"
+    Nv = len(seq)
+    ug = Counter(seq)
+    H_g = -sum(v / Nv * log2(v / Nv) for v in ug.values())
+    prv, nxt = Counter(), Counter()
+    for a, b in pairs:
+        prv[a] += 1; nxt[(a, b)] += 1
+    H_gc = sum(prv[a] / Np * (-sum((v / prv[a]) * log2(v / prv[a])
+               for (x, _), v in nxt.items() if x == a)) for a in GATES5)
+    train = [p for i, p in enumerate(pairs) if i % 2 == 0]
+    test = [p for i, p in enumerate(pairs) if i % 2 == 1]
+    Ntr, Nte = len(train), len(test)
+    ALPHA = 1                                # سياسة موسومة — بلا مانعٍ آليّ لقيمتها
+    cell_bits = log2(Ntr + 1)                # ترميز عدٍّ مسطَّح معلن لكل خلية
+    tr_ug = Counter(b for _, b in train)
+    tr_prv, tr_nxt = Counter(), Counter()
+    for a, b in train:
+        tr_prv[a] += 1; tr_nxt[(a, b)] += 1
+
+    def ce_uni(ps):
+        return sum(-log2((tr_ug[b] + ALPHA) / (Ntr + 5 * ALPHA)) for _, b in ps)
+    def ce_mk(ps):
+        return sum(-log2((tr_nxt[(a, b)] + ALPHA) / (tr_prv[a] + 5 * ALPHA)) for a, b in ps)
+
+    data_uni, data_mk = ce_uni(train), ce_mk(train)
+    mod_uni, mod_mk = 5 * cell_bits, 25 * cell_bits
+    inv_uni, inv_mk = data_uni + mod_uni, data_mk + mod_mk
+    te_uni, te_mk = ce_uni(test) / Nte, ce_mk(test) / Nte
+
+    def part_invoice(assign):                # assign: سابق ⟵ عنقود — الفاتورة = بيانات + نموذج
+        rows = defaultdict(Counter)
+        for (a, b), v in tr_nxt.items():
+            rows[assign[a]][b] += v
+        k = len(set(assign.values()))
+        data = 0.0
+        for a, b in train:
+            row = rows[assign[a]]
+            data += -log2((row[b] + ALPHA) / (sum(row.values()) + 5 * ALPHA))
+        return data + 5 * log2(5) + k * 5 * cell_bits, data
+
+    best = None                              # الاستنفاد الكامل — 52 قسمًا
+    for rgs in rgs5():
+        assign = dict(zip(GATES5, rgs))
+        inv, data = part_invoice(assign)
+        if best is None or inv < best[0] - 1e-12:
+            best = (inv, data, assign)
+    inv_opt, data_opt, assign_opt = best
+    k_opt = len(set(assign_opt.values()))
+    groups = defaultdict(list)
+    for g in GATES5:
+        groups[assign_opt[g]].append(g)
+
+    clusters = {g: frozenset([g]) for g in GATES5}      # الجشع التدريجيّ — للعرض والمحاسبة لا للحكم
+    gpath = []
+    while True:
+        cur_inv, _ = part_invoice(clusters)
+        uniq = list({c for c in clusters.values()})
+        best_t = (cur_inv, None)
+        for i in range(len(uniq)):
+            for j in range(i + 1, len(uniq)):
+                merged = uniq[i] | uniq[j]
+                trial = {g: (merged if clusters[g] in (uniq[i], uniq[j]) else clusters[g]) for g in GATES5}
+                inv, _ = part_invoice(trial)
+                if inv < best_t[0] - 1e-12:
+                    best_t = (inv, trial)
+        if best_t[1] is None:
+            break
+        clusters = best_t[1]
+        gpath.append(best_t[0])
+    greedy_inv = gpath[-1] if gpath else cur_inv
+
+    rows_opt = defaultdict(Counter)                     # FOR: اشتقاق الصفوف من العناقيد المثلى
+    for (a, b), v in tr_nxt.items():
+        rows_opt[assign_opt[a]][b] += v
+    te_mg = sum(-log2((rows_opt[assign_opt[a]][b] + ALPHA) /
+                (sum(rows_opt[assign_opt[a]].values()) + 5 * ALPHA)) for a, b in test) / Nte
+    mod_opt = 5 * log2(5) + k_opt * 5 * cell_bits
+    resid = data_opt - data_mk                          # حامل FOR: فاقد الاسترجاع بالبتّات
+    mod_save = mod_mk - mod_opt                         # مقشور FOR: بتّات النموذج الموفَّرة
+    top_pairs = nxt.most_common(4)
+    return dict(Np=Np, ug=ug, H_g=H_g, H_gc=H_gc, Ntr=Ntr, Nte=Nte,
+                inv_uni=inv_uni, inv_mk=inv_mk, inv_opt=inv_opt, k_opt=k_opt,
+                groups=[tuple(sorted(v)) for v in groups.values()],
+                greedy_inv=greedy_inv, gpath=gpath, te_uni=te_uni, te_mk=te_mk, te_mg=te_mg,
+                resid=resid, mod_save=mod_save, net=inv_mk - inv_opt, top_pairs=top_pairs)
+
 # ---------- ٨) الفحص المشغَّل (يُدار عند الاستدعاء) ----------
 if __name__ == "__main__":
     assert len(UNITS) == 256 and len({pack(*u) for u in UNITS}) == 256
@@ -670,5 +806,21 @@ if __name__ == "__main__":
               f"أعمى B خامًا: {tb} | بعد القلع: {tbs} | وحيدات وَ (قسم ظاهر مبتلَع في C): {th['oath_1w']} | "
               f"مصالحة T=209 (§٢١): خام {th['raw']['T']} + J∩T {th['redir_T']} + C∩T {th['chain_T']} = "
               f"{th['raw']['T'] + th['redir_T'] + th['chain_T']} ✓ — الفعلية الحاسمة دَينُ المعجم القائم")
+        # ماركوف بعبور الحدّ + استقراء الاستقراء FOR — السجلّ الوارد (5 تحفّظات + 22 عطلًا) ممارَسًا
+        gm = gate_markov_for()
+        assert gm["ug"] == th["raw"] and abs(gm["H_g"] - th["H_raw"]) < 1e-12, \
+            "النسخة المستقلّة من البوّابات خالفت خام §٢٢ — صريخ"
+        grp = " + ".join("/".join(g) for g in gm["groups"])
+        tops = " · ".join(f"{a}→{b}:{v:,}" for (a, b), v in gm["top_pairs"])
+        print(f"ماركوف العتبة بعبور الحدّ: أزواج {gm['Np']:,} (الحدّ يُعبَر — اتفاق معلن) | "
+              f"H(بوّابة)={gm['H_g']:.4f} · H(بوّابة|سابقتها)={gm['H_gc']:.4f} — ربح العبور "
+              f"{gm['H_g'] - gm['H_gc']:.4f} بت/آية | أعلى الانتقالات: {tops}")
+        print(f"استقراء الاستقراء FOR: فواتير التدريب ({gm['Ntr']:,} زوجًا) — أحاديّ {gm['inv_uni']:.1f} · "
+              f"ماركوف25 {gm['inv_mk']:.1f} · مدمجٌ أمثل {gm['inv_opt']:.1f} (k={gm['k_opt']}: {grp}) | "
+              f"استنفاد 52 قسمًا — الجشع التدريجيّ {gm['greedy_inv']:.1f} (فارقه عن الأمثل "
+              f"{gm['greedy_inv'] - gm['inv_opt']:+.2f} — تحفّظ ٢ الوارد مفحوصٌ بالعدّ) | "
+              f"FOR: مقشور النموذج {gm['mod_save']:.1f} بت ⟷ حامل الاسترجاع {gm['resid']:.1f} بت — "
+              f"صافي {gm['net']:+.1f} | خارج العيّنة (ل٣/ع٩ — {gm['Nte']:,} زوجًا): أحاديّ "
+              f"{gm['te_uni']:.4f} · ماركوف {gm['te_mk']:.4f} · مدمج {gm['te_mg']:.4f} بت/زوج")
     else:
         print(f"مجمَّد: غائب عن القرص — القياس مؤجَّل ببصمته {MUJAMMAD_SHA256[:12]}… (لا قياس على بديلٍ صامت)")
