@@ -1,7 +1,7 @@
 # algebra_engine.py — الجبر المشغَّل (إيداع التفويض)
 # النظام من الداخل: فضاء الوحدة (بايت)، جبر الأوزان (سنّ)، ماركوف الاشتقاق، الاستقراء المشغَّل.
 # كل عدٍّ هنا معروضٌ أو مشتقٌّ بقاعدة — انضباط البند ٧ (لا عدَّ مُعلَنًا غيرَ معروض).
-from math import log2
+from math import log2, factorial, ceil
 from collections import defaultdict, Counter
 import numpy as np
 
@@ -292,6 +292,57 @@ def peel112_measured(cells):
     p_seal = outer["ختم"] / sum(cells.values())
     return (c_out, H_out, L_out), (c4, H4, L4), (c_in, H_in, L_in), p_seal, L_out + p_seal * L_in
 
+# ---------- ١٢) انقلاب الربح — التوافيق والتباديل على الجبر المغلق 112، وماركوف باتجاهين ----------
+def assign_stats(cells, lengths):
+    """الربح الجشع بالتباديل: الأطوال ثابتة (نتيجة هوفمان المقيس)، والتخصيص يُبدَّل.
+    الأفضل: الأعلى ترددًا ⟵ الأقصر (متراجحة الترتيب — قاعدة معلنة). الأردأ: المعاكس تمامًا.
+    التخصيصات المتميِّزة = n! / Π م! (م = تكرار كل طول — التوافيق: مَن يأخذ أيّ طول)؛
+    المثلى = Π م! (التباديل داخل الأطوال المتساوية لا تغيّر السعر — الربح كله في التوافيق).
+    والمسطَّح: n! تبديلًا كلّها بسعرٍ واحد — رهن الترتيب فيها = صفر، أي إنّه أعمى عن الجشع أصلًا."""
+    ks = sorted(cells, key=lambda k: -cells[k])
+    ls = sorted(lengths)
+    N = sum(cells.values())
+    Lb = sum(cells[k] * l for k, l in zip(ks, ls)) / N
+    Lw = sum(cells[k] * l for k, l in zip(ks, ls[::-1])) / N
+    mult = Counter(lengths)
+    distinct = factorial(len(ks))
+    optimal = 1
+    for m in mult.values():
+        distinct //= factorial(m)
+        optimal *= factorial(m)
+    return Lb, Lw, distinct, optimal
+
+def bigram_states(path=MUJAMMAD_PATH):
+    """ماركوف ON المجمَّد: انتقالات الحالة بين موضعَين متتاليين داخل السطر.
+    اتفاق معلن: حدُّ السطر لا يُعبَر (زوجان متتاليان من سطرين لا يُحسَبان)."""
+    blob = open(path, "rb").read()
+    assert hashlib.sha256(blob).hexdigest() == MUJAMMAD_SHA256, "ليس المجمَّد"
+    lines = [l for l in blob.decode("utf-8-sig").strip().split("\n") if l.strip()]
+    big, prev_m = Counter(), Counter()
+    for ln in lines:
+        seq = []
+        i, n = 0, len(ln)
+        while i < n:
+            if AR_LET(ln[i]):
+                marks = []
+                while i + 1 < n and (0x064B <= ord(ln[i + 1]) <= 0x0652 or ord(ln[i + 1]) == DAGGER):
+                    i += 1
+                    marks.append(ord(ln[i]))
+                vs = [m for m in marks if m in VOWM]
+                ts = [m for m in marks if m in TANM]
+                seq.append(TANM[ts[0]] if ts else VOWM[vs[0]] if vs else "فتحة" if DAGGER in marks else "عري")
+            i += 1
+        for a, b in zip(seq, seq[1:]):
+            big[(a, b)] += 1
+            prev_m[a] += 1
+    Np = sum(big.values())
+    per_prev, Hc = {}, 0.0
+    for a, tot_a in prev_m.items():
+        h = -sum((v / tot_a) * log2(v / tot_a) for (x, _), v in big.items() if x == a)
+        per_prev[a] = h
+        Hc += (tot_a / Np) * h
+    return Hc, per_prev, Np, big, prev_m
+
 # ---------- ٨) الفحص المشغَّل (يُدار عند الاستدعاء) ----------
 if __name__ == "__main__":
     assert len(UNITS) == 256 and len({pack(*u) for u in UNITS}) == 256
@@ -345,5 +396,34 @@ if __name__ == "__main__":
               f"المسطَّح 2.0000 — فائض {2 - L4:.4f}) | داخل الختم L={L_in:.4f} "
               f"[{', '.join(f'{k}={c_in[k]}' for k in c_in)}] | الفاتورة L={L_t:.4f} = {L_out:.4f}+{p_s:.6f}×{L_in:.4f} — "
               f"ثمن العزل على §١٧ المباشر ({L_h:.4f}): +{L_t - L_h:.4f} بت/موضع")
+        # انقلاب الربح بالتباديل على الجبر المغلق 112 + ماركوف باتجاهين
+        cells4 = Counter({k: cells[k] for k in LICENSED4})
+        lb4, lw4, d4, o4 = assign_stats(cells4, [len(c4[k]) for k in c4])
+        lb8, lw8, d8, o8 = assign_stats(cells, [len(codes[k]) for k in codes])
+        outer5 = Counter({k: cells[k] for k in LICENSED4})
+        outer5["ختم"] = sum(cells[k] for k in SEALED4)
+        lb5, lw5, d5, o5 = assign_stats(outer5, [len(c_out[k]) for k in c_out])
+        letters_lic = Counter()
+        for (ch, ce), v in joint.items():
+            if ce in LICENSED4:
+                letters_lic[ch] += v
+        cL, H_L, L_L = huffman(letters_lic)
+        lbL, lwL, dL, oL = assign_stats(letters_lic, [len(cL[k]) for k in cL])
+        flatL = ceil(log2(len(letters_lic)))
+        Hc, per_prev, Np, big, prev_m = bigram_states()
+        print(f"انقلاب الربح بالتباديل: حالة4 أطوال[1,2,3,3]: أفضل {lb4:.4f} ⟷ أردأ {lw4:.4f} — رهن {lw4 - lb4:.4f} "
+              f"(تخصيصات {d4}، مثلى {o4}؛ مسطَّح 4!=24 تبديلًا رهنها 0.0000) | §١٧ أطوال[2,2,3,3,3,4,5,5]: "
+              f"{lb8:.4f} ⟷ {lw8:.4f} — رهن {lw8 - lb8:.4f} ({d8}، مثلى {o8}) | ختم5: {lb5:.4f} ⟷ {lw5:.4f} — "
+              f"رهن {lw5 - lb5:.4f} ({d5}، مثلى {o5})")
+        print(f"حقل الحرف على المواضع المرخَّصة ({sum(letters_lic.values()):,}): أنماط {len(letters_lic)}، "
+              f"مسطَّح {flatL} بت (وإطار 112 يخصص 5 بت لـ28 حرفًا — الزائدون مسمَّون في البرهان) | "
+              f"H={H_L:.4f} L={L_L:.4f} — فائض على مسطَّح الأنماط {flatL - L_L:.4f} وعلى حقل 112 "
+              f"{5 - L_L:+.4f} | تباديل: رهن {lwL - lbL:.4f} (تخصيصات {dL}، مثلى {oL}) | "
+              f"الجبر المغلق 112 كاملًا: مسطَّح 7.0000 = 5+2 ⟷ مقيس {L_L:.4f}+{L4:.4f}={L_L + L4:.4f} — "
+              f"ربح {7 - L_L - L4:.4f} بت/موضع")
+        print(f"ماركوف ON: أزواج {Np:,} داخل السطر — H(حالة|سابقتها)={Hc:.4f} ⟷ H(حالة)={H_s:.4f} — "
+              f"ربح الذاكرة {H_s - Hc:.4f} بت/موضع | لكل سابقة: "
+              f"[{', '.join(f'{k}={v:.3f}' for k, v in sorted(per_prev.items(), key=lambda kv: -prev_m[kv[0]]))}] | "
+              f"ماركوف FOR (مثال الاشتقاق الموسوم): H(π)=2.8729 ⟷ معدل 1.0340 — ربح {2.8729 - 1.0340:.4f}")
     else:
         print(f"مجمَّد: غائب عن القرص — القياس مؤجَّل ببصمته {MUJAMMAD_SHA256[:12]}… (لا قياس على بديلٍ صامت)")
