@@ -845,8 +845,28 @@ def bani_muarab_for(path=MUJAMMAD_PATH):
                 resid=resid, mod_save=mod_save, net=inv_mk - inv_opt,
                 H_g=H_g, H_g_fc=H_g_fc, joint=joint, top_pairs=top_pairs)
 
+# ---------- ٢٥) واجهة السطر: إيداع القياس ملفًّا — بالبصمة أو لا قياس ----------
+import argparse, json, sys
+
+def cli(argv=None):
+    """--json=PATH: يودع الأعداد المقيسة ملفًّا. --require-corpus: يصرخ إن غاب المجمَّد ولا يُكمل صامتًا."""
+    p = argparse.ArgumentParser(description="الجبر المشغَّل — حامل/حالة/زمان")
+    p.add_argument("--json", metavar="PATH", default=None,
+                   help="مسار إيداع النتائج بصيغة JSON (يُنشأ مجلّده إن غاب)")
+    p.add_argument("--require-corpus", action="store_true",
+                   help="اشتراط حضور المجمَّد بالبصمة — الغياب خروجٌ بخطأ لا قياسٌ مؤجَّل")
+    return p.parse_args(argv)
+
+def dump_json(path, payload):
+    d = os.path.dirname(os.path.abspath(path))
+    os.makedirs(d, exist_ok=True)
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(payload, f, ensure_ascii=False, indent=2, sort_keys=True)
+        f.write("\n")
+
 # ---------- ٨) الفحص المشغَّل (يُدار عند الاستدعاء) ----------
 if __name__ == "__main__":
+    args = cli()
     assert len(UNITS) == 256 and len({pack(*u) for u in UNITS}) == 256
     assert all(unpack(pack(*u)) == u for u in UNITS)          # on البايت
     assert all(dec(enc(*u)) == u for u in UNITS)              # on الترميز
@@ -882,6 +902,20 @@ if __name__ == "__main__":
           f"FOR+جسر: {len(demo)}/{len(demo)} ✓ | تقشير: {peeled}□ مقشور + {kept}■ حامل = {8*len(demo)} بتًّا — استرجاعٌ تامّ | "
           f"112↑: □{t112['□']}/◆{t112['◆']}/■{t112['■']} = {sum(t112.values())} بتًّا — بلا تسريب | "
           f"256↑صارم: □{t256['□']}/◆{t256['◆']}/■{t256['■']} = {sum(t256.values())} — الترخيص بتٌّ واحدٌ للأعلى")
+    RES = {
+        "بنيوي": {
+            "فضاء": 256, "وحدات_متمايزة": len({pack(*u) for u in UNITS}),
+            "مصفوفة": {"محسوم": 120 - n_flag, "راية": n_flag},
+            "ماركوف_FOR": {"H_pi": H_pi, "معدل": rate},
+            "تقشير_المثال": {"مقشور": peeled, "حامل": kept, "الكل": 8 * len(demo)},
+            "112": dict(t112), "256_صارم": dict(t256),
+        },
+        "المجمَّد": {"مسار": os.path.basename(MUJAMMAD_PATH), "sha256": MUJAMMAD_SHA256,
+                     "حاضر": os.path.exists(MUJAMMAD_PATH)},
+    }
+    if args.require_corpus and not os.path.exists(MUJAMMAD_PATH):
+        sys.exit(f"صريخ: المجمَّد غائب عن {MUJAMMAD_PATH} — بصمته {MUJAMMAD_SHA256}. "
+                 f"اجلبه بـ‹bash fetch_corpus.sh› — لا قياس على بديلٍ صامت.")
     if os.path.exists(MUJAMMAD_PATH):                     # القياس على المجمَّد — بالبصمة أو لا قياس
         cells, letters, joint, pos = audit_corpus()
         codes, H_s, L_h = huffman(cells)
@@ -1015,5 +1049,51 @@ if __name__ == "__main__":
               f"{bm['mod_save']:.1f} بت ⟷ حامل {bm['resid']:.1f} بت — صافي {bm['net']:+.1f} | "
               f"مفتاح الجملة: H(بوّابة)={bm['H_g']:.4f} · H(بوّابة|صنف أوّل كلمة)={bm['H_g_fc']:.4f} — "
               f"ربح المفتاح {bm['H_g'] - bm['H_g_fc']:.4f} بت/آية")
+        RES["مقيس"] = {
+            "§١٧_عدّ": {"مواضع": pos, "تعارضات": 0, "خلايا": dict(cells),
+                        "H_حالة": H_s, "هوفمان_L": L_h, "المسطَّح": 3.0,
+                        "أطوال_الرموز": {k: len(v) for k, v in codes.items()},
+                        "H_حرف": H_l, "H_مشترك": H_j, "Δضبط": H_j - H_l},
+            "§١٨_الختم": {"مرخَّص": sum(cells[k] for k in LICENSED4),
+                          "مختوم": sum(cells[k] for k in SEALED4),
+                          "L_خارجي": L_out, "H_خارجي": H_out, "L_حصة": L4, "H_حصة": H4,
+                          "L_ختم": L_in, "H_ختم": H_in, "p_ختم": p_s,
+                          "الفاتورة": L_t, "ثمن_العزل": L_t - L_h},
+            "§١٩_الانقلاب": {"حالة4": {"أفضل": lb4, "أردأ": lw4, "تخصيصات": d4, "مثلى": o4},
+                             "خلايا8": {"أفضل": lb8, "أردأ": lw8, "تخصيصات": d8, "مثلى": o8},
+                             "ختم5": {"أفضل": lb5, "أردأ": lw5, "تخصيصات": d5, "مثلى": o5},
+                             "حقل_الحرف": {"مواضع": sum(letters_lic.values()), "أنماط": len(letters_lic),
+                                           "H": H_L, "L": L_L, "مسطَّح": flatL,
+                                           "أفضل": lbL, "أردأ": lwL, "تخصيصات": dL, "مثلى": oL},
+                             "الجبر_112": {"مسطَّح": 7.0, "مقيس": L_L + L4, "ربح": 7 - L_L - L4},
+                             "ماركوف_ON": {"أزواج": Np, "H_شرطي": Hc, "ربح": H_s - Hc,
+                                           "لكل_سابقة": per_prev}},
+            "§٢٠_المحطة": {"كلمات": st["Nw"], "متوسط_الطول": st["wlen"], "أصناف": dict(st["cls"]),
+                           "H_محطة": st["H_cls"], "H_شرطي": st["Hc_cls"],
+                           "هياكل": len(st["skel"]), "غامضة": len(st["amb"]), "كتلة_الغموض": st["mass"]},
+            "§٢١_قبل_الجملة": {"آيات": bs["Nv"], "كلمات": bs["Nw"], "H_طول": bs["H_len"],
+                               "مفتتح_بعطف": bs["vopen_conj"], "عطف": dict(bs["conj"]),
+                               "خاتمة_الآية": dict(bs["vfinal"]), "خاتمة_الكلمة": dict(bs["final_all"]),
+                               "H_خاتمة_آية": bs["H_vf"], "H_خاتمة_كلمة": bs["H_wf"],
+                               "بسم": bs["bsm"], "وحيدات": len(bs["one_word"]), "مبتلَع_بـA": bs["mq_inA"]},
+            "§٢٢_العتبة": {"خام": dict(th["raw"]), "H_خام": th["H_raw"],
+                           "بعد_القلع": dict(th["strip"]), "الثلاثي": dict(th["tri"]), "H_ثلاثي": th["H_tri"]},
+            "§٢٣_ماركوف_العتبة": {"أزواج": gm["Np"], "H_بوابة": gm["H_g"], "H_شرطي": gm["H_gc"],
+                                  "k_أمثل": gm["k_opt"], "أحاديّ": gm["inv_uni"], "ماركوف": gm["inv_mk"],
+                                  "أمثل": gm["inv_opt"], "جشع": gm["greedy_inv"],
+                                  "مقشور": gm["mod_save"], "حامل": gm["resid"], "صافي": gm["net"],
+                                  "خارج_العيّنة": {"أحاديّ": gm["te_uni"], "ماركوف": gm["te_mk"],
+                                                   "مدمج": gm["te_mg"]}},
+            "§٢٤_الدورة": {"كلمات": bm["Nw"], "أصناف": dict(bm["cnt"]), "أزواج": bm["Np"],
+                           "H_صنف": bm["H_c"], "H_شرطي": bm["H_cc"], "k_أمثل": bm["k_opt"],
+                           "أحاديّ": bm["inv_uni"], "ماركوف": bm["inv_mk"], "أمثل": bm["inv_opt"],
+                           "جشع": bm["greedy_inv"], "مقشور": bm["mod_save"], "حامل": bm["resid"],
+                           "صافي": bm["net"], "H_بوابة": bm["H_g"], "H_بوابة_بالمفتاح": bm["H_g_fc"],
+                           "خارج_العيّنة": {"أحاديّ": bm["te_uni"], "ماركوف": bm["te_mk"],
+                                            "مدمج": bm["te_mg"]}},
+        }
     else:
         print(f"مجمَّد: غائب عن القرص — القياس مؤجَّل ببصمته {MUJAMMAD_SHA256[:12]}… (لا قياس على بديلٍ صامت)")
+    if args.json:
+        dump_json(args.json, RES)
+        print(f"أُودِعت النتائج: {args.json} ({'مقيسة على المجمَّد' if 'مقيس' in RES else 'بنيويةٌ فقط — لا قياس'})")
