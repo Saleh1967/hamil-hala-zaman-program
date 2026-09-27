@@ -110,9 +110,10 @@ def conditional_H(rows, idx):
     return sum(sum(c.values()) / n * H(c) for c in d.values())
 
 
-def heldout_ce(rows, idx):
-    """بت/كلمة خارج العيّنة: تدريب/اختبار متناوبان + α=1 على حقلٍ مغلقٍ m=8.
-    idx=None ⟵ بلا شرط. الربحُ الصادقُ هو فرقُ هذين، لا فرقُ الداخلَين."""
+def heldout_ce(rows, idx, m=M):
+    """بت/كلمة خارج العيّنة: تدريب/اختبار متناوبان + α=1 على حقلٍ مغلقٍ حجمُه m (هنا m=8).
+    idx=None ⟵ بلا شرط. الربحُ الصادقُ هو فرقُ هذين، لا فرقُ الداخلَين.
+    وm وسيطٌ معلن لا ثابتٌ مضمر: مَن قاس على حقلٍ مغلقٍ آخر يسمّي حجمَه ويستعير السياسةَ نفسَها."""
     tr, te = rows[::2], rows[1::2]
     tab, tot = defaultdict(Counter), Counter()
     for r in tr:
@@ -122,7 +123,7 @@ def heldout_ce(rows, idx):
     s = 0.0
     for r in te:
         k = None if idx is None else r[idx]
-        s += -log2((tab[k][r[-1]] + ALPHA) / (tot[k] + ALPHA * M))
+        s += -log2((tab[k][r[-1]] + ALPHA) / (tot[k] + ALPHA * m))
     return s / len(te)
 
 
