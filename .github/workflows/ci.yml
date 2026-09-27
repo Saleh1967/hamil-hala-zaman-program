@@ -109,6 +109,20 @@ jobs:
           print("results.json مُعاد الإنتاج بفارق صفر ✓")
           PY
 
+      - name: مصادمة الأوزان — awzan_v0.json مُعاد الإنتاج حرفيًّا
+        run: |
+          set -eu
+          python awzan_engine.py --json /tmp/awzan.json | tee -a measurement.txt
+          python - <<'PY'
+          import json, sys
+          a = json.load(open("awzan_v0.json", encoding="utf-8"))
+          b = json.load(open("/tmp/awzan.json", encoding="utf-8"))
+          if a != b:
+              print("::error::awzan_v0.json المودَع خالف ما يُنتجه المحرّك — صريخ")
+              sys.exit(1)
+          print("awzan_v0.json مُعاد الإنتاج بفارق صفر ✓")
+          PY
+
       - name: مصادمة المعجم — dictionary_v0.json مُعاد الإنتاج حرفيًّا
         run: |
           set -eu
