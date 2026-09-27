@@ -1,0 +1,91 @@
+name: القياس الكامل على المجمَّد
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  measure:
+    name: تشغيل المحرّك الجبري
+    runs-on: ubuntu-latest
+    steps:
+      - name: سحب المستودع
+        uses: actions/checkout@v4
+
+      - name: تهيئة بايثون
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: تثبيت الاعتماديات
+        run: python -m pip install --upgrade pip numpy
+
+      - name: البوّابة بالبصمة — المجمَّد المودَع أوّلًا، ولا قياس على بديلٍ صامت
+        env:
+          MUJAMMAD_URL: ${{ vars.MUJAMMAD_URL }}
+        run: |
+          set -u
+          # البصمة تُقرأ من المحرّك نفسه: مصدرٌ واحدٌ للحقيقة، لا نسخةٌ ثانيةٌ تتخلّف.
+          SHA="$(python - <<'PY'
+          import re, pathlib
+          src = pathlib.Path("algebra_engine.py").read_text(encoding="utf-8")
+          print(re.search(r'MUJAMMAD_SHA256\s*=\s*"([0-9a-f]{64})"', src).group(1))
+          PY
+          )"
+          echo "البصمة المعلنة: $SHA"
+
+          # ١) المودَع في الشجرة — البايتات حاضرةٌ فلا مرآةَ ولا متغيّرَ سرّيّ.
+          if [ -f mujammad.txt ]; then
+            GOT="$(sha256sum mujammad.txt | cut -d' ' -f1)"
+            if [ "$GOT" = "$SHA" ]; then
+              echo "المجمَّد مودَعٌ في الشجرة وبصمتُه مطابقة ✓"
+              exit 0
+            fi
+            echo "::error::المودَع خالف بصمته ($GOT) — ليس المجمَّد"
+            exit 1
+          fi
+
+          # ٢) مسارٌ احتياطيٌّ موسوم لمن استنسخ بلا بايتات (استنساخٌ ناقص أو سحبٌ جزئيّ).
+          echo "::warning::المجمَّد غيرُ مودَعٍ في الشجرة — المسار الاحتياطيّ الموسوم"
+          GQ='https://raw.githubusercontent.com/globalquran/data/master/Quran/quran-simple-enhanced.txt'
+          TANZIL='https://tanzil.net/pub/download/index.php?quranType=simple-enhanced&outType=txt-2&agree=true'
+          for URL in "${MUJAMMAD_URL:-}" "$GQ" "$TANZIL"; do
+            [ -n "$URL" ] || continue
+            echo "محاولة الإحضار من مصدرٍ معلن…"
+            if curl -fsSL --max-time 120 --retry 3 --retry-delay 5 -o mujammad.candidate "$URL"; then
+              GOT="$(sha256sum mujammad.candidate | cut -d' ' -f1)"
+              if [ "$GOT" = "$SHA" ]; then
+                mv mujammad.candidate mujammad.txt
+                echo "المجمَّد حاضرٌ بالبصمة ✓"
+                break
+              fi
+              echo "::error::بصمةٌ مخالفة ($GOT) — ليس المجمَّد، ولا قياس على بديلٍ صامت"
+              rm -f mujammad.candidate
+              exit 1
+            fi
+            echo "::warning::تعذّر الوصول إلى هذا المصدر"
+          done
+          if [ ! -f mujammad.txt ]; then
+            echo "::warning::المجمَّد غائبٌ عن كلّ مصدرٍ معلن — القياس مؤجَّلٌ باسمه، والتدقيق البنيويّ يجري كاملًا"
+          fi
+
+      - name: تشغيل المحرّك — التدقيق البنيويّ والقياس
+        run: python algebra_engine.py | tee measurement.txt
+
+      - name: إيداع تقرير القياس
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: measurement
+          path: measurement.txt
+          if-no-files-found: warn
