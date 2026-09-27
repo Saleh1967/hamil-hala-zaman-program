@@ -109,23 +109,14 @@ jobs:
           print("results.json مُعاد الإنتاج بفارق صفر ✓")
           PY
 
-      - name: مصادمة ودائع الاستقراء الستّ — كلُّ وديعةٍ مُعادةُ الإنتاج حرفيًّا
+      - name: سجلُّ الأختام الحيّة — كلُّ وديعةٍ وكلُّ ختمٍ يُعاد توليدُه ويُصادَم
         run: |
           set -eu
-          for d in online_peel mirror deposit_law tensor_law jami3_mani3 hiyad; do
-            echo "— $d —"
-            python "induction/$d.py" --json "/tmp/$d.json" | tee -a measurement.txt
-            DEPOSIT="$d" python - <<'PY'
-          import json, os, sys
-          d = os.environ["DEPOSIT"]
-          a = json.load(open(f"induction/{d}.json", encoding="utf-8"))
-          b = json.load(open(f"/tmp/{d}.json", encoding="utf-8"))
-          if a != b:
-              print(f"::error::{d}.json المودَع خالف ما يُنتجه محرّكه — صريخ")
-              sys.exit(1)
-          print(f"{d}.json مُعاد الإنتاج بفارق صفر ✓")
-          PY
-          done
+          # لا رقمَ إلا بمولِّدٍ يُشغَّل: regen_all يعيد توليدَ الودائع السبع كلِّها، ثمّ يقرأ
+          # كلَّ ختمٍ **من المخرَج الطازج لا من الوديعة** ويصادمُه. الختمُ الذي تغيّر رقمُه
+          # يُسقط الـCI ويستلزم تعديلًا معلنًا في induction/seals.py بفاتورةٍ في رسالة الالتزام،
+          # والمسارُ المفقودُ يُسقطه ولو كان الختمُ [شاهدًا] — فالعرضُ ليس إعفاءً من التوليد.
+          python induction/seals.py --json /tmp/seals.json | tee -a measurement.txt
 
       - name: مصادمة الأوزان — awzan_v0.json مُعاد الإنتاج حرفيًّا
         run: |
