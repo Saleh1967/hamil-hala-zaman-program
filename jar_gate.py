@@ -147,6 +147,7 @@ assert os.path.isfile(os.path.join(_INDUCTION, "induction_engine.py")), \
     "محرّك الاستقراء غائبٌ عن induction/ — لا استيراد صامت"
 sys.path.insert(0, _INDUCTION)
 from induction_engine import parse_verses, JARR, JPRE   # الحدُّ المختوم — لا نسخةَ ثانية
+from i3lal_layer import is_wasl_head        # رأسُ الوصل: حدٌّ مختومٌ يُورَث لا يُكتَب ثانيةً
 
 CORPUS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "mujammad.txt")
 LIC = ("فتحة", "ضمة", "كسرة", "سكون")
@@ -282,6 +283,26 @@ def pron_suffix(sk):
             return s
     return None
 
+def _jarr_mark_alif(prev_w):
+    """Ⓑ علامةُ الجرّ **مقدَّرةٌ** على المقصور: آخرُه ألفٌ مقصورةٌ عاريةٌ فلا تظهر كسرتُه
+    أبدًا — «اليتامى» · «القربى» · «الهدى».
+    ▸ **إصلاحٌ بعديٌّ موسوم** (سقط به التسجيلُ الخامس، §١٠): كُتب الشرطُ أوّلًا «ى أو ا»
+      فابتلع 963 موضعًا ليست مقصورًا البتّة — **ألفُ الجماعة** في «آمنوا · وعملوا · كفروا».
+      فقُصر على «ى»، ومعه قيدُ الأصل في `_follows_majrur`: التابعُ يتبع مجرورًا **مُثبَتًا**."""
+    return prev_w[-1][0] == "ى" and prev_w[-1][1] == "عري" and len(prev_w) > 2
+
+def _follows_majrur(v, i):
+    """قيدُ الأصل في البابين Ⓑ Ⓒ — وهو **تعريفُ التابع** لا معايرةُ رقم: لا يُحمَل اللاحقُ
+    على متبوعٍ إلّا أن يكون المتبوعُ **مجرورًا مُثبَتًا بأحد الأبواب**. وبه يسقط «آمنوا
+    بالله» (آمنوا ليست مجرورةً) و«على الناس» («على» حرفُ جرٍّ لا مجرور، وله بابُه)."""
+    return i >= 2 and bool(gates_of(v, i - 1))
+
+def _jarr_mark_ya(prev_w):
+    """Ⓒ علامةُ الجرّ **الياءُ** في المثنى وجمع المذكر السالم، ونونُهما مفتوحة —
+    «الصديقين» · «المؤمنين» · «فئتين». والشرطُ من البايتات: «ـين» ونونٌ مفتوحة."""
+    return len(prev_w) > 3 and prev_w[-1][0] == "ن" and prev_w[-1][1] == "فتحة" \
+           and prev_w[-2][0] == "ي" and prev_w[-2][1] in ("عري", "سكون")
+
 def gates_of(v, i):
     """كلُّ الأبواب التي تنطبق على الموضع، **بترتيب الترويسة الحاكم** (أوّلُها الحاكم)."""
     w = v[i]; sk = "".join(c for c, _ in w)
@@ -316,6 +337,16 @@ def gates_of(v, i):
         g.append("تابع-معطوف")                      # عطفٌ على مجرورٍ سابق — العاطفُ ملتصق
     if tabi3:
         g.append("تابع-غير-معطوف")
+    # ③ Ⓑ Ⓒ تصحيحُ عيبٍ مودَع: البابان أعلاه يفترضان أنّ **علامةَ الجرّ الكسرةُ وحدَها**.
+    #    والسابقُ يكون مجرورًا بغيرها في بابين معلنين، فيُفتح لكلٍّ بابٌ **مستقلٌّ معدودٌ
+    #    بالاسم** ولا يُدمَج في التابع (فلا يُخفي الدمجُ ثمنَه). وشرطُ اللاحق واحدٌ في
+    #    الثلاثة: عاطفٌ ملتصقٌ أو تعريف — فلا يُفتَح البابُ لكلّ ما بعد مقصور.
+    follows = (sk[:1] in ("و", "ف") and w[0][1] == "فتحة" and len(w) > 1) or is_definite(w)
+    if follows and prev_w is not None and not tabi3 and _follows_majrur(v, i):
+        if _jarr_mark_alif(prev_w):
+            g.append("تابع-لمقصور (جرٌّ مقدَّر)")
+        elif _jarr_mark_ya(prev_w):
+            g.append("تابع-لمجرورٍ-بالياء (مثنى/ج.م.سالم)")
     if pron_suffix(sk):
         g.append("ضمير-متصل")
     if _strip_al(sk) in MAMNU3 or sk in MAMNU3:
@@ -326,6 +357,27 @@ MABNI_KASR = {"هؤلاء", "هاؤلاء", "هذه", "هاذه", "يومئذ", 
               "هذي", "أمس", "الآن"}
 NIDA = ("يا", "ويا", "فيا")
 
+# ▸ شهادةُ السكون (الجولة الخامسة): هياكلُ الكلمات التي تَرِد في المجمَّد **ساكنةَ الآخر**
+#   ولو مرّةً. تُبنى من المجمَّد نفسِه مرّةً واحدة — شاهدٌ مقيسٌ لا قائمةٌ يدويّة.
+SUKUN_WITNESS = set()
+
+def build_sukun_witness(verses):
+    SUKUN_WITNESS.clear()
+    for v in verses:
+        for w in v:
+            if w[-1][1] == "سكون":
+                SUKUN_WITNESS.add("".join(c for c, _ in w))
+    return SUKUN_WITNESS
+
+def is_wasl_kasra(v, i):
+    """Ⓐ كسرُ الوصل: كسرةُ تخلُّصٍ من التقاء الساكنين قبل همزة الوصل — **ليست إعرابًا**.
+    شرطان معًا، كلاهما من البايتات: تاليه رأسُ وصل (حدٌّ مختومٌ موروث) + هيكلُه مشهودٌ له
+    بالسكون في المجمَّد. والثاني يمنع المِكنسة: «الرحمنِ الرحيم» لا تَرِد ساكنةً فلا تُطرَح."""
+    w = v[i]
+    if w[-1][1] != "كسرة": return False              # التنوينُ إعرابٌ قطعًا، لا كسرَ وصل
+    if i + 1 >= len(v) or not is_wasl_head(v[i + 1]): return False
+    return "".join(c for c, _ in w) in SUKUN_WITNESS
+
 def excluded_kind(v, i):
     """اتفاقيةُ تضييق البسط (الجولة الرابعة) — **تُطبَّق على كلّ موضعٍ في البسط**، مفسَّرًا
     كان أو ساقطًا. خمسةُ أجناسٍ منتهيةٍ مسمّاةٍ بكاشفٍ من البايتات، أو None إن كان الموضعُ
@@ -334,6 +386,7 @@ def excluded_kind(v, i):
     w = v[i]; sk = "".join(c for c, _ in w)
     prev_w = v[i - 1] if i > 0 else None
     prev = "".join(c for c, _ in prev_w) if prev_w else ""
+    if is_wasl_kasra(v, i): return "كسرُ الوصل (تخلُّصٌ من التقاء الساكنين)"
     if sk in HARF or norm(sk) in JARR_N: return "حرفٌ مستقلّ (ليس مجرورًا)"
     if sk in MABNI_KASR: return "مبنيٌّ على الكسر (قائمةٌ مسمّاة)"
     if word_class(w) == "فعل": return "فعلٌ خاتمتُه كسرة (نونٌ أو وقاية)"
@@ -356,13 +409,25 @@ def residue_kind(v, i):
     return "غيرُ ذلك"
 
 # أجناسُ التضييق الخمسةُ المسجَّلةُ مسبقًا — تُسمّى كلُّها ولو جاء بعضُها صفرًا.
+# ═══ أحكامٌ مجمَّدة: كلُّ حكمٍ يُختَم يومَ صدوره بأرقامه، ولا يُعاد حسابُه في جولةٍ تالية.
+#     (عيبٌ انكشف في الجولة الخامسة: الأحكامُ كانت تُحسَب حيًّا، فلمّا تغيّرت الأبوابُ تبدّل
+#      رقمُ §٨ من 656 إلى 597 بلا أن يمسّه أحد — والحكمُ المُعادُ حسابُه ليس حكمًا.)
+SEALED_VERDICTS = {
+    "الجولة الثالثة": "سقط بشرطه المعلن: غيرُ المفسَّر 656 ≥ 400 · "
+                      "بابُ التابع 1,065 > ضِعفِ سقفه (300)",
+    "الجولة الرابعة": "صمد — المطروحُ 506 ∈ [250,700] · كان مفسَّرًا 76.7% ≥ 25% · "
+                      "المتبقّي 538 ∈ [400,560]",
+}
+
 DROP_KINDS = ("حرفٌ مستقلّ (ليس مجرورًا)", "مبنيٌّ على الكسر (قائمةٌ مسمّاة)",
               "فعلٌ خاتمتُه كسرة (نونٌ أو وقاية)", "منادًى (سابقُه «يا»)",
-              "جمعٌ مؤنثٌ سالمٌ بعد فعل (منصوبٌ بالكسرة)")
+              "جمعٌ مؤنثٌ سالمٌ بعد فعل (منصوبٌ بالكسرة)",
+              "كسرُ الوصل (تخلُّصٌ من التقاء الساكنين)")
 NOT_JARR_KINDS = DROP_KINDS
 
 def main():
     verses = parse_verses(CORPUS)
+    build_sukun_witness(verses)   # شاهدُ السكون يُبنى من المجمَّد قبل أيّ حكم
     # ـــــ الشرط المختوم: تعداد مواضع الجرّ وعدّ ما لا يفسّره الجدول
     unexplained = []; causes = Counter(); jar_positions = 0
     pron = Counter(); alone = Counter(); overlap = Counter(); residue = Counter()
@@ -371,6 +436,7 @@ def main():
     #      (كان مفسَّرًا · كان ساقطًا) ليُكشَف بالعدّ إن كانت الاتفاقيةُ مفصَّلةً على العتبة.
     raw_positions = 0; raw_unexplained = 0; raw_causes = Counter()
     excluded = Counter(); excluded_explained = 0; excluded_unexplained = 0
+    excluded_explained_by = Counter()   # المطروحُ الذي كان مفسَّرًا، بجنسه
     for vi, v in enumerate(verses):
         for i, w in enumerate(v):
             end = w[-1][1]
@@ -384,7 +450,7 @@ def main():
             else: raw_unexplained += 1
             if drop:
                 excluded[drop] += 1
-                if g: excluded_explained += 1
+                if g: excluded_explained += 1; excluded_explained_by[drop] += 1
                 else: excluded_unexplained += 1
                 continue                         # مطروحٌ من البسط المضيَّق بالاتفاقية المعلنة
             jar_positions += 1
@@ -404,23 +470,32 @@ def main():
     assert jar_positions + not_jarr == raw_positions, "مصالحةُ التضييق مخروقة"
     assert excluded_explained + excluded_unexplained == not_jarr
     assert raw_unexplained == len(unexplained) + excluded_unexplained
-    # ـــــ حكمُ التسجيل المسبق للجولة الثالثة — **يُحسَب على البسط الخام كما سُجِّل**،
-    #      فلا يُرفَع سقوطٌ مثبتٌ بمقامٍ أُعلن بعده (§٨ لا يُمَسّ).
-    tabi3 = raw_causes["تابع-غير-معطوف"] + raw_causes["تابع-معطوف"]
-    broke = []
-    if raw_unexplained >= 400: broke.append(f"غيرُ المفسَّر {raw_unexplained:,} ≥ 400")
-    if tabi3 > 2 * 300: broke.append(f"بابُ التابع {tabi3:,} > ضِعفِ سقفه (300)")
-    verdict = "سقط بشرطه المعلن: " + " · ".join(broke) if broke else "صمد"
+    # ـــــ أحكامُ الجولات الماضية **مجمَّدةٌ بنصّها لا مُعادةُ الحساب** (SEALED_VERDICTS):
+    #      كانت تُحسَب حيًّا، فلمّا تغيّرت الأبوابُ في الجولة الخامسة تبدّل رقمُ §٨ من 656
+    #      إلى 597 **صامتًا** — وهذا إعادةُ كتابةٍ للتاريخ. فالحكمُ يُختَم يومَ صدوره.
+    verdict = SEALED_VERDICTS["الجولة الثالثة"]
     # ـــــ حكمُ التسجيل المسبق للجولة الرابعة (اتفاقيةُ التضييق) بفواصله الثلاثة
     share = excluded_explained / not_jarr if not_jarr else 0.0
-    broke4 = []
-    if not_jarr < 150: broke4.append(f"المطروحُ {not_jarr:,} < 150 — اتفاقيةٌ صوريةٌ لا تضييق")
-    if not_jarr > 1200: broke4.append(f"المطروحُ {not_jarr:,} > 1,200 — مِكنسةٌ تبتلع المجرور")
-    if share < 0.25:
-        broke4.append(f"المطروحُ الذي كان مفسَّرًا {share:.1%} < 25% — الاتفاقيةُ مفصَّلةٌ على العتبة")
-    if not (400 <= len(unexplained) <= 560):
-        broke4.append(f"غيرُ المفسَّر بعد التضييق {len(unexplained):,} خارج [400, 560]")
-    verdict4 = "سقط بشرطه المعلن: " + " · ".join(broke4) if broke4 else "صمد"
+    verdict4 = SEALED_VERDICTS["الجولة الرابعة"]
+    # ـــــ حكمُ التسجيل المسبق للجولة الخامسة: Ⓐ طرحٌ · Ⓑ Ⓒ تفسير، ونسبتُهما معروضة
+    wasl = excluded["كسرُ الوصل (تخلُّصٌ من التقاء الساكنين)"]
+    wasl_expl = excluded_explained_by["كسرُ الوصل (تخلُّصٌ من التقاء الساكنين)"]
+    bc = alone["تابع-لمقصور (جرٌّ مقدَّر)"] + alone["تابع-لمجرورٍ-بالياء (مثنى/ج.م.سالم)"]
+    broke5 = []
+    if not (300 <= wasl <= 800):
+        broke5.append(f"كسرُ الوصل {wasl:,} خارج [300, 800]")
+    if wasl and wasl_expl < 0.40 * wasl:
+        broke5.append(f"المطروحُ بكسر الوصل الذي كان مفسَّرًا {wasl_expl / wasl:.1%} < 40%"
+                      " — كاشفٌ مفصَّلٌ على المتبقّي")
+    if not (60 <= bc <= 260):
+        broke5.append(f"بابا Ⓑ Ⓒ مستقلَّين {bc:,} خارج [60, 260]")
+    if not (240 <= len(unexplained) <= 420):
+        broke5.append(f"المتبقّي {len(unexplained):,} خارج [240, 420]")
+    # الشرطُ الأقسى: الربحُ بالمِقَصّ لا بالمِجهر يُسقط الجولةَ ولو بلغ الرقمُ العتبة.
+    if wasl > bc:
+        broke5.append(f"المطروحُ بكسر الوصل {wasl:,} > ما فسّره البابان {bc:,}"
+                      " — ربحٌ بالمِقَصّ لا بالمِجهر")
+    verdict5 = "سقط بشرطه المعلن: " + " · ".join(broke5) if broke5 else "صمد"
     # ـــــ ماركوف الـ112 داخل الأقسام الثلاثة (البنية الداخلية)
     prof = defaultdict(lambda: defaultdict(Counter))
     for v in verses:
@@ -467,6 +542,10 @@ def main():
           f" | غيرُ المفسَّر خامًّا {raw_unexplained:,} = {len(unexplained):,} + {excluded_unexplained:,}")
     print("حكمُ التسجيل المسبق (الجولة الثالثة، على الخام — لا يُمَسّ):", verdict)
     print("حكمُ التسجيل المسبق (الجولة الرابعة — اتفاقيةُ التضييق):", verdict4)
+    print(f"الجولة الخامسة: كسرُ الوصل طُرح {wasl:,} (منه كان مفسَّرًا {wasl_expl:,}"
+          f" {wasl_expl / wasl if wasl else 0:.1%}) · وبابا Ⓑ Ⓒ فسّرا مستقلَّين {bc:,}"
+          f" — مِقَصٌّ/مِجهر = {wasl}/{bc}")
+    print("حكمُ التسجيل المسبق (الجولة الخامسة):", verdict5)
     for cls, d in profH.items():
         print(f"ماركوف-داخل-{cls}: {d}")
     print("أمامي (صنف-الأول × بوابته):", dict(fwd.most_common(8)))
@@ -481,7 +560,11 @@ def main():
                             excluded_explained=excluded_explained,
                             excluded_unexplained=excluded_unexplained,
                             narrowed_candidate=jar_positions,
-                            preregistration=verdict, preregistration_r4=verdict4),
+                            excluded_explained_by=dict(excluded_explained_by),
+                            wasl_kasra=wasl, wasl_kasra_explained=wasl_expl,
+                            gates_bc=bc,
+                            preregistration=verdict, preregistration_r4=verdict4,
+                            preregistration_r5=verdict5),
                 ماركوف_الأقسام=profH)
 
 if __name__ == "__main__":
