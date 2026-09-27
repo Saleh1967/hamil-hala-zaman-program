@@ -8,9 +8,11 @@
       "ق": 22317
     },
     "coverage": {
+      "awzan_gain": 3098,
+      "awzan_words": 4043,
       "jar_mabni_words": 1588,
       "raw_words": 82406,
-      "scream": 60701,
+      "scream": 57603,
       "shadda_words": 21705
     },
     "n_var": 1692,
@@ -36,7 +38,7 @@
       "ى": 590,
       "ي": 2861
     },
-    "rules_cost_bits": 192,
+    "rules_cost_bits": 1456,
     "skeletons": 14870,
     "sup_states": {
       "تنوين ضم": 344,
