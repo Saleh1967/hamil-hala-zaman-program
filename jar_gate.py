@@ -16,18 +16,37 @@
 # توقعاتي الموقَّعة (كما وقّعتُ جدول الأدوار): الجارُ المفرد أولًا والإضافة ثانية ·
 #   الممنوع أقل من 500 موضع · الضمائر المتصلة بالآلاف · والشرط يسقط في جولته الأولى
 #   على المستوى (ب) لا على (أ) — وأتوقع سقوطه بمواضع الإضافة المبهمة.
+# ═══════════════ الإصلاح الرابع — بعديٌّ موسوم (لا يُحتسَب تسجيلًا مسبقًا) ═══════════════
+# صيغ هذا الإصلاح **بعد** رؤية مواضع السقوط، فيُوسَم «بعديًّا» كما وُسم الشرطُ المصحَّح في
+# isnad_layer.py. وهو رابعُ الإصلاحات الثلاثة في FRACTAL.md §٥، وبندُه بندان:
+#   ① ردُّ JARR/JPRE إلى المختوم: الحدُّ الوحيد عندنا هو induction_engine.gate — فالنسخةُ
+#     الثانيةُ المكتوبةُ يدًا (19 مدخلًا زائدًا وJPRE غائبةٌ بالكلّيّة) تُحذَف، ويُورَث الحدُّ
+#     كما وَرِثته harakat_layer.py وfield112_laws.py. ومعه بابٌ سادسٌ كان خارج البوّابة:
+#     **الجارُّ الملتصقُ المكسور** (ب/ل/ك) في الكلمة نفسِها.
+#   ② إحياءُ الأبواب الميتة الثلاثة: «تابع-معطوف» (كان `and ""` فشرطُه False أبدًا) ·
+#     «ممنوع-من-الصرف» (كان `if False`) · «الضميرُ المتصلُ المجرور» (كان يقارن هيكلَ الكلمة
+#     كاملًا، والضميرُ ملتصقٌ داخلها فكان `pronoun_genitive` = {}).
+# واتفاقيةُ الأولوية (الدَّينُ الرابع في §٤) **تُعلَن هنا واحدةً حاكمة**: ترتيبُ الترويسة
+#   بعينه — جارٌّ ملتصق ← جارٌّ سابق ← إضافة ← تابع معطوف ← ضميرٌ متصل ← ممنوع من الصرف.
+#   وحتى لا يُخفي الترتيبُ بابًا، يُعَدّ كلُّ بابٍ **مستقلًّا** أيضًا (`الأبواب_مستقلة`)
+#   ويُعَدّ التداخلُ بالاسم (`تداخل`) — الحاكمُ واحدٌ والباقي عرضٌ موسوم.
+# وما لم يُصلَح هنا يبقى مسمًّى بعطله: مصنِّفُ الاسم/الفعل (يبتلع كلَّ ثلاثيٍّ) وبابُ الإضافة
+#   القائمُ عليه، والبسطُ غيرُ المضيَّق — وهي الإصلاحاتُ ①②③ في §٥. **فلا ختمَ ثانيًا بهذا
+#   الملفّ وحدَه**: هذه الجولةُ تُحيي الأبواب وتردُّ الحدَّ، والختمُ موقوفٌ على اجتماع الأربعة.
 # ═══════════════════════════════════════════════════════════════════════════════════
 import sys, os, json, re
 from math import log2
 from collections import Counter, defaultdict
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from induction_engine import parse_verses
+_INDUCTION = os.path.join(os.path.dirname(os.path.abspath(__file__)), "induction")
+assert os.path.isfile(os.path.join(_INDUCTION, "induction_engine.py")), \
+    "محرّك الاستقراء غائبٌ عن induction/ — لا استيراد صامت"
+sys.path.insert(0, _INDUCTION)
+from induction_engine import parse_verses, JARR, JPRE   # الحدُّ المختوم — لا نسخةَ ثانية
 
 CORPUS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "mujammad.txt")
 LIC = ("فتحة", "ضمة", "كسرة", "سكون")
 HARF = set("و ف ثم حتى إذ إذا قد لقد إن أن لكن ليت لعل ما لا لم لن بل كل منذ أم رب أليس ليس أو أم".split())
-JARR = set("من عن على الى في رب مذ منذ عدى حاشا خلا لدى لدن بين امام امام وراء عند ذو ذي حتى كي لكي وإذ وإذا".split())
 TEMPLATES = ["فعل","فعلل","فاعل","أفعل","تفعلل","تفاعل","انفعل","افتعل","افعلل","استفعل"]
 def rx(t):
     lg = defaultdict(list); out = ""; idx = 0
@@ -56,12 +75,59 @@ def word_class(w):
             return "فعل"
     return "اسم"
 
+# ــــــ الأبواب المُحياة: صورٌ معلنةٌ منتهيةٌ مسعَّرة، لا قواعدُ مفتوحة ــــــ
+# صورُ الضمير المتصل المجرور (من جدول الأدوار) — تُقاس **لاحقةً داخل الكلمة** لا هيكلًا كاملًا.
+PRON_SUF = ("هما", "كما", "هم", "هن", "كم", "كن", "نا", "ها", "ه", "ك", "ي")
+# مبنيّاتٌ تنتهي بصورة الضمير ولا ضميرَ فيها — تُستثنى بالاسم (جدول الاستثناءات في الترويسة).
+PRON_GUARD = {"هذه", "هاذه", "هذي", "هؤلاء", "هاؤلاء", "هذي", "ذه"}
+# الممنوع من الصرف: قائمةٌ منتهيةٌ مسمّاة (أعلامٌ أعجميةٌ ومؤنثةٌ ومواضع). وجرُّه بالكسرة
+#   فرعيةٌ لا تكون إلّا بإضافةٍ أو بـ«ال» — فالبابُ يُعَدّ حيًّا وإن جاء عدُّه صغيرًا.
+MAMNU3 = set("""إبراهيم ابراهيم إسماعيل اسماعيل إسحاق اسحاق يعقوب إسرائيل اسرائيل عمران
+    هارون مريم فرعون سليمان يوسف يونس أيوب ايوب زكريا يحيى إلياس الياس اليسع جبريل ميكال
+    ميكائيل إدريس ادريس ذكريا آدم ادم ثمود مدين جهنم مكة بابل هاروت ماروت عرفات""".split())
+AL = ("بال", "وال", "فال", "كال", "ال", "لل")
+
+def _strip_al(sk):
+    """قلعُ «ال» المعلنة بصورها — ليُعرَض الهيكلُ على القائمة المنتهية."""
+    for p in AL:
+        if sk.startswith(p) and len(sk) > len(p) + 1:
+            return sk[len(p):]
+    return sk
+
+def pron_suffix(sk):
+    """لاحقةُ الضمير المجرور إن كانت ملتصقةً بجذعٍ غيرِ خالٍ — وإلّا None."""
+    if sk in PRON_GUARD: return None
+    for s in PRON_SUF:
+        if sk.endswith(s) and len(sk) > len(s):
+            return s
+    return None
+
+def gates_of(v, i):
+    """كلُّ الأبواب التي تنطبق على الموضع، **بترتيب الترويسة الحاكم** (أوّلُها الحاكم)."""
+    w = v[i]; sk = "".join(c for c, _ in w)
+    prev_w = v[i - 1] if i > 0 else None
+    prev = "".join(c for c, _ in prev_w) if prev_w else ""
+    g = []
+    if w[0][0] in JPRE and w[0][1] == "كسرة" and len(w) > 1:
+        g.append("جار-ملتصق")                      # ب/ل/ك المكسورة — من الحدّ المختوم
+    if prev in JARR:
+        g.append("حرف-جر-سابق")
+    if prev_w is not None and word_class(prev_w) == "اسم" and prev_w[-1][1] in LIC:
+        g.append("إضافة")
+    if sk[:1] in ("و", "ف") and w[0][1] == "فتحة" and len(w) > 1 \
+       and prev_w is not None and prev_w[-1][1] in ("كسرة", "تنوين كسر"):
+        g.append("تابع-معطوف")                      # عطفٌ على مجرورٍ سابق — العاطفُ ملتصق
+    if pron_suffix(sk):
+        g.append("ضمير-متصل")
+    if _strip_al(sk) in MAMNU3 or sk in MAMNU3:
+        g.append("ممنوع-من-الصرف")
+    return g
+
 def main():
     verses = parse_verses(CORPUS)
     # ـــــ الشرط المختوم: تعداد مواضع الجرّ وعدّ ما لا يفسّره الجدول
     unexplained = []; causes = Counter(); jar_positions = 0
-    pron = Counter()
-    PRON_SKEL = {"ه","ها","هما","هم","هن","ك","كما","كم","كن","نا","ي","ت","ن"}
+    pron = Counter(); alone = Counter(); overlap = Counter()
     for vi, v in enumerate(verses):
         for i, w in enumerate(v):
             end = w[-1][1]
@@ -69,11 +135,10 @@ def main():
             jar_positions += 1
             sk = "".join(c for c, _ in w)
             prev = "".join(c for c, _ in v[i - 1]) if i > 0 else ""
-            c = "ضمير-متصل" if sk in PRON_SKEL else \
-                "حرف-جر-سابق" if prev in JARR else \
-                "إضافة" if (i > 0 and word_class(v[i - 1]) == "اسم" and v[i - 1][-1][1] in LIC) else \
-                "ممنوع-من-الصرف(مرشح)" if False else \
-                "تابع-معطوف" if (i > 1 and prev in ("و","ف") and "" ) else "؟"
+            g = gates_of(v, i)
+            for name in g: alone[name] += 1          # عرضٌ موسوم: البابُ مستقلًّا عن الأولوية
+            if len(g) > 1: overlap["×".join(g)] += 1
+            c = g[0] if g else "؟"
             if c == "؟":
                 c2 = "إضافة" if i > 0 and word_class(v[i - 1]) == "اسم" else "؟"
                 if c2 == "؟":
@@ -82,7 +147,7 @@ def main():
                     continue
                 c = c2
             causes[c] += 1
-            if c == "ضمير-متصل": pron[sk] += 1
+            if "ضمير-متصل" in g: pron[pron_suffix(sk)] += 1
     seal = "PASS" if not unexplained else "FAIL"
     # ـــــ ماركوف الـ112 داخل الأقسام الثلاثة (البنية الداخلية)
     prof = defaultdict(lambda: defaultdict(Counter))
@@ -106,7 +171,7 @@ def main():
         if not v: continue
         w0 = v[0]; cls0 = word_class(w0)
         g = "C" if w0[0] in (("و","فتحة"),("ف","فتحة")) else \
-            "J" if "".join(c for c,_ in w0) in JARR or (w0[0][0] in "بلك" and w0[0][1]=="كسرة") else \
+            "J" if "".join(c for c,_ in w0) in JARR or (w0[0][0] in JPRE and w0[0][1]=="كسرة") else \
             "A" if len(w0)>1 and w0[0][0]=="ا" and w0[1][0]=="ل" else \
             "T" if w0[-1][1].startswith("تنوين") else "B"
         typ = "شبه-جملة" if (g == "J" or cls0 == "حرف") else \
@@ -118,13 +183,16 @@ def main():
     print("الأسباب:", dict(causes.most_common()))
     print("أولى المواضع غير المفسَّرة:", unexplained[:12])
     print("الضمائر المتصلة المجرورة:", dict(pron.most_common(8)))
+    print("الأبواب مستقلةً (عرضٌ موسوم):", dict(alone.most_common()))
+    print("التداخل (الحاكمُ أوّلُ السلسلة):", dict(overlap.most_common(8)))
     for cls, d in profH.items():
         print(f"ماركوف-داخل-{cls}: {d}")
     print("أمامي (صنف-الأول × بوابته):", dict(fwd.most_common(8)))
     print("عكسي (نوع-الجملة × صنف-أولها):", dict(rev.most_common(6)))
     return dict(الشرط=dict(state=seal, jar_positions=jar_positions,
                             unexplained=len(unexplained), sample=unexplained[:50],
-                            causes=dict(causes), pronoun_genitive=dict(pron)),
+                            causes=dict(causes), pronoun_genitive=dict(pron),
+                            gates_alone=dict(alone), overlap=dict(overlap)),
                 ماركوف_الأقسام=profH)
 
 if __name__ == "__main__":
