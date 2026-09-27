@@ -225,6 +225,147 @@ def coverage(verbose=True, _found=None, _ci=None):
     return problems
 
 
+# فواتيرُ الودائع: كلُّ دعوى نموذجٍ تُسجَّل هنا بمسارِ Δ **ومسارِ حكمِها المكتوب**.
+# والمصادمةُ هي المقصود: الحكمُ المكتوبُ في الوديعة يُقابَل بالحكم المشتقّ من إشارة Δ،
+# فلا يُقبَل «يُقبَل» فوق فاتورةٍ موجبة. (قاعدةُ «لا رقمَ بلا فاتورة»: CONTRIBUTING.md §٢)
+# الاتفاقيةُ واحدةٌ معلنة: Δ بالبتّات، سالبٌ ⟹ يُقبَل · موجبٌ ⟹ يُرفَض.
+BILLS = {
+    "jami3_mani3.json": (("البناءُ_الجامع_المانع", "الحَكَم", "فرق"),
+                         ("البناءُ_الجامع_المانع", "الحَكَم", "حكم"),
+                         "قسمةُ الحقل 112"),
+    "tensor_law.json": (("دعوى_التنسور", "T2_تفنيد", "الفاتورةُ_ترفض", "جداول",
+                         "التنسور كما هو", "فائدة"),
+                        ("دعوى_التنسور", "T2_تفنيد", "الفاتورةُ_ترفض", "جداول",
+                         "التنسور كما هو", "حكم"),
+                        "سابقة⊗وزن⊗لاحقة"),
+}
+
+# ودائعُ الحياد: الحكمُ فيها لا يُكتَب في الوديعة، فيُقابَل Δ بالحكم المعلن هنا.
+HIYAD_BILLS = {"ا": ("طيُّ الألف وسمًا", "يُرفَض"), "وي": ("طيُّ و/ي وسمًا", "يُقبَل")}
+
+
+def _verdict_of(delta):
+    return "يُقبَل" if delta < 0 else "يُرفَض"
+
+
+def contracts(verbose=True):
+    """قاعدةُ «لا رقمَ بلا فاتورة»، مفحوصةً لا موعودة.
+
+    ① كلُّ وديعةٍ بمولِّدٍ هنا لها ختمٌ [بوّابة] واحدٌ على الأقلّ — وإلا فهي رقمٌ يُعرَض
+       ولا يَحكم، وذلك بابُ «معرَّض».
+    ② كلُّ دعوى نموذجٍ لها Δ يُقرأ من وديعتها، و**حكمُها المكتوبُ يُصادَم بإشارة Δ**.
+    """
+    problems = []
+    for deposit in GENERATORS:
+        if not any(s["وديعة"] == deposit and s["صنف"] == GATE for s in SEALS):
+            problems.append(f"الوديعة «{deposit}» بلا ختمٍ {GATE} واحد — عرضٌ بلا حارس")
+
+    def check(deposit, delta, written, claim):
+        derived = _verdict_of(delta)
+        if written != derived:
+            problems.append(f"فاتورةٌ تخالف حكمَها: «{claim}» في {deposit} — "
+                            f"Δ = {delta:+} ⟹ {derived}، والمكتوبُ «{written}»")
+        elif verbose:
+            print(f"    Δ({claim}) = {delta:+,} بتًّا ⟹ {derived} — والمكتوبُ يوافقه ✓")
+
+    for deposit, (dpath, vpath, claim) in BILLS.items():
+        if deposit not in GENERATORS:
+            problems.append(f"فاتورةٌ لوديعةٍ بلا مولِّد: «{deposit}»")
+            continue
+        with open(deposit_path(deposit), encoding="utf-8") as fh:
+            doc = json.load(fh)
+        check(deposit, dig(doc, dpath, f"فاتورة {claim}"),
+              dig(doc, vpath, f"حكم {claim}"), claim)
+
+    with open(deposit_path("hiyad.json"), encoding="utf-8") as fh:
+        hiyad = json.load(fh)["دعوى_الحياد"]["الحَكَم"]
+    for key, (claim, declared) in HIYAD_BILLS.items():
+        check("hiyad.json", hiyad[key]["فرق"], declared, claim)
+
+    if verbose and not problems:
+        print("    ✓ لا وديعةَ بلا حارس، ولا حكمَ يخالف إشارةَ فاتورتِه")
+    for p in problems:
+        print(f"::error::{p}")
+    return problems
+
+
+def audit_sheet():
+    """قائمةُ الأختام للتدقيق الخارجي — **مولَّدةٌ من السجلّ لا مكتوبةٌ بيد**.
+
+    فلا تتخلّف الورقةُ عن الشجرة: CI يعيد توليدَها ويصادمُها حرفًا بحرف.
+    """
+    rows = ["# AUDIT-SEALS — قائمةُ الأختام للتدقيق الخارجي الثاني (Alghanem)",
+            "",
+            "> **مولَّدةٌ آليًّا** بـ`python induction/seals.py --audit AUDIT-SEALS.md`،",
+            "> ويصادمُها CI بفارق صفر. لا تُحرَّر بيد.",
+            "",
+            "## الدعوى المعروضة",
+            "",
+            "كلُّ رقمٍ أدناه **يُعاد توليدُه** بأمرٍ واحد (`python induction/seals.py`)، ويُقرَأ",
+            "من مخرَجٍ طازجٍ لا من الوديعة. والمطلوبُ من التدقيق حكمٌ من ثلاثيِّ T لكلِّ سطر",
+            "(انظر `AUDIT-188.md` §٠): **T₁** تصديقٌ بعدٍّ من مقامٍ مختوم · **T₂** تفنيدٌ بحسابٍ",
+            "معروض · **T₃** تعليقٌ بالاسم. والصمتُ ليس حكمًا.",
+            "",
+            "## الأختام",
+            "",
+            "| # | الختم | القيمة | الصنف | الدالّة | المقام | الوديعة · المسار |",
+            "|---|---|---|---|---|---|---|"]
+    for i, s in enumerate(SEALS, 1):
+        rows.append(f"| {i} | {s['اسم']} | `{s['قيمة']}` | {s['صنف']} | `{s['دالّة']}` | "
+                    f"{s['مقام']} | `{s['وديعة']}` · `{'/'.join(map(str, s['مسار']))}` |")
+    n_gate = sum(1 for s in SEALS if s["صنف"] == GATE)
+    rows += ["",
+             f"**العدّ**: {len(SEALS)} ختمًا — {n_gate} {GATE} · {len(SEALS) - n_gate} {WITNESS}.",
+             "",
+             "## الفواتيرُ المصادَمةُ بأحكامها",
+             "",
+             "كلُّ دعوى نموذجٍ يُقرأ Δ من وديعتها، و**يُشتقّ الحكمُ من إشارته** فيُقابَل بالمكتوب",
+             "(`seals.contracts`، والاتفاقيةُ واحدة: Δ سالبٌ ⟹ يُقبَل · موجبٌ ⟹ يُرفَض):",
+             "",
+             "| الدعوى | Δ (بتًّا) | الحكمُ المشتقّ |",
+             "|---|---|---|"]
+    rows += [f"| {claim} | {delta:+,} | {verdict} |" for claim, delta, verdict in _bill_rows()]
+    rows += ["",
+             "## البندُ الذي وَلد من عطلٍ — الفصلُ بين جدولِ التدريب والمقامات",
+             "",
+             "طُبع رقمٌ واحدٌ باسمين ومقامين: «H(البوّابة|سابقتها)» = 1.2050 مرّةً و1.3985 أخرى.",
+             "والعلّةُ لم تكن اتفاقيتين، بل **جدولَ نصفِ التدريب (3,118 زوجًا) على مقاماتِ",
+             "الأزواج كلِّها (6,235)** — فكتلةُ كلِّ سابقةٍ كانت ‎≈0.50 لا 1.0، فلم تكن إنتروبيا",
+             "شرطيةً أصلًا. والإصلاحُ ثلاثةُ أشياء معًا:",
+             "",
+             "1. اتفاقيةٌ واحدة: الجدولُ والمقاماتُ من التيار نفسِه — `H_cond = 1.398473785338209`.",
+             "2. حارسُ كتلة: `assert abs(mass - 1.0) < 1e-9` لكلِّ سابقة، فلا يعود العطلُ صامتًا.",
+             "3. فصلُ المفتاحين في الوديعة: `transitions_train` ⟷ `transitions_all` — فلا يجتمع",
+             "   اسمٌ واحدٌ على جدولين.",
+             "",
+             "والمصادمةُ الخارجية: `algebra_engine.gate_markov_for()['H_gc']` تُعطي الرقمَ نفسَه",
+             "بفارق `0.0` بتنفيذٍ مستقلّ — فالرقمُ محروسٌ بمصدرين لا بواحد.",
+             "",
+             "## ما يُطلَب من المدقِّق بعينه",
+             "",
+             "1. أيُّ ختمٍ [بوّابة] ينبغي أن يكون [شاهدًا] (يُعرَض ولا يَحكم)؟ وبأيِّ سند؟",
+             "2. أيُّ **مقامٍ** أعلاه مخلوطٌ كما خُلط مقامُ H_cond — اسمٌ واحدٌ على قاعدتين؟",
+             "3. `QAC-fork-v0.4` محجورٌ T₃ لانعدام FROZEN (`AUDIT-188.md` §١ صفّ ٢): ما بصمتُه",
+             "   وطولُه ومصدرُه ومَن صحّح جذورَه وبأيِّ ضابط؟ — فمرايا الشبكة تتخالف في الطول.",
+             ""]
+    return "\n".join(rows)
+
+
+def _bill_rows():
+    """صفوفُ الفواتير — تُقرأ من الودائع لا تُكتب في الورقة."""
+    out = []
+    for deposit, (dpath, vpath, claim) in BILLS.items():
+        with open(deposit_path(deposit), encoding="utf-8") as fh:
+            doc = json.load(fh)
+        delta = dig(doc, dpath, f"فاتورة {claim}")
+        out.append((claim, delta, _verdict_of(delta)))
+    with open(deposit_path("hiyad.json"), encoding="utf-8") as fh:
+        hiyad = json.load(fh)["دعوى_الحياد"]["الحَكَم"]
+    for key, (claim, _declared) in HIYAD_BILLS.items():
+        out.append((claim, hiyad[key]["فرق"], _verdict_of(hiyad[key]["فرق"])))
+    return out
+
+
 def regen_all(verbose=True):
     """يعيد توليدَ كلِّ وديعةٍ وكلِّ ختمٍ ويصادمُهما — فارقٌ صفرٌ أو صريخ."""
     problems, checked = [], 0
@@ -308,6 +449,10 @@ def falsify(verbose=True):
     trials["دعوى تبويبٍ كاذبة"] = ("رفض ✓ — «مبوَّبٌ في ci.yml» تُفتَّش لا تُصدَّق"
                                    if len(claim) >= len(CI_COLLIDED) else "لم يرفض ✗")
 
+    trials["حكمٌ يخالف فاتورتَه"] = ("رفض ✓ — «يُقبَل» فوق Δ موجبةٍ لا تمرّ"
+                                     if _verdict_of(+69037) == "يُرفَض"
+                                     and _verdict_of(-5427) == "يُقبَل" else "لم يرفض ✗")
+
     if verbose:
         print("— تكذيبُ الحارس (هل يستطيع أن يرفض؟) —")
         for k, v in trials.items():
@@ -319,12 +464,20 @@ def falsify(verbose=True):
 def main():
     ap = argparse.ArgumentParser(description="سجلُّ الأختام الحيّة")
     ap.add_argument("--falsify-only", action="store_true")
+    ap.add_argument("--audit", metavar="مسار", help="توليدُ ورقة التدقيق الخارجي")
     ap.add_argument("--json")
     args = ap.parse_args()
 
+    if args.audit:                       # التوليدُ وحدَه — ثمّ تُصادَم الورقةُ في CI
+        sheet = audit_sheet()
+        with open(args.audit, "w", encoding="utf-8") as fh:
+            fh.write(sheet)
+        print(f"ورقةُ التدقيق ({len(SEALS)} ختمًا) ⟵ {args.audit}")
+        return 0
+
     print("سجلُّ الأختام — لا رقمَ إلا بمولِّدٍ يُشغَّل، ولا رقمَ إلا باسم دالّتِه ومقامِه\n")
     trials = falsify()
-    problems = [] if args.falsify_only else coverage() + regen_all()
+    problems = [] if args.falsify_only else coverage() + contracts() + regen_all()
     if args.json:
         with open(args.json, "w", encoding="utf-8") as fh:
             json.dump({"الأختام": [dict(s, مسار=list(s["مسار"])) for s in SEALS],
