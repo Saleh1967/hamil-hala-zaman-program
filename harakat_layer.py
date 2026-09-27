@@ -10,7 +10,13 @@
 #   ٣) جسرُ الحاكم السابق — H(الخاتمة) بلا شرطٍ وبالسابقة وبالتالية وبشرط الوصل، **داخل
 #      العيّنة وخارجها معًا** (تقسيمٌ متناوب + α=1، سياسةُ induction_engine نفسُها). الاتجاهُ
 #      والمقدارُ يُفصَلان بالاسم: ما يصمد خارجَ العيّنة وحده يُبنى عليه.
+#   ٤) صفُّ الطرف — داخلُ اللفظ ⟷ خاتمتُه، الثمانيةُ بأسمائها وH وΔ. **عدٌّ رسميٌّ محض**:
+#      لا دعوى صوتيةً ولا تفسيرَ («الصائتُ يحمل الهيئة» ونحوُه ليس مقيسًا هنا). وتُعرَض
+#      **اتفاقيةُ طيّ التنوين** كلتاهما: الخامُ حاكمٌ والمطويُّ عرضٌ موسومٌ بصيغته — لأنّ
+#      اختيارَها الصامتَ يضاعف Δ (0.091 ⟷ 0.168)، كما فُعل بسرير سترلنج في i3lal_layer.
 #   دَينان: «الثلاثون» (الكلماتُ العاريةُ كليًّا) و**شرطا قياس «بعد الجار»** — كلاهما بالاسم.
+#   ودَينٌ ثالثٌ يُحال: «هل ارتفاعُ H عند الخاتمة أثرُ الحاكم السابق؟» — البندان ٣ و٤ **مقامان
+#      لم يُجمَعا في رقم**، والجسرُ بينهما مؤجَّلٌ إلى الجولة الثانية مع H(بوّابة|صنف).
 # ⚑ والمعجم والكلفةُ السابقة لا تُمسّ: هذه طبقةُ قياسٍ صوتيّ فوق الكلمة، لا تصنيفُ كلمات.
 from collections import Counter, defaultdict
 from math import log2
@@ -33,6 +39,15 @@ NASB = ("إن", "أن", "وإن", "فإن", "وأن", "لأن", "كأن",
         "ولكن", "لكن", "إنا", "إنه")                        # حاكمُ الفتح المسمّى (جدولٌ مسعَّر)
 
 skel = lambda w: "".join(ch for ch, _ in w)
+
+# ---------- اتفاقيةُ طيّ التنوين: واحدةٌ حاكمة، والأخرى عرضٌ موسومٌ بصيغته ----------
+# على قاعدةِ سرير سترلنج في i3lal_layer: صيغتان صامتتان تُزيحان المقدار، فتُسمَّيان كلتاهما.
+TANWIN_CONVENTION = {
+    "الحاكمة": "خام — التنوينُ ثلاثُ حالاتٍ قائمةٌ من الثماني، لا يُردّ إلى حركته",
+    "العرض":   "مطويّ — تنوينُ الفتح/الضم/الكسر يُردّ إلى فتحة/ضمة/كسرة",
+    "سببُ الإعلان": "Δ(H) بين الداخل والخاتمة يتضاعف بالاختيار: 0.091 خامًا ⟷ 0.168 مطويًّا",
+}
+FOLD = {"تنوين فتح": "فتحة", "تنوين ضم": "ضمة", "تنوين كسر": "كسرة"}
 
 
 def is_wasl_head(word):
@@ -214,7 +229,60 @@ def debts(verses, path):
                              pct=round(after_var["كسرة"] / n_var * 100, 2),
                              distribution={k: after_var[k] for k in VOWELS if after_var[k]}),
             verdict="اتجاهٌ واحد وشرطان مختلفان — لا يُنقَل رقمٌ بلا وسم شرطه"),
+        edge_vs_governor=dict(
+            question="هل ارتفاعُ H عند الخاتمة أثرُ الحاكم السابق؟",
+            status="T₃ — محالٌ بالاسم إلى الجولة الثانية مع H(بوّابة|صنف)",
+            reason=("البندان ٣ و٤ مقامان لم يُجمَعا في رقم: جسرُ الحاكم يقيس H(الخاتمة) "
+                    "مشروطةً بالكلمة السابقة، وصفُّ الطرف يقيس الخاتمةَ مقابلَ الداخل — "
+                    "ولا قياسَ عندنا يربط الفرقَ بالشرط، فالربطُ دعوى لا نتيجة")),
     )
+
+
+def edge_row(verses):
+    """صفُّ الطرف: توزيعُ الحالات الثماني داخلَ اللفظ ⟷ عند خاتمته، بالاتفاقيتين معًا.
+    **عدٌّ رسميٌّ لا غير**: الموضعُ يُعرَّف بالرسم (آخرُ وحدةٍ في الكلمة ⟷ ما قبلَها)، ولا
+    يُدَّعى على النتيجة تفسيرٌ صوتيّ. وH تُحسَب على **الحركات الثلاث وحدها** بشرطها معلنًا،
+    وتُعرَض إلى جانبها نسبُ الثماني كاملةً كيلا يُنقَل رقمٌ بلا مقامه."""
+    def H3(c):
+        n = sum(c[k] for k in VOWELS)
+        return round(-sum((c[k] / n) * log2(c[k] / n) for k in VOWELS if c[k]), 4), n
+
+    out = {}
+    for conv, fold in (("خام", False), ("مطويّ", True)):
+        inner, final = Counter(), Counter()
+        for words in verses:
+            for w in words:
+                if not w:
+                    continue
+                for _, st in w[:-1]:
+                    inner[FOLD.get(st, st) if fold else st] += 1
+                st = w[-1][1]
+                final[FOLD.get(st, st) if fold else st] += 1
+        rows = {}
+        for name, c in (("داخل اللفظ", inner), ("خاتمة اللفظ", final)):
+            h, n3 = H3(c)
+            tot = sum(c.values())
+            rows[name] = dict(
+                n_positions=tot, n_vowels=n3, H_vowels=h,
+                counts={k: c[k] for k in STATES if c[k]},
+                pct_of_vowels={k: round(c[k] / n3 * 100, 2) for k in VOWELS},
+                pct_of_all={k: round(c[k] / tot * 100, 2) for k in STATES if c[k]})
+        out[conv] = dict(rows=rows,
+                         delta_H=round(rows["خاتمة اللفظ"]["H_vowels"] -
+                                       rows["داخل اللفظ"]["H_vowels"], 4))
+    f = out["خام"]["rows"]["خاتمة اللفظ"]
+    out["قسمةُ الساكن عند الخاتمة"] = dict(
+        sukun_plus_tanwin=f["counts"]["سكون"] + sum(f["counts"].get(k, 0) for k in FOLD),
+        pct_of_all_endings=round((f["counts"]["سكون"] + sum(f["counts"].get(k, 0) for k in FOLD))
+                                 / f["n_positions"] * 100, 2),
+        pct_of_non_bare=round((f["counts"]["سكون"] + sum(f["counts"].get(k, 0) for k in FOLD))
+                              / (f["n_positions"] - f["counts"]["عري"]) * 100, 2),
+        note="قسمتان مختلفتان لرقمٍ واحد — يُنقَل بمقامه أو لا يُنقَل")
+    out["convention"] = TANWIN_CONVENTION
+    out["verdict"] = ("الخاتمةُ أعلى إنتروبيا من الداخل تحت الاتفاقيتين معًا — "
+                      "**الاتجاهُ وحدَه يُقرَأ**، والمقدارُ لا يُنقَل بلا وسم اتفاقيته. "
+                      "ولا دعوى صوتيةَ هنا: هذا موضعٌ في الرسم لا عضوٌ في الحنجرة")
+    return out
 
 
 def run(path=CORPUS):
@@ -223,8 +291,10 @@ def run(path=CORPUS):
     G = waqf_wasl(verses)
     B = bridge(verses)
     D = debts(verses, path)
+    E = edge_row(verses)
     named = ["و-وقف (خاتمةٌ ساكنة)", "و-وصل (حركةٌ قبل ألف الوصل)",
-             "بداية-حامل", "لا-تصاق-صرفي", "استثناء لام الأمر"] + list(NASB)
+             "بداية-حامل", "لا-تصاق-صرفي", "استثناء لام الأمر",
+             "داخل اللفظ", "خاتمة اللفظ", "طيُّ التنوين (عرضٌ موسوم)"] + list(NASB)
     R = dict(
         seals=dict(mujammad_sha256_prefix="8b387ea8", words=sum(len(w) for w in verses),
                    verses=len(verses)),
@@ -234,6 +304,7 @@ def run(path=CORPUS):
                     verdict="هيكلُ (متحرك×ساكن) قانونُ المتن لا اصطلاحُ الترميز — assertان"),
         waqf_wasl_rule=G,
         governor_bridge=B,
+        edge_row=E,
         debts=D,
         cost_bits=len(named) * 8 * 4,   # المسمَّى وحده يُسعَّر؛ جدولُ الهيئات مُشتَقٌّ بالقاعدة
     )
@@ -243,6 +314,16 @@ def run(path=CORPUS):
     assert sum(adjacent.values()) == 0, f"لا-تصاق-صرفي خُولف: {dict(adjacent)} — صريخ"
     assert R["seals"]["words"] == 77801 and D["token_reconciliation"]["residue"] == 0, \
         "مصالحةُ العدّ خُولفت — صريخ"
+    # ---------- صفُّ الطرف: الاتجاهُ محروسٌ تحت الاتفاقيتين، والمقدارُ لا يُحرَس ----------
+    for conv, blk in ((c, E[c]) for c in ("خام", "مطويّ")):
+        assert blk["delta_H"] > 0, f"صفُّ الطرف: الخاتمةُ ليست أعلى إنتروبيا في {conv} — صريخ"
+        for nm, r in blk["rows"].items():
+            assert sum(r["counts"].values()) == r["n_positions"], f"صفُّ الطرف: {conv}/{nm} — صريخ"
+    assert E["خام"]["rows"]["خاتمة اللفظ"]["n_positions"] == R["seals"]["words"], \
+        "صفُّ الطرف: خاتمةٌ واحدةٌ لكلّ كلمة — خُولفت المصالحة، صريخ"
+    assert (E["خام"]["rows"]["داخل اللفظ"]["n_positions"]
+            == E["مطويّ"]["rows"]["داخل اللفظ"]["n_positions"]), \
+        "صفُّ الطرف: الطيُّ غيَّر عددَ المواضع لا توزيعَها وحدَه — صريخ"
     return R
 
 
@@ -267,6 +348,20 @@ def main(argv=None):
     print(f"    الحاكمُ بثلاثة أصنافٍ مسمّاة: {GV['heldout_no_cond']} ⟵ {GV['heldout_cond']} "
           f"= ربحٌ {GV['heldout_gain']} بت/كلمة ({GV['gain_bits_total']:,.0f} بتًّا على "
           f"{GV['n_positions']:,} موضعًا) — {B['verdict']}")
+    E = R["edge_row"]
+    print(f"صفُّ الطرف — اتفاقيةُ التنوين معلنة: الحاكمةُ «{E['convention']['الحاكمة'].split(' — ')[0]}» "
+          f"والعرضُ «{E['convention']['العرض'].split(' — ')[0]}» موسومٌ بصيغته")
+    for conv in ("خام", "مطويّ"):
+        blk = E[conv]
+        for nm in ("داخل اللفظ", "خاتمة اللفظ"):
+            r = blk["rows"][nm]
+            print(f"    [{conv}] {nm}: " + " · ".join(f"{k} {r['pct_of_vowels'][k]}%" for k in VOWELS)
+                  + f" (على الحركات الثلاث، n={r['n_vowels']:,}) · H={r['H_vowels']}")
+        print(f"    [{conv}] Δ(H) = {blk['delta_H']} — الخاتمةُ أعلى")
+    Q = E["قسمةُ الساكن عند الخاتمة"]
+    print(f"    سكون+تنوين عند الخاتمة {Q['sukun_plus_tanwin']:,} = {Q['pct_of_all_endings']}% "
+          f"على الكلّ · {Q['pct_of_non_bare']}% على غير العاري — {Q['note']}")
+    print(f"    {E['verdict']}")
     N = D["naked_words"]; T = D["token_reconciliation"]; J = D["after_jar"]
     print(f"دَينُ «الثلاثين» مُقفَل بالاسم: {N['total']} كلمةً عاريةً كليًّا في {N['forms']} هيئة "
           f"({' · '.join(list(N['by_form'])[:6])}…) — {N['verdict']}")
