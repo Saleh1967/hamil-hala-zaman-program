@@ -16,6 +16,7 @@
 #     ج) مسارٌ مفقودٌ صريخٌ **ولو كان الختمُ [شاهدًا]** — فلا يبقى رقمٌ لا يولَّد.
 # وتغييرُ رقمٍ مختومٍ لا يمرّ إلا بتعديلٍ معلنٍ في هذا الملفّ، مقرونٍ بفاتورته في رسالة الالتزام.
 import argparse
+import ast
 import json
 import os
 import subprocess
@@ -24,6 +25,13 @@ import tempfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
+
+sys.path.insert(0, HERE)
+import deposit_law                                     # المصادقُ المركزيّ نفسُه الذي تستدعيه المحرّكات
+from deposit_law import verdict, ACCEPT, DEGENERACY_CEILING
+
+LAW_FILE = deposit_law.__file__
+
 
 GATE = "[بوّابة]"      # رقمٌ يحكم: يمنع دمجًا، أو يَسقط به حكم
 WITNESS = "[شاهد]"     # رقمٌ يُعرَض ولا يحكم — ويُولَّد مع ذلك، فالعرضُ ليس إعفاءً
@@ -245,7 +253,46 @@ HIYAD_BILLS = {"ا": ("طيُّ الألف وسمًا", "يُرفَض"), "وي":
 
 
 def _verdict_of(delta):
-    return "يُقبَل" if delta < 0 else "يُرفَض"
+    """حكمُ الفاتورة — **من القانون لا من نسخةٍ هنا**.
+
+    ولولا هذا لصادَق المدقِّقُ نفسَه: لو تغيّر الحدُّ في `deposit_law` لبقي هذا السجلُّ
+    يوافق الودائعَ القديمةَ على قانونٍ متروك، فيشهد بالسلامة وهو أعمى.
+    """
+    return verdict(delta)
+
+
+def sole_judge(verbose=True, _dir=None):
+    """حارسُ «حَكَمٌ واحد»: القانونُ يُستدعى ولا يُنسَخ.
+
+    العلّةُ الملموسة: كان نصُّ الحكم وحدُّ الانحلال مكتوبين بأيديهما في `jami3_mani3`
+    و`tensor_law` و`hiyad` و`deposit_law` وفي هذا السجلِّ نفسِه — خمسُ نسخٍ توافقت
+    بالصدفة لا بالبناء. فلو رُقِّي الحدُّ في واحدةٍ لتخالفت الودائعُ **صامتةً**، ولصادَق
+    المدقِّقُ المُدقَّقَ بقانونٍ غيرِ قانونِه.
+
+    والفحصُ على **الشجرة النحوية لا على النصّ**: يُبحَث عن تعبيرٍ شرطيٍّ يُخرج «يُقبَل»،
+    وعن مقارنةٍ بعتبة الانحلال — فلا يُسقِط الحارسُ وثيقةً تذكر القاعدةَ حكايةً (وقد
+    أسقط هذه الدالّةَ نفسَها حين كان يفتّش البايتات، فكان ذلك تكذيبَه الأول).
+    """
+    problems = []
+    law = os.path.basename(LAW_FILE)
+    folder = _dir or HERE
+    for fname in sorted(os.listdir(folder)):
+        if not fname.endswith(".py") or fname == law:
+            continue
+        tree = ast.parse(open(os.path.join(folder, fname), encoding="utf-8").read(), fname)
+        for node in ast.walk(tree):
+            if (isinstance(node, ast.IfExp)
+                    and isinstance(node.body, ast.Constant) and node.body.value == ACCEPT):
+                problems.append(f"حَكَمٌ ثانٍ في induction/{fname}:{node.lineno} — نصُّ الحكم "
+                                f"مكتوبٌ بيده، ويُستدعى `verdict` من {law} ولا يُنسَخ")
+            elif (isinstance(node, ast.Compare)
+                  and any(isinstance(c, ast.Constant) and c.value == DEGENERACY_CEILING
+                          for c in node.comparators)):
+                problems.append(f"حَكَمٌ ثانٍ في induction/{fname}:{node.lineno} — حدُّ الانحلال "
+                                f"مكتوبٌ بيده، ويُستدعى `degenerate` من {law} ولا يُنسَخ")
+    if verbose and not problems:
+        print(f"    ✓ حَكَمٌ واحد: لا نسخةَ ثانيةً للحكم ولا لحدِّ الانحلال خارج {law}")
+    return problems
 
 
 def contracts(verbose=True):
@@ -254,8 +301,11 @@ def contracts(verbose=True):
     ① كلُّ وديعةٍ بمولِّدٍ هنا لها ختمٌ [بوّابة] واحدٌ على الأقلّ — وإلا فهي رقمٌ يُعرَض
        ولا يَحكم، وذلك بابُ «معرَّض».
     ② كلُّ دعوى نموذجٍ لها Δ يُقرأ من وديعتها، و**حكمُها المكتوبُ يُصادَم بإشارة Δ**.
+    ③ **ولا حَكَمَ ثانٍ**: لا يُعاد كتابةُ الحكم ولا حدِّ الانحلال خارج `deposit_law` —
+       فالقانونُ نسخةٌ واحدة، لا خمسٌ متوافقةٌ بالصدفة.
     """
     problems = []
+    problems += sole_judge(verbose)
     for deposit in GENERATORS:
         if not any(s["وديعة"] == deposit and s["صنف"] == GATE for s in SEALS):
             problems.append(f"الوديعة «{deposit}» بلا ختمٍ {GATE} واحد — عرضٌ بلا حارس")
@@ -324,7 +374,7 @@ def audit_sheet():
              "",
              "| الدعوى | Δ (بتًّا) | الحكمُ المشتقّ |",
              "|---|---|---|"]
-    rows += [f"| {claim} | {delta:+,} | {verdict} |" for claim, delta, verdict in _bill_rows()]
+    rows += [f"| {claim} | {delta:+,} | {حكم} |" for claim, delta, حكم in _bill_rows()]
     rows += ["",
              "## البندُ الذي وَلد من عطلٍ — الفصلُ بين جدولِ التدريب والمقامات",
              "",
@@ -448,6 +498,13 @@ def falsify(verbose=True):
     claim = coverage(verbose=False, _found=set(GENERATORS) | set(CI_COLLIDED), _ci="")
     trials["دعوى تبويبٍ كاذبة"] = ("رفض ✓ — «مبوَّبٌ في ci.yml» تُفتَّش لا تُصدَّق"
                                    if len(claim) >= len(CI_COLLIDED) else "لم يرفض ✗")
+
+    with tempfile.TemporaryDirectory() as td:
+        with open(os.path.join(td, "ناسخ.py"), "w", encoding="utf-8") as fh:
+            fh.write(f'حكم = "{ACCEPT}" if d < 0 else "x"\nمنحلّ = v / n > {DEGENERACY_CEILING}\n')
+        copies = sole_judge(verbose=False, _dir=td)
+    trials["حَكَمٌ ثانٍ يُكتَب"] = ("رفض ✓ — القانونُ يُستدعى ولا يُنسَخ (الحكمُ وحدُّ الانحلال معًا)"
+                                   if len(copies) == 2 else "لم يرفض ✗")
 
     trials["حكمٌ يخالف فاتورتَه"] = ("رفض ✓ — «يُقبَل» فوق Δ موجبةٍ لا تمرّ"
                                      if _verdict_of(+69037) == "يُرفَض"

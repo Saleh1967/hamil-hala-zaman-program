@@ -42,6 +42,12 @@ python algebra_engine.py --json=baselines/results-measured.json --require-corpus
 توزيعًا · والسقفُ لم يكن يُقارَن. فالحَكَمُ المرقَّى: **فاتورةُ الوصف الأدنى Δ = L(D|M)+L(M)−L₀ < 0
 + حارسُ الانحلال |Σ|/N**. ومبدأُ **الوسيط المُفقِد**: لا هويةَ تُحتسب إلا فوق وسيطٍ أضيق من المدخل.
 
+وهذا القانونُ **مصادِقٌ مركزيٌّ يُستدعى ولا يُنسَخ**: `verdict(Δ)` و`degenerate(|Σ|, N)` في
+`induction/deposit_law.py` يستدعيهما `jami3_mani3` و`tensor_law` و`hiyad` وسجلُّ الأختام
+نفسُه. وقد كان الحكمُ قبلَ ذلك **خمسَ نسخٍ متوافقةٍ بالصدفة لا بالبناء** — لو رُقِّي الحدُّ
+في واحدةٍ لتخالفت الودائعُ صامتةً، ولصادَق المدقِّقُ المُدقَّقَ بقانونٍ غيرِ قانونِه. ويفحص
+`seals.sole_judge` على الشجرة النحوية أن لا نسخةَ سادسةَ تُولَد.
+
 ### ③ الآلات — ما يقيس (كلٌّ ببوّابة zero-diff في CI)
 | العائلة | الملفّات |
 |---|---|
@@ -50,6 +56,7 @@ python algebra_engine.py --json=baselines/results-measured.json --require-corpus
 | نحوية/بوّابات | `jar_gate.py` · `context_ladder.py` · `isnad_layer.py` |
 | مرايا وبناء | `induction/mirror.py` (وفيه `honest_mirror` دالّةً) · `induction/jami3_mani3.py` (وفيه الصعودُ بتًّا بتًّا) · `induction/hiyad.py` · `induction/tensor_law.py` |
 | سجلُّ الأختام | `induction/seals.py` — يعيد توليدَ كلِّ وديعةٍ وكلِّ ختمٍ ويصادمُه |
+| المصادقُ المركزيّ | `induction/deposit_law.py` — `verdict` و`degenerate`، يستدعيهما كلُّ حَكَم |
 
 ### ④ الثوابت المولَّدة — كلُّ رقمٍ هنا يُعاد توليدُه في CI
 | الرقم | القيمة | الصنف | الدالّة · المقام |

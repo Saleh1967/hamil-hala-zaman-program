@@ -25,10 +25,13 @@
 # ⑤ **والحَكَمُ يقلب الترتيب**: طيُّ الألف — وهي الأتمُّ حيادًا في الحالة — **يُرفَض**
 #    (+24,145)، وطيُّ و/ي — وهما المحايدان موضعيًّا لا مطلقًا — **يُقبَل** (−5,427).
 #    فالحيادُ المقيسُ في بُعدٍ لا يشتري قبولًا في الفاتورة، والقبولُ لا يُنال بالوصف.
-import argparse, hashlib, json, math, os
+import argparse, hashlib, json, math, os, sys
 from collections import Counter, defaultdict
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, ROOT)
+from deposit_law import verdict                # المصادقُ المركزيّ — الحكمُ لا يُعاد كتابتُه
+
 CORPUS = os.path.join(ROOT, "mujammad.txt")
 SEAL = "8b387ea811bc8c658e1cab75488ce1aa69606deafd62759eeaf49ffe15c6d215"
 
@@ -309,7 +312,7 @@ def main():
         B[ls] = b
         print(f"    طيُّ ({nm:5s})           {b['وحدات']:>7,} وحدةً · {b['الكلّ']:>9,} بت "
               f"(وسمُ المدّ {b['وسمُ_المدّ']:,}) · Δ {b['فرق']:+,} ⟹ "
-              + ("يُقبَل" if b["فرق"] < 0 else "يُرفَض"))
+              + verdict(b["فرق"]))
     assert base["الكلّ"] == SEALED_HIYAD["فاتورةُ_الأساس"], "فاتورةُ الأساس خالفت الجامعَ المانع"
     assert B["ا"]["فرق"] == SEALED_HIYAD["طيُّ_الألف"]
     assert B[ILLA]["فرق"] == SEALED_HIYAD["طيُّ_العلّة"]

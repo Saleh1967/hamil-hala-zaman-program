@@ -35,6 +35,7 @@ from collections import Counter
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from induction_engine import parse_verses
+from deposit_law import verdict               # المصادقُ المركزيّ — الحكمُ لا يُعاد كتابتُه
 
 CORPUS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "mujammad.txt")
 PREFIX = ("است", "ان", "اف", "أ", "ت", "م", "")
@@ -182,7 +183,7 @@ def main():
     for lab, p_, s_ in variants:
         tot, unc = tensor_bill(words, p_, s_)
         bills[lab] = dict(الكلّ=tot, فائدة=tot - base, غيرُ_مفرد=unc,
-                          حكم="يُقبَل" if tot < base else "يُرفَض")
+                          حكم=verdict(tot - base))
     mim_cost = bills["التنسور كما هو"]["الكلّ"] - bills["بلا ميم"]["الكلّ"]
 
     # ── المصادمةُ بفارق صفر ──
