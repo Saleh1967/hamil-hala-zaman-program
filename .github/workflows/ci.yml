@@ -137,6 +137,25 @@ jobs:
           print("dictionary_v0.json مُعاد الإنتاج بفارق صفر ✓")
           PY
 
+      - name: طبقة الإثراء — جدول المقاييس بالبصمة، ومصادمة maqayis_v0.json
+        run: |
+          set -eu
+          if ./fetch_maqayis.sh; then
+            python maqayis_layer.py --json /tmp/maqayis.json | tee -a measurement.txt
+            python - <<'PY'
+          import json, sys
+          a = json.load(open("maqayis_v0.json", encoding="utf-8"))
+          b = json.load(open("/tmp/maqayis.json", encoding="utf-8"))
+          if a != b:
+              print("::error::maqayis_v0.json المودَع خالف ما يُنتجه المحرّك — صريخ")
+              sys.exit(1)
+          print("maqayis_v0.json مُعاد الإنتاج بفارق صفر ✓")
+          PY
+          else
+            echo "::warning::جدول المقاييس غائبٌ عن كلّ مصدرٍ معلن — الإثراء مؤجَّلٌ باسمه، ولا إثراء على بديلٍ صامت"
+            python maqayis_layer.py | tee -a measurement.txt
+          fi
+
       - name: إيداع تقرير القياس
         if: always()
         uses: actions/upload-artifact@v4
