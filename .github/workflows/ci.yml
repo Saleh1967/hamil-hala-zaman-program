@@ -80,12 +80,14 @@ jobs:
           fi
 
       - name: تشغيل المحرّك — التدقيق البنيويّ والقياس
-        run: python algebra_engine.py | tee measurement.txt
+        run: |
+          set -euo pipefail          # بلا pipefail يبتلع `| tee` سقوطَ المحرّك
+          python algebra_engine.py | tee measurement.txt
 
       - name: البوّابة الثانية — نسخة المجمَّد في induction/ بالبصمة نفسها
         if: hashFiles('mujammad.txt') != ''
         run: |
-          set -eu
+          set -euo pipefail          # بلا pipefail يبتلع `| tee` سقوطَ المحرّك
           A="$(sha256sum mujammad.txt | cut -d' ' -f1)"
           B="$(sha256sum induction/mujammad.txt | cut -d' ' -f1)"
           if [ "$A" != "$B" ]; then
@@ -96,7 +98,7 @@ jobs:
 
       - name: مصادمة الاستقراء — results.json مُعاد الإنتاج حرفيًّا
         run: |
-          set -eu
+          set -euo pipefail          # بلا pipefail يبتلع `| tee` سقوطَ المحرّك
           python induction/induction_engine.py --json=/tmp/induction.json --require-corpus \
             | tee -a measurement.txt
           python - <<'PY'
@@ -111,7 +113,7 @@ jobs:
 
       - name: سجلُّ الأختام الحيّة — كلُّ وديعةٍ وكلُّ ختمٍ يُعاد توليدُه ويُصادَم
         run: |
-          set -eu
+          set -euo pipefail          # بلا pipefail كان `| tee` يبتلع سقوطَ السجلِّ ويُخضِر الخطوة
           # لا رقمَ إلا بمولِّدٍ يُشغَّل: regen_all يعيد توليدَ الودائع السبع كلِّها، ثمّ يقرأ
           # كلَّ ختمٍ **من المخرَج الطازج لا من الوديعة** ويصادمُه. الختمُ الذي تغيّر رقمُه
           # يُسقط الـCI ويستلزم تعديلًا معلنًا في induction/seals.py بفاتورةٍ في رسالة الالتزام،
@@ -122,10 +124,31 @@ jobs:
           #   contracts() — لا وديعةَ بلا ختمِ [بوّابة]، ولا دعوى نموذجٍ بلا Δ يُقرأ من
           #                 مولِّدها ويُشتقّ الحكمُ من إشارته (CONTRIBUTING.md §٢).
           python induction/seals.py --json /tmp/seals.json | tee -a measurement.txt
+          # ووديعةُ السجلِّ نفسِها تُصادَم: الحارسُ الذي لا يودِع مخرَجَه لا يُصادَم،
+          # فيبقى نجاحُه دعوى طباعةٍ تُقرأ بالعين (العقدُ من PR #10، وهذا موضعُه الواحد).
+          python - <<'PY'
+          import json, sys
+          a = json.load(open("induction/seals.json", encoding="utf-8"))
+          b = json.load(open("/tmp/seals.json", encoding="utf-8"))
+          if a != b:
+              print("::error::seals.json المودَع خالف ما يُنتجه السجلّ — صريخ")
+              sys.exit(1)
+          R = b["سجلُّ_الأختام"]
+          if R["أختامٌ_بلا_مولِّد"]:
+              print(f"::error::أختامٌ بلا مولِّدٍ حيّ: {R['أختامٌ_بلا_مولِّد']} — صريخ")
+              sys.exit(1)
+          if R["ودائعُ_خالفت"] or R["أختامٌ_انحرفت"]:
+              print(f"::error::انحرافٌ: {R['ودائعُ_خالفت']} · {R['أختامٌ_انحرفت']} — صريخ")
+              sys.exit(1)
+          if not all(t["مرفوضة"] for t in R["اختبارُ_التكذيب"]):
+              print("::error::سجلُّ الأختام لا يستطيع أن يرفض — حارسٌ أعمى — صريخ")
+              sys.exit(1)
+          print(f"أختامٌ حيّةٌ مصادَمة: {R['بوّابات']} بوّابةً · {R['شواهد']} شاهدًا ✓")
+          PY
 
       - name: ورقةُ التدقيق الخارجي — AUDIT-SEALS.md مولَّدةٌ لا محرَّرةٌ بيد
         run: |
-          set -eu
+          set -euo pipefail          # بلا pipefail يبتلع `| tee` سقوطَ المحرّك
           # الورقةُ المرسَلة إلى التدقيق تُولَّد من سجلّ الأختام نفسِه، فلا تتخلّف عن الشجرة.
           python induction/seals.py --audit /tmp/AUDIT-SEALS.md
           diff -u AUDIT-SEALS.md /tmp/AUDIT-SEALS.md \
@@ -134,7 +157,7 @@ jobs:
 
       - name: مصادمة الأوزان — awzan_v0.json مُعاد الإنتاج حرفيًّا
         run: |
-          set -eu
+          set -euo pipefail          # بلا pipefail يبتلع `| tee` سقوطَ المحرّك
           python awzan_engine.py --json /tmp/awzan.json | tee -a measurement.txt
           python - <<'PY'
           import json, sys
@@ -148,7 +171,7 @@ jobs:
 
       - name: مصادمة المعجم — dictionary_v0.json مُعاد الإنتاج حرفيًّا
         run: |
-          set -eu
+          set -euo pipefail          # بلا pipefail يبتلع `| tee` سقوطَ المحرّك
           python dictionary_engine.py --json /tmp/dictionary.json | tee -a measurement.txt
           python - <<'PY'
           import json, sys
@@ -162,7 +185,7 @@ jobs:
 
       - name: طبقة الإثراء — جدول المقاييس بالبصمة، ومصادمة maqayis_v0.json
         run: |
-          set -eu
+          set -euo pipefail          # بلا pipefail يبتلع `| tee` سقوطَ المحرّك
           if ./fetch_maqayis.sh; then
             python maqayis_layer.py --json /tmp/maqayis.json | tee -a measurement.txt
             python - <<'PY'
@@ -181,7 +204,7 @@ jobs:
 
       - name: المرحلة ٢ — ختمُ العثماني، ومصادمة waqf_v0.json
         run: |
-          set -eu
+          set -euo pipefail          # بلا pipefail يبتلع `| tee` سقوطَ المحرّك
           ./fetch_uthmani.sh
           SHA="$(sed -n 's/^UTHMANI_SHA256 = "\([0-9a-f]\{64\}\)".*/\1/p' waqf_layer.py | head -n 1)"
           GOT="$(sha256sum uthmani.txt | cut -d' ' -f1)"
@@ -203,7 +226,7 @@ jobs:
 
       - name: دفعةُ الحركات — الحارسان والوقف/الوصل، ومصادمة harakat_v0.json
         run: |
-          set -eu
+          set -euo pipefail          # بلا pipefail يبتلع `| tee` سقوطَ المحرّك
           python harakat_layer.py --json /tmp/harakat.json | tee -a measurement.txt
           python - <<'PY'
           import json, sys
@@ -217,7 +240,7 @@ jobs:
 
       - name: الحقل 112 — قوانينُ الدفعة مقيسةً بتقسيمنا، ومصادمة field112_laws.json
         run: |
-          set -eu
+          set -euo pipefail          # بلا pipefail يبتلع `| tee` سقوطَ المحرّك
           python field112_laws.py --json /tmp/field112.json | tee -a measurement.txt
           python - <<'PY'
           import json, sys
@@ -231,7 +254,7 @@ jobs:
 
       - name: الإعلال — سترلنج بحارس ثوابته وحارسا التيار، ومصادمة i3lal_v0.json
         run: |
-          set -eu
+          set -euo pipefail          # بلا pipefail يبتلع `| tee` سقوطَ المحرّك
           python i3lal_layer.py --json /tmp/i3lal.json | tee -a measurement.txt
           python - <<'PY'
           import json, sys
@@ -257,7 +280,7 @@ jobs:
 
       - name: الإسناد — صفَّا «أنيت» والتاء والشرطُ المصحَّح، ومصادمة isnad_v0.json
         run: |
-          set -eu
+          set -euo pipefail          # بلا pipefail يبتلع `| tee` سقوطَ المحرّك
           python isnad_layer.py --json /tmp/isnad.json | tee -a measurement.txt
           python - <<'PY'
           import json, sys
@@ -281,7 +304,7 @@ jobs:
 
       - name: بوّابةُ الجرّ — الأبوابُ المُحياةُ والحدُّ المختوم، ومصادمة jar_gate.json
         run: |
-          set -eu
+          set -euo pipefail          # بلا pipefail يبتلع `| tee` سقوطَ المحرّك
           python jar_gate.py --json /tmp/jar_gate.json | tee -a measurement.txt
           python - <<'PY'
           import json, sys
@@ -389,32 +412,6 @@ jobs:
                   sys.exit(1)
           print(f"فواصلُ موقَّعةٌ بمقاييسها: {len(S['signed_bounds'])} ✓")
           print("الأبوابُ الثلاثةَ عشرَ حيّةٌ معدودةٌ مستقلّةً، والبسطان والمتبقّي مُصالَحةٌ ✓")
-          PY
-
-      # ═══ إذابةُ التجميد: كلُّ ختمٍ في induction/ يولَّد هنا ثمّ يُصادَم ═══════════
-      # العلّةُ المقتولة: رقمٌ لا يولَّد في CI رقمٌ مدفون. seals.py يشغّل المسبارات
-      # الستّةَ من الصفر، ويصادم كلَّ وديعةٍ بايتًا ببايت، ويقرأ كلَّ ختمٍ من المخرَج
-      # الطازج لا من الوديعة، ويختبر نفسَه بالتكذيب. والانحرافُ لا يمرّ إلا بتعديلٍ
-      # معلنٍ في seals.py مع اشتقاقه في رسالة الالتزام.
-      - name: سجلُّ الأختام الحيّ — توليدُ كلِّ رقمٍ ومصادمتُه
-        run: |
-          set -euo pipefail
-          python induction/seals.py --json /tmp/seals.json | tee -a measurement.txt
-          python - <<'PY'
-          import json, sys
-          a = json.load(open("induction/seals.json", encoding="utf-8"))
-          b = json.load(open("/tmp/seals.json", encoding="utf-8"))
-          if a != b:
-              print("::error::seals.json المودَع خالف ما يُنتجه السجلّ — صريخ")
-              sys.exit(1)
-          R = b["سجلُّ_الأختام"]
-          if R["أختامٌ_بلا_مولِّد"]:
-              print(f"::error::أختامٌ بلا مولِّدٍ حيّ: {R['أختامٌ_بلا_مولِّد']} — صريخ")
-              sys.exit(1)
-          if not all(t["مرفوضة"] for t in R["اختبارُ_التكذيب"]):
-              print("::error::سجلُّ الأختام لا يستطيع أن يرفض — حارسٌ أعمى — صريخ")
-              sys.exit(1)
-          print(f"أختامٌ حيّةٌ مصادَمة: {R['بوّابات']} بوّابةً · {R['شواهد']} شاهدًا ✓")
           PY
 
       - name: إيداع تقرير القياس

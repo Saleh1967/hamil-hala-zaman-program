@@ -71,6 +71,9 @@ def deposit_path(deposit):
 CI_COLLIDED = (
     "awzan_v0.json", "dictionary_v0.json", "field112_laws.json", "harakat_v0.json",
     "i3lal_v0.json", "isnad_v0.json", "jar_gate.json", "maqayis_v0.json", "waqf_v0.json",
+    # وديعةُ السجلِّ نفسِه: مولِّدُها هذا الملفّ، فلا تُوضَع في GENERATORS (فتُعيد تشغيلَ
+    # نفسِها بلا قرار)، بل تُصادَم في خطوةِ ci.yml التي تشغّله ثمّ تقابل مخرَجَه بالمودَع.
+    "seals.json",
 )
 
 SEALS = [
@@ -155,6 +158,47 @@ SEALS = [
     S("العدوى السياقية", "context_ladder.json",
       ("سلم_السياق", "قناة_العدوى", "سياقية"), 0.0734,
       "context_ladder.main", "H(الخاتمة) − H(الخاتمة|الحاكم المعلن) — المقامُ نفسُه", GATE),
+    # ——— أرقامُ سجلِّ الأختام الموازي (PR #10): لا يُفقَد رقمٌ صامتًا عند الدمج ———
+    S("ماركوف · الربحُ الكلّيّ", "results.json", ("مقيس", "markov", 2), 290.1716959343538,
+      "run_gates ⟵ markov", "بتًّا على 6,235 بوّابة — H − H_cond مضروبًا في المقام", GATE),
+    S("ماركوف · فارقُ الترتيبين", "results.json", ("مقيس", "orders_gap"), -600.097234034085,
+      "run_gates ⟵ orders_gap", "بتًّا — الترتيبُ الطبيعيُّ ⟷ المعكوس على المقام نفسِه", GATE),
+    S("المرآة · الهوية", "mirror.json", ("المرآة", "هوية"), "77,801/77,801 = 1.0000",
+      "run ⟵ build/peel", "كلمةً — وهي تحصيلُ حاصلٍ يكذّبُه الجدولُ الفارغ (الختمُ الذي يليه)",
+      WITNESS),
+    S("الفاتورة · الأساس", "deposit_law.json",
+      ("قانون_الوديعة", "الفاتورةُ_الحاكمة", "جداول", "بلا جدولٍ (الأساس)", "الكلّ"), 1737746,
+      "bill ⟵ L₀", "بتًّا — الأساسُ الذي تُخصَم منه كلُّ وديعة", GATE),
+    S("الفاتورة · المودَع يُقبَل", "deposit_law.json",
+      ("قانون_الوديعة", "الفاتورةُ_الحاكمة", "جداول", "المودَع", "فائدة"), -15321,
+      "bill ⟵ verdict", "بتًّا — Δ سالبٌ ⟹ يُقبَل", GATE),
+    S("الفاتورة · الشَّرِه يُرفَض", "deposit_law.json",
+      ("قانون_الوديعة", "الفاتورةُ_الحاكمة", "جداول", "حروفٌ شائعة (شَرِه)", "فائدة"), 6281,
+      "bill ⟵ verdict", "بتًّا — Δ موجبٌ ⟹ يُرفَض ولو رفع عدّادَ الإجماع", GATE),
+    S("التقشير · الحاكمُ فوريّ", "online_peel.json",
+      ("التقشير_الفوري", "الجولة_الثانية", "ياء", "فوريّ"), 637,
+      "run2 ⟵ peel2", "موضعَ باب «ي» — المقامُ الحاكمُ فوريٌّ لا دفعيّ", GATE),
+    S("التقشير · الدفعيُّ عرضًا", "online_peel.json",
+      ("التقشير_الفوري", "الجولة_الثانية", "ياء", "دفعيّ_عرضًا"), 728,
+      "run2 (دفعيّ)", "موضعَ باب «ي» — عرضٌ موسومٌ بفارق 91 عن الحاكم", WITNESS),
+    S("التنسور · مفردٌ منعكس", "tensor_law.json",
+      ("دعوى_التنسور", "T1_تصديق", "أحوال", "مفرد-منعكس"), 27533,
+      "run ⟵ T₁", "كلمةً — و16,487 منها بلا تنسورٍ أصلًا (∅·فعل·∅)", WITNESS),
+    S("التنسور · الميمُ لها منازع", "tensor_law.json",
+      ("دعوى_التنسور", "T2_تفنيد", "الميمُ_لها_منازع", "بشاهدٍ_مضادّ"), 446,
+      "tensor_bill ⟵ T₂", "من 1,164 — الشاهدُ المضادّ من البايتات (منهم=من+هم)", GATE),
+    S("الجامع · الوحدات", "jami3_mani3.json", ("البناءُ_الجامع_المانع", "الجامع", "الوحدات"), 362305,
+      "partition", "وحدةً — الجامعُ يستوعب المجمَّد كلَّه بلا بقية", GATE),
+    S("الجامع · داخل 112", "jami3_mani3.json", ("البناءُ_الجامع_المانع", "الجامع", "داخل_112"), 262355,
+      "partition", "وحدةً من 362,305 — المرخَّصُ في الحقل 112", GATE),
+    S("المانع · الارتدادُ وسمًا", "jami3_mani3.json",
+      ("البناءُ_الجامع_المانع", "المانع", "ارتداد", "وسم"), 77801,
+      "ascend (أعمى)", "من 77,801 — الخنجريةُ وسمَ مدٍّ: ارتدادٌ تامّ", GATE),
+    S("المانع · الخنجريةُ فتحةً تُتلف", "jami3_mani3.json",
+      ("البناءُ_الجامع_المانع", "المانع", "ارتداد", "فتحة"), 74585,
+      "ascend (أعمى)", "من 77,801 — الاتفاقيةُ البديلة تُتلف 3,216 كلمة", GATE),
+    S("الحياد · الألفُ تفرّق", "hiyad.json", ("دعوى_الحياد", "حيادٌ_تقابليّ", "ا", "مواضع"), 11024,
+      "contrastive", "موضعًا — الألفُ محايدةٌ في الحالة لا في الحرف", GATE),
 ]
 
 
@@ -416,7 +460,7 @@ def _bill_rows():
     return out
 
 
-def regen_all(verbose=True):
+def regen_all(verbose=True, report=None):
     """يعيد توليدَ كلِّ وديعةٍ وكلِّ ختمٍ ويصادمُهما — فارقٌ صفرٌ أو صريخ."""
     problems, checked = [], 0
     with tempfile.TemporaryDirectory() as tmp:
@@ -426,6 +470,8 @@ def regen_all(verbose=True):
                 stored = json.load(fh)
             if fresh != stored:
                 problems.append(f"{deposit}: الوديعةُ المودَعة خالفت ما يُنتجه مولِّدُها")
+                if report is not None:
+                    report["ودائعُ_خالفت"].append(deposit)
                 if verbose:
                     print(f"::error::{problems[-1]}")
                 continue
@@ -439,6 +485,8 @@ def regen_all(verbose=True):
                     got = dig(fresh, seal["مسار"], seal["اسم"])
                 except KeyError as exc:
                     problems.append(str(exc))
+                    if report is not None:
+                        report["أختامٌ_انحرفت"].append(seal["اسم"])
                     if verbose:
                         print(f"::error::{exc}")
                     continue
@@ -446,6 +494,8 @@ def regen_all(verbose=True):
                     problems.append(f"الختم «{seal['اسم']}» {seal['صنف']}: "
                                     f"المتوقَّع {seal['قيمة']} · المولَّد {got} — "
                                     f"({seal['دالّة']} · {seal['مقام']})")
+                    if report is not None:
+                        report["أختامٌ_انحرفت"].append(seal["اسم"])
                     if verbose:
                         print(f"::error::{problems[-1]}")
                 elif verbose:
@@ -518,6 +568,27 @@ def falsify(verbose=True):
     return trials
 
 
+def record(trials, report, problems):
+    """عقدُ الوديعة `seals.json` — تسعةُ حقولٍ تقرؤها خطوةُ CI وتُسقطها عند أوّل انحراف.
+
+    ولِمَ وديعةٌ للسجلِّ نفسِه؟ لأنّ الحارسَ الذي لا يودِع مخرَجَه لا يُصادَم: يبقى نجاحُه
+    دعوى طباعةٍ تُقرأ بالعين. فهنا يُودَع مخرَجُه ويُصادَم كسائر الودائع — **والحارسُ
+    وديعةٌ عند القانون كالمحروس**.
+    """
+    return dict(
+        أختام=[dict(اسم=s["اسم"], وديعة=s["وديعة"], مسار=list(s["مسار"]), قيمة=s["قيمة"],
+                    دالّة=s["دالّة"], مقام=s["مقام"], صنف=s["صنف"]) for s in SEALS],
+        أختامٌ_انحرفت=sorted(set(report["أختامٌ_انحرفت"])),
+        أختامٌ_بلا_مولِّد=sorted({s["اسم"] for s in SEALS if s["وديعة"] not in GENERATORS}),
+        ودائعُ_خالفت=sorted(set(report["ودائعُ_خالفت"])),
+        اختبارُ_التكذيب=[dict(محاولة=k, مرفوضة=v.startswith("رفض")) for k, v in trials.items()],
+        مسبارات=sorted(GENERATORS),
+        بوّابات=sum(1 for s in SEALS if s["صنف"] == GATE),
+        شواهد=sum(1 for s in SEALS if s["صنف"] == WITNESS),
+        الحكم=("حيٌّ: كلُّ ختمٍ يولَّد ويُصادَم" if not problems
+               else f"ساقطٌ: {len(problems)} انحرافًا"))
+
+
 def main():
     ap = argparse.ArgumentParser(description="سجلُّ الأختام الحيّة")
     ap.add_argument("--falsify-only", action="store_true")
@@ -534,11 +605,12 @@ def main():
 
     print("سجلُّ الأختام — لا رقمَ إلا بمولِّدٍ يُشغَّل، ولا رقمَ إلا باسم دالّتِه ومقامِه\n")
     trials = falsify()
-    problems = [] if args.falsify_only else coverage() + contracts() + regen_all()
+    report = dict(ودائعُ_خالفت=[], أختامٌ_انحرفت=[])
+    problems = ([] if args.falsify_only
+                else coverage() + contracts() + regen_all(report=report))
     if args.json:
         with open(args.json, "w", encoding="utf-8") as fh:
-            json.dump({"الأختام": [dict(s, مسار=list(s["مسار"])) for s in SEALS],
-                       "التكذيب": trials, "سقوط": problems},
+            json.dump({"سجلُّ_الأختام": record(trials, report, problems)},
                       fh, ensure_ascii=False, indent=2, sort_keys=True)
         print(f"JSON ⟵ {args.json}")
     return 1 if problems else 0
