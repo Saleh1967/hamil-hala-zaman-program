@@ -6,7 +6,12 @@ import sys, os, json
 from math import log2
 from collections import Counter, defaultdict
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+_HERE = os.path.dirname(os.path.abspath(__file__))
+_INDUCTION = os.path.join(_HERE, "induction")
+assert os.path.isfile(os.path.join(_INDUCTION, "induction_engine.py")), \
+    "محرّك الاستقراء غائبٌ عن induction/ — لا استيراد صامت"
+sys.path.insert(0, _HERE)
+sys.path.insert(0, _INDUCTION)
 from induction_engine import parse_verses, gate, GATES5
 from dictionary_engine import classify_word, skel_of
 

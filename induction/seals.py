@@ -46,7 +46,24 @@ GENERATORS = {
     "tensor_law.json": ["induction/tensor_law.py"],
     "jami3_mani3.json": ["induction/jami3_mani3.py"],
     "hiyad.json": ["induction/hiyad.py"],
+    "pairs_v0.json": ["pairs_engine.py"],
+    "context_ladder.json": ["context_ladder.py"],
 }
+
+# موضعُ كلِّ وديعةٍ في الشجرة — الأصلُ induction/، وما خرج عنه يُعلَن هنا بمساره.
+DEPOSIT_DIR = {"pairs_v0.json": ROOT, "context_ladder.json": ROOT}
+
+
+def deposit_path(deposit):
+    return os.path.join(DEPOSIT_DIR.get(deposit, HERE), deposit)
+
+
+# الودائعُ المبوَّبةُ في ci.yml لا في هذا الملفّ — لكلِّ واحدةٍ خطوةُ مصادمةٍ باسمها.
+# الحارسُ أدناه يتحقّق من الدعوى في بايتات ci.yml، فلا تُقبَل بمجرّد كتابتها هنا.
+CI_COLLIDED = (
+    "awzan_v0.json", "dictionary_v0.json", "field112_laws.json", "harakat_v0.json",
+    "i3lal_v0.json", "isnad_v0.json", "jar_gate.json", "maqayis_v0.json", "waqf_v0.json",
+)
 
 SEALS = [
     # ——— الاستقراء: تيارُ بوّابات الآيات ———
@@ -114,6 +131,22 @@ SEALS = [
       "bill", "طيُّ الألف وسمًا — Δ موجبٌ ⟹ يُرفَض", GATE),
     S("فاتورة طيّ و/ي", "hiyad.json", ("دعوى_الحياد", "الحَكَم", "وي", "فرق"), -5427,
       "bill", "طيُّ العلّتين وسمًا — Δ سالبٌ ⟹ يُقبَل", GATE),
+
+    # ——— الأزواجُ الدنيا (كانت يتيمةً بلا بوّابة) ———
+    S("عائلاتُ الإعراب الثلاثي", "pairs_v0.json",
+      ("الأزواج_الدنيا", "إعراب_ثلاثي", "عائلات"), 176,
+      "pairs_engine.main", "هياكلُ المجمَّد — ≥3 هيئاتٍ تختلف في الخاتمة وحدَها", GATE),
+    S("العائلاتُ ذاتُ الأزواج الدنيا", "pairs_v0.json",
+      ("الأزواج_الدنيا", "عائلات_ذات_أزواج"), 1764,
+      "pairs_engine.main", "هيكلٌ حرفيٌّ واحد · هيئتان تختلفان في وحدةٍ واحدة", GATE),
+
+    # ——— سلّمُ السياق (كان يتيمًا بلا بوّابة) ———
+    S("العدوى المعجمية", "context_ladder.json",
+      ("سلم_السياق", "قناة_العدوى", "معجمية"), 1.8028,
+      "context_ladder.main", "خاتمةُ الكلمة مشروطةً بالحاكم المعلن — 42,850 صفًّا", GATE),
+    S("العدوى السياقية", "context_ladder.json",
+      ("سلم_السياق", "قناة_العدوى", "سياقية"), 0.0734,
+      "context_ladder.main", "H(الخاتمة) − H(الخاتمة|الحاكم المعلن) — المقامُ نفسُه", GATE),
 ]
 
 
@@ -147,13 +180,58 @@ def regenerate(deposit, outdir):
         return json.load(fh)
 
 
+def coverage(verbose=True, _found=None, _ci=None):
+    """حارسُ التغطية الذاتي: كلُّ وديعةِ JSON في الشجرة مبوَّبةٌ — أو يسقط CI من لحظة ولادتها.
+
+    العلّةُ التي يقتلها: `pairs_v0.json` و`context_ladder.json` عاشتا خارج كلِّ بوّابةٍ
+    فتعفّنتا صامتتين (محرّكاهما لم يعودا يستوردان أصلًا، وإحداهما لم تكن تُولَّد مرّتين
+    على النسق نفسِه). فالعدُّ هنا ذاتيٌّ: لا قائمةَ ودائعَ مكتوبةً بيدٍ تُقارَن بقائمةٍ
+    أخرى مكتوبةٍ بيد، بل **مسحُ الشجرة** يُقابَل بالمبوَّب. ودعوى «مبوَّبٌ في ci.yml»
+    لا تُصدَّق بكتابتها هنا، بل تُفتَّش في بايتات ci.yml.
+    """
+    problems = []
+    if _found is None:
+        _found = set()
+        for base, dirs, files in os.walk(ROOT):
+            dirs[:] = [d for d in dirs if d not in (".git", "__pycache__", ".github")]
+            for fn in files:
+                if fn.endswith(".json"):
+                    _found.add(fn)
+    found = set(_found)
+
+    if _ci is None:
+        with open(os.path.join(ROOT, ".github", "workflows", "ci.yml"), encoding="utf-8") as fh:
+            _ci = fh.read()
+    ci = _ci
+
+    for dep in CI_COLLIDED:
+        if dep not in ci:
+            problems.append(f"الوديعة «{dep}» مدَّعًى أنّها مبوَّبةٌ في ci.yml ولا ذكرَ لها فيه")
+
+    gated = set(GENERATORS) | set(CI_COLLIDED)
+    for dep in sorted(found - gated):
+        problems.append(f"وديعةٌ يتيمة: «{dep}» في الشجرة ولا بوّابةَ تمرّ عليها — "
+                        f"تُدخَل في GENERATORS (بمولِّدها) أو في CI_COLLIDED (بخطوتها)")
+    for dep in sorted(gated - found):
+        problems.append(f"وديعةٌ مبوَّبةٌ غائبةٌ عن الشجرة: «{dep}»")
+
+    if verbose:
+        print(f"— التغطية: {len(found)} وديعةً في الشجرة · {len(GENERATORS)} بمولِّدٍ هنا "
+              f"· {len(CI_COLLIDED)} بخطوةٍ في ci.yml —")
+        for p in problems:
+            print(f"::error::{p}")
+        if not problems:
+            print("    ✓ لا يتيمَ: كلُّ وديعةٍ مبوَّبة")
+    return problems
+
+
 def regen_all(verbose=True):
     """يعيد توليدَ كلِّ وديعةٍ وكلِّ ختمٍ ويصادمُهما — فارقٌ صفرٌ أو صريخ."""
     problems, checked = [], 0
     with tempfile.TemporaryDirectory() as tmp:
         for deposit in GENERATORS:
             fresh = regenerate(deposit, tmp)
-            with open(os.path.join(HERE, deposit), encoding="utf-8") as fh:
+            with open(deposit_path(deposit), encoding="utf-8") as fh:
                 stored = json.load(fh)
             if fresh != stored:
                 problems.append(f"{deposit}: الوديعةُ المودَعة خالفت ما يُنتجه مولِّدُها")
@@ -190,6 +268,11 @@ def regen_all(verbose=True):
     return problems
 
 
+def ci_text():
+    with open(os.path.join(ROOT, ".github", "workflows", "ci.yml"), encoding="utf-8") as fh:
+        return fh.read()
+
+
 def falsify(verbose=True):
     """هل يستطيع هذا الحارسُ أن يرفض؟ — ثلاثُ تجارِبَ مكذِّبةٍ على نسخٍ في الذاكرة."""
     trials = {}
@@ -217,6 +300,14 @@ def falsify(verbose=True):
     except AssertionError:
         trials["ختمٌ بلا دالّة"] = "رفض ✓ — لا رقمَ بلا اسم دالّتِه"
 
+    orphan = coverage(verbose=False, _found=set(GENERATORS) | set(CI_COLLIDED) | {"يتيم_v0.json"}, _ci=ci_text())
+    trials["وديعةٌ يتيمةٌ وُلدت"] = ("رفض ✓ — التغطيةُ تُمسك اليتيمَ ساعةَ ولادته"
+                                    if any("يتيم_v0.json" in p for p in orphan) else "لم يرفض ✗")
+
+    claim = coverage(verbose=False, _found=set(GENERATORS) | set(CI_COLLIDED), _ci="")
+    trials["دعوى تبويبٍ كاذبة"] = ("رفض ✓ — «مبوَّبٌ في ci.yml» تُفتَّش لا تُصدَّق"
+                                   if len(claim) >= len(CI_COLLIDED) else "لم يرفض ✗")
+
     if verbose:
         print("— تكذيبُ الحارس (هل يستطيع أن يرفض؟) —")
         for k, v in trials.items():
@@ -233,7 +324,7 @@ def main():
 
     print("سجلُّ الأختام — لا رقمَ إلا بمولِّدٍ يُشغَّل، ولا رقمَ إلا باسم دالّتِه ومقامِه\n")
     trials = falsify()
-    problems = [] if args.falsify_only else regen_all()
+    problems = [] if args.falsify_only else coverage() + regen_all()
     if args.json:
         with open(args.json, "w", encoding="utf-8") as fh:
             json.dump({"الأختام": [dict(s, مسار=list(s["مسار"])) for s in SEALS],

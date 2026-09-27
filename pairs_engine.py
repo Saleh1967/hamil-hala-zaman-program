@@ -7,10 +7,19 @@
 import sys, os, json
 from collections import Counter, defaultdict
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+_INDUCTION = os.path.join(os.path.dirname(os.path.abspath(__file__)), "induction")
+assert os.path.isfile(os.path.join(_INDUCTION, "induction_engine.py")), \
+    "محرّك الاستقراء غائبٌ عن induction/ — لا استيراد صامت"
+sys.path.insert(0, _INDUCTION)
 from induction_engine import parse_verses
 
 CORPUS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "mujammad.txt")
+
+# ترتيبُ العلامات معلنٌ صراحةً — لا ترتيبَ مجموعةٍ عشوائيّ.
+# كانت `lic` تُبنى بالمرور على `set`، فترتيبُ أمثلةِ «إعراب ثلاثي» يتبع PYTHONHASHSEED،
+# فالوديعةُ لا تُصادَم بفارق صفر. والفاتورة: ترتيبٌ عشوائيٌّ ⟵ ترتيبٌ مسمّى،
+# والعددُ (176 عائلة) لا يُمسّ — الأمثلةُ عرضٌ والعدُّ هو الحاكم.
+LIC_ORDER = ("فتحة", "ضمة", "كسرة")
 
 def classify(pos, n):
     if pos == n - 1: return "خاتمة-الإعراب"
@@ -59,7 +68,7 @@ def main():
         for f in last_var:
             groups[f[:-1]].add(f[-1])
         for pre, ends in groups.items():
-            lic = [e for e in ends if e in ("فتحة", "ضمة", "كسرة")]
+            lic = [e for e in LIC_ORDER if e in ends]
             if len(lic) >= 3:
                 triples += 1
                 if len(triples_ex) < 5:
