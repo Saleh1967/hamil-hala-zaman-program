@@ -82,6 +82,47 @@ jobs:
       - name: تشغيل المحرّك — التدقيق البنيويّ والقياس
         run: python algebra_engine.py | tee measurement.txt
 
+      - name: البوّابة الثانية — نسخة المجمَّد في induction/ بالبصمة نفسها
+        if: hashFiles('mujammad.txt') != ''
+        run: |
+          set -eu
+          A="$(sha256sum mujammad.txt | cut -d' ' -f1)"
+          B="$(sha256sum induction/mujammad.txt | cut -d' ' -f1)"
+          if [ "$A" != "$B" ]; then
+            echo "::error::نسخة induction/ خالفت المجمَّد ($B ≠ $A) — لا قياس على بايتاتٍ متخلّفة"
+            exit 1
+          fi
+          echo "نسختا المجمَّد متطابقتان ✓ ($A)"
+
+      - name: مصادمة الاستقراء — results.json مُعاد الإنتاج حرفيًّا
+        run: |
+          set -eu
+          python induction/induction_engine.py --json=/tmp/induction.json --require-corpus \
+            | tee -a measurement.txt
+          python - <<'PY'
+          import json, sys
+          a = json.load(open("induction/results.json", encoding="utf-8"))
+          b = json.load(open("/tmp/induction.json", encoding="utf-8"))
+          if a != b:
+              print("::error::results.json المودَع خالف ما يُنتجه المحرّك — صريخ")
+              sys.exit(1)
+          print("results.json مُعاد الإنتاج بفارق صفر ✓")
+          PY
+
+      - name: مصادمة المعجم — dictionary_v0.json مُعاد الإنتاج حرفيًّا
+        run: |
+          set -eu
+          python dictionary_engine.py --json /tmp/dictionary.json | tee -a measurement.txt
+          python - <<'PY'
+          import json, sys
+          a = json.load(open("dictionary_v0.json", encoding="utf-8"))
+          b = json.load(open("/tmp/dictionary.json", encoding="utf-8"))
+          if a != b:
+              print("::error::dictionary_v0.json المودَع خالف ما يُنتجه المحرّك — صريخ")
+              sys.exit(1)
+          print("dictionary_v0.json مُعاد الإنتاج بفارق صفر ✓")
+          PY
+
       - name: إيداع تقرير القياس
         if: always()
         uses: actions/upload-artifact@v4
