@@ -6,7 +6,7 @@
 #   ع-تبدل: سند خاتمة الهيكل يتبدّل على المجمَّد (سندان فأكثر)
 #   ث-وحدة: سندٌ واحد وعلامةٌ محقَّقة
 #   ز-مزاح: تنوين فتح على ما قبل الخاتمة وخاتمةٌ عارية ا/ى
-#   ق-فراغ: خاتمةٌ عاريةٌ بلا تنوينٍ مزاح
+#   ق-فراغ: خاتمةٌ عاريةٌ بلا تنوينٍ مزاح — **صنفٌ رابعٌ نهائيّ بحكم الرسم** (انظر q_rasm أدناه)
 #   و٣-قلع: مطابقة قوالب I–XV بعد قلع السوابق المعلنة (awzan_engine — القوالب من T بعينها)
 from collections import Counter, defaultdict
 from math import log2
@@ -42,6 +42,15 @@ def mabni_loci(word):
 def has_shadda(word, raw):
     return "ح-شدة" if "ّ" in raw else None
 
+Q_RASM = ("ا", "ى", "ي")          # خواتمُ الفراغ الثلاث: المقصور/المنقوص مظنّتُها
+
+def definite_evidence(word):
+    """قرينةُ الاسميّة السطحيّة الوحيدة المعلنة: «ال» بعد السوابق (PREFIX من awzan بعينها،
+    لا نسخةٌ ثانية). تشخيصٌ يُعَدّ ولا يُصنِّف: حدٌّ أدنى لما يصحّ نقلُه إلى علامةٍ مقدَّرة."""
+    import awzan_engine as AZ
+    i = 1 if len(word) > 2 and (word[0][0], word[0][1]) in AZ.PREFIX else 0
+    return [ch for ch, _ in word[i:i + 2]] == ["ا", "ل"]
+
 def awzan_cover(path, verses, sup):
     """تغطية الأوزان (و٣-قلع) على المعلَّق ث+ع — تُحسب هنا بالمحرّك نفسه، لا برقمٍ منقول."""
     import awzan_engine as AZ
@@ -70,6 +79,8 @@ def run(path=CORPUS):
         toks.append(ws)
     assert len(sup) == 14870, "بصمة الهياكل خُالفت — صريخ"
     cnt, q_split, rule_cov = Counter(), Counter(), Counter()
+    q_words, q_defi = Counter(), Counter()
+    q_forms = defaultdict(set)
     mabni_words = 0
     Nw = 0
     for ws in toks:
@@ -80,6 +91,11 @@ def run(path=CORPUS):
             rule_cov[rule] += 1
             if k == "ق":
                 q_split[w[-1][0]] += 1
+                if w[-1][0] in Q_RASM:
+                    q_words[w[-1][0]] += 1
+                    q_forms[w[-1][0]].add(tuple(w))
+                    if definite_evidence(w):
+                        q_defi[w[-1][0]] += 1
             if mabni_loci(w):
                 mabni_words += 1
     z_chk = cnt["ز"]
@@ -103,14 +119,26 @@ def run(path=CORPUS):
                 sup_states[st] += 1
     awzan_words, awzan_shadda, awzan_bits = awzan_cover(path, verses, sup)
     awzan_gain = awzan_words - awzan_shadda          # الجديدُ وحده: ما لم تغطّه ح-شدة
+    scream = raw_words - shadda_words - awzan_gain
+    cost_bits = len(["ز-مزاح", "ق-فراغ", "ع-تبدل", "ث-وحدة",
+                     "ح-شدة", "ح-جار-ملتصق"]) * 8 * 4 + awzan_bits
+    # حكمُ الرسم: «ق» صنفٌ رابعٌ نهائيّ — الطبقة التاليةُ تشخيصيّةٌ معدودة لا تُحتسب تغطيةً
+    # ولا تُسعَّر، فالحدّان ⚑ والكلفة محروسان بالعدّ هنا صراحةً.
+    assert scream == 57603 and cost_bits == 1456, \
+        f"حدُّ حكم الرسم خُولف: ⚑={scream} كلفة={cost_bits} — صريخ"
+    q_rasm = {e: dict(words=q_words[e], forms=len(q_forms[e]), definite=q_defi[e])
+              for e in Q_RASM}
+    q_rasm_total = dict(words=sum(q_words.values()), forms=sum(len(f) for f in q_forms.values()),
+                        definite=sum(q_defi.values()))
+    q_rasm_total["definite_pct"] = round(q_rasm_total["definite"] / q_rasm_total["words"] * 100, 2)
     return dict(Nw=Nw, cnt=dict(cnt), z=z_chk, q_split=dict(q_split),
+                q_rasm=dict(by_ending=q_rasm, total=q_rasm_total, verdict="ق-فراغ صنفٌ رابعٌ نهائيّ"),
                 skeletons=len(sup), n_var=n_var, sup_states=dict(sup_states),
                 coverage=dict(raw_words=raw_words, shadda_words=shadda_words,
                               jar_mabni_words=mabni_words,
                               awzan_words=awzan_words, awzan_gain=awzan_gain,
-                              scream=raw_words - shadda_words - awzan_gain),  # ⚑ المتبقّي بلا قاعدة
-                rules_cost_bits=len(["ز-مزاح", "ق-فراغ", "ع-تبدل", "ث-وحدة",
-                                     "ح-شدة", "ح-جار-ملتصق"]) * 8 * 4 + awzan_bits)
+                              scream=scream),  # ⚑ المتبقّي بلا قاعدة
+                rules_cost_bits=cost_bits)
 
 def main():
     R = run()
@@ -119,6 +147,10 @@ def main():
     print(f"المعجم v0 — كلمات {R['Nw']:,} · هياكل {R['skeletons']:,} (متبدّلة {R['n_var']:,}) | "
           f"ث={R['cnt']['ث']:,} · ع={R['cnt']['ع']:,} · ز={R['cnt']['ز']:,} · ق={R['cnt']['ق']:,} | H(صنف)={H:.4f}")
     print(f"حسم «ق» بخواتمه: " + " · ".join(f"{k}={v:,}" for k, v in sorted(R["q_split"].items(), key=lambda kv: -kv[1])))
+    QR = R["q_rasm"]["total"]
+    print(f"حكمُ الرسم — «ق» صنفٌ رابعٌ نهائيّ: خواتمُ ا/ى/ي {QR['words']:,} كلمة في {QR['forms']:,} صيغةً متمايزة، "
+          f"والمرشَّح بقرينةٍ سطحيّةٍ معلنة («ال») {QR['definite']:,} ({QR['definite_pct']}%) — "
+          f"نقلُ الصنف إلى علامةٍ مقدَّرة يحرّك الباقي بلا قرينة، فلا يُقيَّد. ⚑ والكلفة لم تُمسّا")
     print(f"تغطية المبني السطحية: شدّة {R['coverage']['shadda_words']:,} كلمة · جار ملتصق {R['coverage']['jar_mabni_words']:,} · "
           f"أوزان {R['coverage']['awzan_words']:,} (جديدها {R['coverage']['awzan_gain']:,}) · "
           f"⚑ المتبقّي {R['coverage']['scream']:,} (لا قاعدة سطحية له — دَين المعجم الكامل)")
