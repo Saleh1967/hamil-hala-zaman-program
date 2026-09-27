@@ -71,7 +71,16 @@ from induction_engine import parse_verses, JARR, JPRE   # الحدُّ المخ�
 
 CORPUS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "mujammad.txt")
 LIC = ("فتحة", "ضمة", "كسرة", "سكون")
-HARF = set("و ف ثم حتى إذ إذا قد لقد إن أن لكن ليت لعل ما لا لم لن بل كل منذ أم رب أليس ليس أو أم".split())
+# تصحيحٌ معلنٌ لجدول الحروف: «كل» و«رب» **اسمان** أُقحما في قائمة الحروف، و«رب» كان في
+#   `HARF` و`JARR` معًا (وسمُ التدقيق §٦ ثالثًا). فأُخرجا باسمهما — 202 موضعًا كان بابُ
+#   الإضافة يُحجَب عنها بـ«كلِّ شيءٍ» وحدَها.
+HARF = set("و ف ثم حتى إذ إذا قد لقد إن أن لكن ليت لعل ما لا لم لن بل منذ أم أليس ليس أو أم".split())
+# تسويةُ الهمزة — **مصالحةٌ محروسةٌ معلنة** تُطبَّق عند عرض الكلمة على الحدّ المختوم وحدَه:
+#   `JARR` المختومة تكتب «الى» والرسمُ في المجمَّد «إلى»، فلولا التسوية سقط أكبرُ جارٍّ
+#   (207 مواضع) بذنب صورةِ الهمزة لا بذنب الحدّ. ولا تُمَسّ بها بايتاتُ المجمَّد ولا الحدُّ.
+HAMZA = {"أ": "ا", "إ": "ا", "آ": "ا", "ٱ": "ا"}
+def norm(s): return "".join(HAMZA.get(c, c) for c in s)
+JARR_N = {norm(x) for x in JARR}
 TEMPLATES = ["فعل","فعلل","فاعل","أفعل","تفعلل","تفاعل","انفعل","افتعل","افعلل","استفعل"]
 def rx(t):
     lg = defaultdict(list); out = ""; idx = 0
@@ -80,6 +89,82 @@ def rx(t):
         else: out += ch
     return re.compile("^" + out + "$"), lg
 RXS = [(rx(t)) for t in TEMPLATES]
+
+# ــــــ كاشفاتُ الاسم المعلنة (منتهيةٌ مسعَّرة) — الإصلاحُ ① في تسجيل الجولة الثالثة ــــــ
+# كلُّها من البايتات وحدَها، ولا واحدةَ منها تصلح للفعل:
+#   ⓐ التنوينُ بصوره الثلاثة — علامةُ اسمٍ خالصة.
+#   ⓑ «ال» التعريف بصورها المعلنة (ومعها الجارُّ الملتصقُ قبلها).
+#   ⓒ خاتمةٌ مكسورة — **لا يُكسَر آخرُ فعلٍ قطّ** في هذا الرسم.
+#   ⓓ تاءٌ مربوطة في الآخر.
+# ومَن حمل واحدةً منها فاسمٌ، ولو طابق هيكلُه قالبَ فعل — وهذا موضعُ **استثناء المشارك
+#   والمصدر** المعلن: «مالِكِ» و«جنّاتٍ» و«الكتابِ» أسماءٌ بعلامتها لا بظنِّ قالبها.
+TA_MARBUTA = "ة"
+DEF_PRE = ("بال", "وال", "فال", "كال", "لل", "بل", "ولل", "فلل")   # صورُ «ال» بعد الجارّ الملتصق
+
+def _body(w):
+    """جذعُ الكلمة بعد قلع الملتصق المفتوح (و/ف العاطفة · ل الابتداء) — قلعٌ معلنٌ لا صامت.
+    وهو بابُ ③ بعينه: الملتصقُ المفتوحُ يحجب الجارَّ عن الجدول («ومن الناس» · «لفي ضلال»)."""
+    sk = "".join(c for c, _ in w)
+    if len(sk) > 2 and sk[0] in ("و", "ف", "ل") and w[0][1] == "فتحة":
+        return sk[1:], w[1:]
+    return sk, w
+
+# المضافُ معتلُّ الآخر: الأسماءُ الستّةُ (ذو · أولو) والمقصورُ والمنقوص خاتمتُها حرفُ علّةٍ
+#   عارٍ لا حركةَ عليه، فاشتراطُ الحركة كان يُخرج المضافَ الصحيحَ من بابه.
+MU3TAL = ("ا", "و", "ي", "ى")
+
+def _can_be_mudaf(prev_w):
+    st = prev_w[-1][1]
+    return (st in LIC and not st.startswith("تنوين")) or \
+           (st == "عري" and prev_w[-1][0] in MU3TAL)
+
+def is_definite(w):
+    """التعريفُ بـ«ال» بصورها المعلنة — ومعها لامُ الجرّ الداخلةُ عليها (لله · للناس)."""
+    sk, _ = _body(w)
+    return (sk.startswith("ال") and len(sk) > 2) or \
+           any(sk.startswith(p) and len(sk) > len(p) for p in DEF_PRE)
+
+def nominal_mark(w):
+    """أوّلُ كاشفِ اسمٍ ينطبق على الكلمة، أو None — معدودٌ ومعروض."""
+    sk = "".join(c for c, _ in w)
+    if w[-1][1].startswith("تنوين"): return "تنوين"
+    body = sk[1:] if (sk[:1] in JPRE and w[0][1] == "كسرة") else sk
+    if body.startswith("ال") and len(body) > 2: return "ال"
+    if w[-1][1] == "كسرة": return "خاتمة-مكسورة"
+    if sk.endswith(TA_MARBUTA): return "تاء-مربوطة"
+    return None
+
+# حركاتُ قوالب الفعل: عينُ القالب **مفتوحةٌ أو مضمومة**، وكسرُها علامةُ المشارك (فاعِل ·
+#   مفاعِل)، فيُستثنى المشاركُ بموضعٍ معلنٍ واحد. والقالبُ لا يُقبَل بهيكله وحدَه.
+def _rad_pos(m, g):
+    """موضعُ الجذر رقم g من مطابقة القالب داخل الهيكل."""
+    return m.start(g)
+
+def verb_template(w):
+    """قالبُ الفعل **بحركاته** — وكسرُ العين علامةُ المشارك فيُستثنى بموضعٍ معلنٍ واحد."""
+    sk = "".join(c for c, _ in w)
+    for (r, lg), t in zip(RXS, TEMPLATES):
+        m = r.match(sk)
+        if not m or not all(len(set(m.group(g) for g in gs)) == 1 for gs in lg.values()):
+            continue
+        if w[_rad_pos(m, lg["ع"][-1])][1] == "كسرة":
+            return None                          # فاعِل · مفاعِل — مشاركٌ لا فعل
+        return t
+    return None
+
+def word_class(w):
+    """أربعةُ أصنافٍ لا ثلاثة: والرابعُ **المشتبه** — وهو ثمنُ الاشتباه معدودًا لا مطموسًا.
+    الثلاثيُّ المجرَّدُ بلا علامةِ اسمٍ ولا علامةِ فعلٍ حاسمة (غَيْبُ · حَذَرَ · سَبْعَ ·
+    يَوْمَ) **لا يفصله شكلُه** عن فَعَلَ الماضي. فلا يُدَّعى فيه صنفٌ: يُسمّى مشتبهًا،
+    وتُعلَن اتفاقيتُه الحاكمة (يُحمَل على الاسمية حين يليه مجرور) ويُعَدّ بابُه على حدةٍ
+    (`إضافة-مشتبهة`) فيُعرَف ثمنُه بالطرح."""
+    sk = "".join(c for c, _ in w)
+    if sk in HARF: return "حرف"
+    if nominal_mark(w): return "اسم"             # العلامةُ تسبق القالب — لا ظنَّ فوق علامة
+    t = verb_template(w)
+    if t:
+        return "فعل" if t != "فعل" else "مشتبه"  # الرباعيُّ فصاعدًا قالبٌ حاسم، والمجرَّدُ لا
+    return "اسم"
 
 def H(c):
     n = sum(c.values())
@@ -90,15 +175,6 @@ def Hcond(rows):
     for x, y in rows: by[x][y] += 1
     n = len(rows)
     return sum(sum(c.values()) / n * H(c) for c in by.values())
-
-def word_class(w):
-    sk = "".join(c for c, _ in w)
-    if sk in HARF: return "حرف"
-    for r, lg in RXS:
-        m = r.match(sk)
-        if m and all(len(set(m.group(g) for g in gs)) == 1 for gs in lg.values()):
-            return "فعل"
-    return "اسم"
 
 # ــــــ الأبواب المُحياة: صورٌ معلنةٌ منتهيةٌ مسعَّرة، لا قواعدُ مفتوحة ــــــ
 # صورُ الضمير المتصل المجرور (من جدول الأدوار) — تُقاس **لاحقةً داخل الكلمة** لا هيكلًا كاملًا.
@@ -132,27 +208,75 @@ def gates_of(v, i):
     w = v[i]; sk = "".join(c for c, _ in w)
     prev_w = v[i - 1] if i > 0 else None
     prev = "".join(c for c, _ in prev_w) if prev_w else ""
+    # ③ فكُّ التقاطع: العاطفُ الملتصقُ يُقلَع **عند التقاطع وحدَه** قبل عرضِ الجذعِ على
+    #    الحدّ المختوم — ولا يُمَسّ ترتيبُ البوّابات الخمس في induction_engine.gate.
+    w_core_sk, w_core = _body(w)
+    prev_core = _body(prev_w)[0] if prev_w is not None else ""
     g = []
-    if w[0][0] in JPRE and w[0][1] == "كسرة" and len(w) > 1:
+    if w_core_sk[:1] in JPRE and w_core[0][1] == "كسرة" and len(w_core) > 1:
         g.append("جار-ملتصق")                      # ب/ل/ك المكسورة — من الحدّ المختوم
-    if prev in JARR:
+    elif w_core_sk[:1] == "ك" and w_core[0][1] == "فتحة" and len(w_core) > 1 \
+         and nominal_mark(w_core[1:]) != "ال":
+        # امتدادٌ **موسومٌ** على الحدّ المختوم: كافُ التشبيه لا تُكسَر في هذا الرسم (كَصَيِّبٍ)،
+        # فتُعَدّ في بابٍ مستقلٍّ باسمها ولا تُخلَط بالمكسورة المختومة.
+        g.append("جار-ملتصق(كاف-مفتوحة)")
+    if norm(prev) in JARR_N or norm(prev_core) in JARR_N:
         g.append("حرف-جر-سابق")
-    if prev_w is not None and word_class(prev_w) == "اسم" and prev_w[-1][1] in LIC:
-        g.append("إضافة")
+    # ① بابُ الإضافة بعد إصلاح المصنِّف: المضافُ اسمٌ **لا يقبل التنوين ولا التعريف**،
+    #    وهذه علامتُه المعلنة التي تفصله عن المتبوع في ②.
+    if prev_w is not None and word_class(prev_w) in ("اسم", "مشتبه") \
+       and _can_be_mudaf(prev_w) and not is_definite(prev_w):
+        g.append("إضافة" if word_class(prev_w) == "اسم" else "إضافة-مشتبهة")
+    # ② بابُ التابع الكامل — نعتٌ وبدلٌ وتوكيدٌ وعطفُ بيان. كاشفُه معلن: **مطابقةُ خاتمةِ
+    #    السابقِ في الجرّ** مع كونِ السابقِ معرَّفًا أو منوَّنًا (فلا يصلح مضافًا)، فيُحمَل
+    #    اللاحقُ على إعرابِ متبوعه. والمعطوفُ بالعاطف الملتصق يبقى مسمًّى ببابه.
+    tabi3 = prev_w is not None and prev_w[-1][1] in ("كسرة", "تنوين كسر") and \
+            (is_definite(prev_w) or prev_w[-1][1] == "تنوين كسر")
     if sk[:1] in ("و", "ف") and w[0][1] == "فتحة" and len(w) > 1 \
        and prev_w is not None and prev_w[-1][1] in ("كسرة", "تنوين كسر"):
         g.append("تابع-معطوف")                      # عطفٌ على مجرورٍ سابق — العاطفُ ملتصق
+    if tabi3:
+        g.append("تابع-غير-معطوف")
     if pron_suffix(sk):
         g.append("ضمير-متصل")
     if _strip_al(sk) in MAMNU3 or sk in MAMNU3:
         g.append("ممنوع-من-الصرف")
     return g
 
+MABNI_KASR = {"هؤلاء", "هاؤلاء", "هذه", "هاذه", "يومئذ", "حينئذ", "ساعتئذ", "بعدئذ", "أولاء",
+              "هذي", "أمس", "الآن"}
+
+def residue_kind(v, i):
+    """تبويبُ ما لا يفسّره الجدول بجنسه المسمّى — ④ لا رقمٌ أصمّ.
+    وأكثرُ هذه الأجناس **ليست مواضعَ جرٍّ أصلًا**، بل أثرُ البسط غير المضيَّق (§٥③): فهي
+    تُعَدّ ههنا بأسمائها لتكون **مادّةَ التضييق** في جولةٍ تُسجَّل مسبقًا، ولا تُطرَح الآن
+    من المقام — فالمقامُ الحاكمُ يبقى 11,420 حتى تُعلَن اتفاقيةُ تضييقه."""
+    w = v[i]; sk = "".join(c for c, _ in w)
+    prev_w = v[i - 1] if i > 0 else None
+    prev = "".join(c for c, _ in prev_w) if prev_w else ""
+    if sk in HARF or norm(sk) in JARR_N: return "حرفٌ مستقلّ (ليس مجرورًا)"
+    if sk in MABNI_KASR: return "مبنيٌّ على الكسر (قائمةٌ مسمّاة)"
+    if word_class(w) == "فعل": return "فعلٌ خاتمتُه كسرة (نونٌ أو وقاية)"
+    if norm(prev) in ("يا", "ويا", "فيا"): return "منادًى (سابقُه «يا»)"
+    if sk.endswith("ات") and prev_w is not None and word_class(prev_w) in ("فعل", "مشتبه"):
+        return "جمعٌ مؤنثٌ سالمٌ بعد فعل (منصوبٌ بالكسرة)"
+    if i == 0: return "أجوف-السند (أوّلُ آية)"
+    if prev_w[-1][1] in ("فتحة", "ضمة", "تنوين فتح", "تنوين ضم"):
+        return "سابقٌ غيرُ مجرور"
+    if word_class(prev_w) == "حرف": return "سابقٌ حرف"
+    return "غيرُ ذلك"
+
+# الأجناسُ التي **ليست مواضعَ جرٍّ** — مادّةُ التضييق، تُعرَض ولا تُطرَح.
+NOT_JARR_KINDS = ("حرفٌ مستقلّ (ليس مجرورًا)", "مبنيٌّ على الكسر (قائمةٌ مسمّاة)",
+                  "فعلٌ خاتمتُه كسرة (نونٌ أو وقاية)",
+                  "جمعٌ مؤنثٌ سالمٌ بعد فعل (منصوبٌ بالكسرة)")
+
 def main():
     verses = parse_verses(CORPUS)
     # ـــــ الشرط المختوم: تعداد مواضع الجرّ وعدّ ما لا يفسّره الجدول
     unexplained = []; causes = Counter(); jar_positions = 0
-    pron = Counter(); alone = Counter(); overlap = Counter()
+    pron = Counter(); alone = Counter(); overlap = Counter(); residue = Counter()
+    only = Counter()   # أوحديةُ الباب: مواضعُ لا يفسّرها سواه — مساهمتُه الحدّية معروضة
     for vi, v in enumerate(verses):
         for i, w in enumerate(v):
             end = w[-1][1]
@@ -163,17 +287,23 @@ def main():
             g = gates_of(v, i)
             for name in g: alone[name] += 1          # عرضٌ موسوم: البابُ مستقلًّا عن الأولوية
             if len(g) > 1: overlap["×".join(g)] += 1
-            c = g[0] if g else "؟"
-            if c == "؟":
-                c2 = "إضافة" if i > 0 and word_class(v[i - 1]) == "اسم" else "؟"
-                if c2 == "؟":
-                    unexplained.append((vi + 1, i, sk, prev))
-                    causes["لا-يُفسَّر"] += 1
-                    continue
-                c = c2
-            causes[c] += 1
+            if len(g) == 1: only[g[0]] += 1
+            if not g:
+                # ④ لا بابَ احتياطيًّا مظنونًا بعد اليوم: السقوطُ يُبوَّب بجنسه المسمّى.
+                unexplained.append((vi + 1, i, sk, prev))
+                causes["لا-يُفسَّر"] += 1
+                residue[residue_kind(v, i)] += 1
+                continue
+            causes[g[0]] += 1
             if "ضمير-متصل" in g: pron[pron_suffix(sk)] += 1
     seal = "PASS" if not unexplained else "FAIL"
+    not_jarr = sum(n for k, n in residue.items() if k in NOT_JARR_KINDS)
+    # ـــــ حكمُ التسجيل المسبق للجولة الثالثة بشرطِ إسقاطه المعلن — يُحسَب ولا يُقدَّر
+    tabi3 = causes["تابع-غير-معطوف"] + causes["تابع-معطوف"]
+    broke = []
+    if len(unexplained) >= 400: broke.append(f"غيرُ المفسَّر {len(unexplained):,} ≥ 400")
+    if tabi3 > 2 * 300: broke.append(f"بابُ التابع {tabi3:,} > ضِعفِ سقفه (300)")
+    verdict = "سقط بشرطه المعلن: " + " · ".join(broke) if broke else "صمد"
     # ـــــ ماركوف الـ112 داخل الأقسام الثلاثة (البنية الداخلية)
     prof = defaultdict(lambda: defaultdict(Counter))
     for v in verses:
@@ -210,6 +340,11 @@ def main():
     print("الضمائر المتصلة المجرورة:", dict(pron.most_common(8)))
     print("الأبواب مستقلةً (عرضٌ موسوم):", dict(alone.most_common()))
     print("التداخل (الحاكمُ أوّلُ السلسلة):", dict(overlap.most_common(8)))
+    print("أجناسُ المتبقّي (مسمّاةً):", dict(residue.most_common()))
+    print("أوحديةُ الأبواب (لا يفسّرها سواه):", dict(only.most_common()))
+    print(f"مادّةُ التضييق المعروضة (ليست مواضعَ جرّ): {not_jarr:,}"
+          f" ⟵ البسطُ المرشَّح {jar_positions - not_jarr:,} (عرضٌ موسوم، والحاكمُ {jar_positions:,})")
+    print("حكمُ التسجيل المسبق:", verdict)
     for cls, d in profH.items():
         print(f"ماركوف-داخل-{cls}: {d}")
     print("أمامي (صنف-الأول × بوابته):", dict(fwd.most_common(8)))
@@ -217,7 +352,11 @@ def main():
     return dict(الشرط=dict(state=seal, jar_positions=jar_positions,
                             unexplained=len(unexplained), sample=unexplained[:50],
                             causes=dict(causes), pronoun_genitive=dict(pron),
-                            gates_alone=dict(alone), overlap=dict(overlap)),
+                            gates_alone=dict(alone), overlap=dict(overlap),
+                            residue_kinds=dict(residue), gate_only=dict(only),
+                            not_jarr_material=not_jarr,
+                            narrowed_candidate=jar_positions - not_jarr,
+                            preregistration=verdict),
                 ماركوف_الأقسام=profH)
 
 if __name__ == "__main__":
