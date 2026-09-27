@@ -178,6 +178,48 @@ jobs:
           print("waqf_v0.json مُعاد الإنتاج بفارق صفر ✓")
           PY
 
+      - name: دفعةُ الحركات — الحارسان والوقف/الوصل، ومصادمة harakat_v0.json
+        run: |
+          set -eu
+          python harakat_layer.py --json /tmp/harakat.json | tee -a measurement.txt
+          python - <<'PY'
+          import json, sys
+          a = json.load(open("harakat_v0.json", encoding="utf-8"))
+          b = json.load(open("/tmp/harakat.json", encoding="utf-8"))
+          if a != b:
+              print("::error::harakat_v0.json المودَع خالف ما يُنتجه المحرّك — صريخ")
+              sys.exit(1)
+          print("harakat_v0.json مُعاد الإنتاج بفارق صفر ✓")
+          PY
+
+      - name: الحقل 112 — قوانينُ الدفعة مقيسةً بتقسيمنا، ومصادمة field112_laws.json
+        run: |
+          set -eu
+          python field112_laws.py --json /tmp/field112.json | tee -a measurement.txt
+          python - <<'PY'
+          import json, sys
+          a = json.load(open("field112_laws.json", encoding="utf-8"))
+          b = json.load(open("/tmp/field112.json", encoding="utf-8"))
+          if a != b:
+              print("::error::field112_laws.json المودَع خالف ما يُنتجه المحرّك — صريخ")
+              sys.exit(1)
+          print("field112_laws.json مُعاد الإنتاج بفارق صفر ✓")
+          PY
+
+      - name: الإعلال — تحقّقُ سترلنج وحارسا التيار، ومصادمة i3lal_v0.json
+        run: |
+          set -eu
+          python i3lal_layer.py --json /tmp/i3lal.json | tee -a measurement.txt
+          python - <<'PY'
+          import json, sys
+          a = json.load(open("i3lal_v0.json", encoding="utf-8"))
+          b = json.load(open("/tmp/i3lal.json", encoding="utf-8"))
+          if a != b:
+              print("::error::i3lal_v0.json المودَع خالف ما يُنتجه المحرّك — صريخ")
+              sys.exit(1)
+          print("i3lal_v0.json مُعاد الإنتاج بفارق صفر ✓")
+          PY
+
       - name: إيداع تقرير القياس
         if: always()
         uses: actions/upload-artifact@v4
