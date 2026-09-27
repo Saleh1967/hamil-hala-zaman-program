@@ -267,6 +267,11 @@ def main():
               " + ".join("".join(g) for g in fl["groups"]))
         print(f"FOR بالعكس على الحالة (4→28): استنفاد Bell(4)=15 كاملًا {fs['invoice']:.1f} ⟷ جشع {fsg['invoice']:.1f} (فارق {fsg['gap']:+.2f}) — حارسا العدّ متطابقان")
         print(f"ستيرلنج (ثمن المقسِّمات): log2 Bell(28)≈{st['log2_Bell28']} · log2 S(112,2)≈{st['log2_S112_2']} · log2 Bell(112)≈{st['log2_Bell112']} بت")
+        RC = reconcile_counts(verses)
+        OUT["مقيس"]["مصالحة_العد"] = RC
+        d = RC["تفكيكه"]
+        print(f"مصالحة العد بالحرف: {RC['إقفال']} — همزات مركبة {d['همزات_مركبة_أإؤئ']:,} + "
+              f"زائدون {d['الزائدون_الأربعة_ىةآء']:,} − تنوينات خارج الإطار {-d['ناقص_تنوينات_خارج_الـ28']:,} | {RC['تحقق_إضافي']}")
     else:
         msg = "مجمَّد غائب — وضع بنيوي موسوم؛ ‎--require-corpus‎ يفشل هنا"
         OUT["مجمَّد"] = {"موجود": False}
@@ -413,6 +418,46 @@ def run_field112(verses):
                               log2_Bell28=int(sum(s28).bit_length()) - 1,
                               log2_S112_2=int((s112[2] - 1).bit_length()) - 1 if s112[2] > 1 else 0,
                               log2_Bell112=int(sum(s112).bit_length()) - 1))
+
+# ---------- ٨) مصالحة العد بالحرف: إطار 28 المغلق مقابل الأبجد الخام ----------
+HAMZA4 = list("أإؤئ")      # همزات مركبة — رسمًا خارج الـ28، صوتًا داخل المقام
+EXTRA4 = list("ىةآء")      # الزائدون الأربعة مسمَّون بالورقة
+
+def reconcile_counts(verses):
+    """يُعيد اشتقاق 223,611 + 20,186 = 243,797 بالحرف — لا فرقَ مكتوم ولا عطلَ في عدّ.
+    الفارق فرقُ تعريفٍ لا خطأ: إطار 28×4 المغلق (§8) مقابل الأبجد الخام (§17-18)."""
+    cell = Counter()
+    for words in verses:
+        for w in words:
+            for ch, st in w:
+                cell[(ch, st)] += 1
+    def tally(letters, states=None):
+        return sum(v for (ch, st), v in cell.items()
+                   if ch in letters and (states is None or st in states))
+    field112 = tally(L28, LIC4)                       # المرخَّص في إطار 28×4
+    hamza = tally(HAMZA4)                             # الهمزات المركبة بكل حالاتها
+    extra = tally(EXTRA4) - tally(EXTRA4, ("عري",))   # الزائدون بغير العري
+    tanwin_out = sum(v for (ch, st), v in cell.items()
+                     if ch in HAMZA4 + EXTRA4 and "تنوين" in st)
+    raw = tally(L28 + HAMZA4 + EXTRA4, LIC4)          # الأبجد الخام بالحالات المرخَّصة
+    gap = hamza + extra - tanwin_out
+    hamza_bare = tally(["ء"])
+    assert field112 == 223611, f"الحقل 112 خُولف: {field112} — صريخ"
+    assert raw == 243797, f"الأبجد الخام خُولف: {raw} — صريخ"
+    assert field112 + gap == raw, f"المصالحة لم تُقفل: {field112}+{gap}≠{raw} — صريخ"
+    assert hamza_bare == 1578, f"همزة hamil خُولفت: {hamza_bare} — صريخ"
+    return {
+        "الحقل112_المرخص": field112,
+        "مرخص_الكل_بالأبجد_الخام": raw,
+        "الفارق_الكامل": gap,
+        "تفكيكه": {"همزات_مركبة_أإؤئ": hamza,
+                   "الزائدون_الأربعة_ىةآء": extra,
+                   "ناقص_تنوينات_خارج_الـ28": -tanwin_out},
+        "إقفال": f"{field112:,} + {gap:,} = {raw:,} بالحرف",
+        "تحقق_إضافي": f"ء وحدها = {hamza_bare:,} = همزة hamil المؤكدة بassert — تطابق مستقل",
+        "فحوى": "لا عطل في أيّ عدّ — فرقُ تعريف الحقل: إطار 28 المغلق (§8) مقابل "
+                "الأبجد الخام (§17-18)، و«الزائدون مسمَّون» بالورقة",
+    }
 
 if __name__ == "__main__":
     main()

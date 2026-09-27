@@ -11,7 +11,10 @@ from collections import Counter, defaultdict
 from math import log2
 import json, os, sys
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+_INDUCTION = os.path.join(os.path.dirname(os.path.abspath(__file__)), "induction")
+assert os.path.isfile(os.path.join(_INDUCTION, "induction_engine.py")), \
+    "محرّك الاستقراء غائبٌ عن induction/ — لا استيراد صامت"
+sys.path.insert(0, _INDUCTION)
 from induction_engine import parse_verses, GATES5  # عائلة الجذر الواحد
 
 CORPUS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "mujammad.txt")
