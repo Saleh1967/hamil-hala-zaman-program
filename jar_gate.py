@@ -279,31 +279,42 @@ def gates_of(v, i):
 
 MABNI_KASR = {"هؤلاء", "هاؤلاء", "هذه", "هاذه", "يومئذ", "حينئذ", "ساعتئذ", "بعدئذ", "أولاء",
               "هذي", "أمس", "الآن"}
+NIDA = ("يا", "ويا", "فيا")
 
-def residue_kind(v, i):
-    """تبويبُ ما لا يفسّره الجدول بجنسه المسمّى — ④ لا رقمٌ أصمّ.
-    وأكثرُ هذه الأجناس **ليست مواضعَ جرٍّ أصلًا**، بل أثرُ البسط غير المضيَّق (§٥③): فهي
-    تُعَدّ ههنا بأسمائها لتكون **مادّةَ التضييق** في جولةٍ تُسجَّل مسبقًا، ولا تُطرَح الآن
-    من المقام — فالمقامُ الحاكمُ يبقى 11,420 حتى تُعلَن اتفاقيةُ تضييقه."""
+def excluded_kind(v, i):
+    """اتفاقيةُ تضييق البسط (الجولة الرابعة) — **تُطبَّق على كلّ موضعٍ في البسط**، مفسَّرًا
+    كان أو ساقطًا. خمسةُ أجناسٍ منتهيةٍ مسمّاةٍ بكاشفٍ من البايتات، أو None إن كان الموضعُ
+    مطالَبًا بتفسير جرِّه. ولا تُستشار هذه الدالّةُ بعد معرفةِ حال الموضع — وهذا هو شرطُ
+    النزاهة المسجَّل: الطرحُ يسبق الحكمَ ولا يتبعه."""
     w = v[i]; sk = "".join(c for c, _ in w)
     prev_w = v[i - 1] if i > 0 else None
     prev = "".join(c for c, _ in prev_w) if prev_w else ""
     if sk in HARF or norm(sk) in JARR_N: return "حرفٌ مستقلّ (ليس مجرورًا)"
     if sk in MABNI_KASR: return "مبنيٌّ على الكسر (قائمةٌ مسمّاة)"
     if word_class(w) == "فعل": return "فعلٌ خاتمتُه كسرة (نونٌ أو وقاية)"
-    if norm(prev) in ("يا", "ويا", "فيا"): return "منادًى (سابقُه «يا»)"
+    if norm(prev) in NIDA: return "منادًى (سابقُه «يا»)"
     if sk.endswith("ات") and prev_w is not None and word_class(prev_w) in ("فعل", "مشتبه"):
         return "جمعٌ مؤنثٌ سالمٌ بعد فعل (منصوبٌ بالكسرة)"
+    return None
+
+def residue_kind(v, i):
+    """تبويبُ ما لا يفسّره الجدول بجنسه المسمّى — ④ لا رقمٌ أصمّ.
+    وما كان منه من مادّة التضييق يُسمّى بجنسه فيها، فيُرى الجنسان في صفٍّ واحد."""
+    k = excluded_kind(v, i)
+    if k: return k
+    w = v[i]
+    prev_w = v[i - 1] if i > 0 else None
     if i == 0: return "أجوف-السند (أوّلُ آية)"
     if prev_w[-1][1] in ("فتحة", "ضمة", "تنوين فتح", "تنوين ضم"):
         return "سابقٌ غيرُ مجرور"
     if word_class(prev_w) == "حرف": return "سابقٌ حرف"
     return "غيرُ ذلك"
 
-# الأجناسُ التي **ليست مواضعَ جرٍّ** — مادّةُ التضييق، تُعرَض ولا تُطرَح.
-NOT_JARR_KINDS = ("حرفٌ مستقلّ (ليس مجرورًا)", "مبنيٌّ على الكسر (قائمةٌ مسمّاة)",
-                  "فعلٌ خاتمتُه كسرة (نونٌ أو وقاية)",
-                  "جمعٌ مؤنثٌ سالمٌ بعد فعل (منصوبٌ بالكسرة)")
+# أجناسُ التضييق الخمسةُ المسجَّلةُ مسبقًا — تُسمّى كلُّها ولو جاء بعضُها صفرًا.
+DROP_KINDS = ("حرفٌ مستقلّ (ليس مجرورًا)", "مبنيٌّ على الكسر (قائمةٌ مسمّاة)",
+              "فعلٌ خاتمتُه كسرة (نونٌ أو وقاية)", "منادًى (سابقُه «يا»)",
+              "جمعٌ مؤنثٌ سالمٌ بعد فعل (منصوبٌ بالكسرة)")
+NOT_JARR_KINDS = DROP_KINDS
 
 def main():
     verses = parse_verses(CORPUS)
@@ -311,14 +322,27 @@ def main():
     unexplained = []; causes = Counter(); jar_positions = 0
     pron = Counter(); alone = Counter(); overlap = Counter(); residue = Counter()
     only = Counter()   # أوحديةُ الباب: مواضعُ لا يفسّرها سواه — مساهمتُه الحدّية معروضة
+    # ـــــ الجولة الرابعة: التضييقُ يُقرَّر **قبل** النظر في الأبواب، ويُعَدّ المطروحُ صنفين
+    #      (كان مفسَّرًا · كان ساقطًا) ليُكشَف بالعدّ إن كانت الاتفاقيةُ مفصَّلةً على العتبة.
+    raw_positions = 0; raw_unexplained = 0; raw_causes = Counter()
+    excluded = Counter(); excluded_explained = 0; excluded_unexplained = 0
     for vi, v in enumerate(verses):
         for i, w in enumerate(v):
             end = w[-1][1]
             if end not in ("كسرة", "تنوين كسر"): continue
-            jar_positions += 1
+            raw_positions += 1
             sk = "".join(c for c, _ in w)
             prev = "".join(c for c, _ in v[i - 1]) if i > 0 else ""
+            drop = excluded_kind(v, i)          # ← الطرحُ يسبق الحكم (شرطُ النزاهة المسجَّل)
             g = gates_of(v, i)
+            if g: raw_causes[g[0]] += 1
+            else: raw_unexplained += 1
+            if drop:
+                excluded[drop] += 1
+                if g: excluded_explained += 1
+                else: excluded_unexplained += 1
+                continue                         # مطروحٌ من البسط المضيَّق بالاتفاقية المعلنة
+            jar_positions += 1
             for name in g: alone[name] += 1          # عرضٌ موسوم: البابُ مستقلًّا عن الأولوية
             if len(g) > 1: overlap["×".join(g)] += 1
             if len(g) == 1: only[g[0]] += 1
@@ -331,13 +355,27 @@ def main():
             causes[g[0]] += 1
             if "ضمير-متصل" in g: pron[pron_suffix(sk)] += 1
     seal = "PASS" if not unexplained else "FAIL"
-    not_jarr = sum(n for k, n in residue.items() if k in NOT_JARR_KINDS)
-    # ـــــ حكمُ التسجيل المسبق للجولة الثالثة بشرطِ إسقاطه المعلن — يُحسَب ولا يُقدَّر
-    tabi3 = causes["تابع-غير-معطوف"] + causes["تابع-معطوف"]
+    not_jarr = sum(excluded.values())
+    assert jar_positions + not_jarr == raw_positions, "مصالحةُ التضييق مخروقة"
+    assert excluded_explained + excluded_unexplained == not_jarr
+    assert raw_unexplained == len(unexplained) + excluded_unexplained
+    # ـــــ حكمُ التسجيل المسبق للجولة الثالثة — **يُحسَب على البسط الخام كما سُجِّل**،
+    #      فلا يُرفَع سقوطٌ مثبتٌ بمقامٍ أُعلن بعده (§٨ لا يُمَسّ).
+    tabi3 = raw_causes["تابع-غير-معطوف"] + raw_causes["تابع-معطوف"]
     broke = []
-    if len(unexplained) >= 400: broke.append(f"غيرُ المفسَّر {len(unexplained):,} ≥ 400")
+    if raw_unexplained >= 400: broke.append(f"غيرُ المفسَّر {raw_unexplained:,} ≥ 400")
     if tabi3 > 2 * 300: broke.append(f"بابُ التابع {tabi3:,} > ضِعفِ سقفه (300)")
     verdict = "سقط بشرطه المعلن: " + " · ".join(broke) if broke else "صمد"
+    # ـــــ حكمُ التسجيل المسبق للجولة الرابعة (اتفاقيةُ التضييق) بفواصله الثلاثة
+    share = excluded_explained / not_jarr if not_jarr else 0.0
+    broke4 = []
+    if not_jarr < 150: broke4.append(f"المطروحُ {not_jarr:,} < 150 — اتفاقيةٌ صوريةٌ لا تضييق")
+    if not_jarr > 1200: broke4.append(f"المطروحُ {not_jarr:,} > 1,200 — مِكنسةٌ تبتلع المجرور")
+    if share < 0.25:
+        broke4.append(f"المطروحُ الذي كان مفسَّرًا {share:.1%} < 25% — الاتفاقيةُ مفصَّلةٌ على العتبة")
+    if not (400 <= len(unexplained) <= 560):
+        broke4.append(f"غيرُ المفسَّر بعد التضييق {len(unexplained):,} خارج [400, 560]")
+    verdict4 = "سقط بشرطه المعلن: " + " · ".join(broke4) if broke4 else "صمد"
     # ـــــ ماركوف الـ112 داخل الأقسام الثلاثة (البنية الداخلية)
     prof = defaultdict(lambda: defaultdict(Counter))
     for v in verses:
@@ -367,8 +405,8 @@ def main():
               "فعلية" if cls0 == "فعل" else "اسمية"
         fwd[(cls0, g)] += 1; rev[(typ, cls0)] += 1
 
-    print(f"الشرط المختوم: مواضع الجر = {jar_positions:,} | لا يفسّرها الجدول = {len(unexplained)}"
-          f" → {seal}")
+    print(f"الشرط المختوم: البسطُ المضيَّق = {jar_positions:,} (الخامُ {raw_positions:,} − المطروحُ"
+          f" {not_jarr:,}) | لا يفسّرها الجدول = {len(unexplained)} → {seal}")
     print("الأسباب:", dict(causes.most_common()))
     print("أولى المواضع غير المفسَّرة:", unexplained[:12])
     print("الضمائر المتصلة المجرورة:", dict(pron.most_common(8)))
@@ -376,9 +414,14 @@ def main():
     print("التداخل (الحاكمُ أوّلُ السلسلة):", dict(overlap.most_common(8)))
     print("أجناسُ المتبقّي (مسمّاةً):", dict(residue.most_common()))
     print("أوحديةُ الأبواب (لا يفسّرها سواه):", dict(only.most_common()))
-    print(f"مادّةُ التضييق المعروضة (ليست مواضعَ جرّ): {not_jarr:,}"
-          f" ⟵ البسطُ المرشَّح {jar_positions - not_jarr:,} (عرضٌ موسوم، والحاكمُ {jar_positions:,})")
-    print("حكمُ التسجيل المسبق:", verdict)
+    print(f"التضييق (الجولة الرابعة): المطروحُ {not_jarr:,} = كان مفسَّرًا {excluded_explained:,}"
+          f" ({share:.1%}) + كان ساقطًا {excluded_unexplained:,}")
+    print("أجناسُ المطروح:", dict(excluded.most_common()),
+          "| أجناسٌ خاليةٌ تُسمّى:", [k for k in DROP_KINDS if not excluded[k]] or "لا شيء")
+    print(f"المصالحةُ المحروسة: {jar_positions:,} + {not_jarr:,} = {raw_positions:,}"
+          f" | غيرُ المفسَّر خامًّا {raw_unexplained:,} = {len(unexplained):,} + {excluded_unexplained:,}")
+    print("حكمُ التسجيل المسبق (الجولة الثالثة، على الخام — لا يُمَسّ):", verdict)
+    print("حكمُ التسجيل المسبق (الجولة الرابعة — اتفاقيةُ التضييق):", verdict4)
     for cls, d in profH.items():
         print(f"ماركوف-داخل-{cls}: {d}")
     print("أمامي (صنف-الأول × بوابته):", dict(fwd.most_common(8)))
@@ -388,9 +431,12 @@ def main():
                             causes=dict(causes), pronoun_genitive=dict(pron),
                             gates_alone=dict(alone), overlap=dict(overlap),
                             residue_kinds=dict(residue), gate_only=dict(only),
-                            not_jarr_material=not_jarr,
-                            narrowed_candidate=jar_positions - not_jarr,
-                            preregistration=verdict),
+                            raw_positions=raw_positions, raw_unexplained=raw_unexplained,
+                            not_jarr_material=not_jarr, excluded_kinds=dict(excluded),
+                            excluded_explained=excluded_explained,
+                            excluded_unexplained=excluded_unexplained,
+                            narrowed_candidate=jar_positions,
+                            preregistration=verdict, preregistration_r4=verdict4),
                 ماركوف_الأقسام=profH)
 
 if __name__ == "__main__":

@@ -285,10 +285,23 @@ jobs:
               sys.exit(1)
           # حكمُ التسجيل المسبق يُعرَض بنصّه ولا يُخفى — والسقوطُ المسمّى نتيجةٌ تُودَع.
           print(f"حكمُ التسجيل المسبق للجولة الثالثة: {S['preregistration']}")
-          if S["narrowed_candidate"] + S["not_jarr_material"] != S["jar_positions"]:
-              print("::error::مصالحةُ مادّةِ التضييق خُولفت — صريخ")
+          print(f"حكمُ التسجيل المسبق للجولة الرابعة: {S['preregistration_r4']}")
+          # §٨ لا يُرفَع بمقامٍ أُعلن بعده: حكمُ الثالثة محسوبٌ على الخام ويبقى ساقطًا.
+          if not S["preregistration"].startswith("سقط"):
+              print("::error::حكمُ الجولة الثالثة رُفع عن سقوطه — صريخ")
               sys.exit(1)
-          print("الأبوابُ التسعةُ حيّةٌ معدودةٌ مستقلّةً، والبسطُ ومتبقّيه مُصالَحان ✓")
+          if S["narrowed_candidate"] + S["not_jarr_material"] != S["raw_positions"]:
+              print("::error::مصالحةُ التضييق خُولفت (مضيَّق + مطروح ≠ خام) — صريخ")
+              sys.exit(1)
+          if S["excluded_explained"] + S["excluded_unexplained"] != S["not_jarr_material"] \
+             or S["unexplained"] + S["excluded_unexplained"] != S["raw_unexplained"]:
+              print("::error::مصالحةُ صنفَي المطروح خُولفت — صريخ")
+              sys.exit(1)
+          # شرطُ النزاهة المسجَّل: اتفاقيةُ التضييق لا تكون مفصَّلةً على العتبة.
+          if S["excluded_explained"] < 0.25 * S["not_jarr_material"]:
+              print("::error::المطروحُ الذي كان مفسَّرًا < 25% — اتفاقيةٌ مفصَّلةٌ على العتبة — صريخ")
+              sys.exit(1)
+          print("الأبوابُ التسعةُ حيّةٌ معدودةٌ مستقلّةً، والبسطان والمتبقّي مُصالَحةٌ ✓")
           PY
 
       - name: إيداع تقرير القياس
