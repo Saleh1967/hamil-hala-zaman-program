@@ -156,6 +156,28 @@ jobs:
             python maqayis_layer.py | tee -a measurement.txt
           fi
 
+      - name: المرحلة ٢ — ختمُ العثماني، ومصادمة waqf_v0.json
+        run: |
+          set -eu
+          ./fetch_uthmani.sh
+          SHA="$(sed -n 's/^UTHMANI_SHA256 = "\([0-9a-f]\{64\}\)".*/\1/p' waqf_layer.py | head -n 1)"
+          GOT="$(sha256sum uthmani.txt | cut -d' ' -f1)"
+          if [ "$GOT" != "$SHA" ]; then
+            echo "::error::العثمانيّ المودَع خالف بصمته ($GOT) — لا قياس حدودٍ على بديلٍ صامت"
+            exit 1
+          fi
+          echo "النسخة العثمانية بالبصمة ✓ ($SHA)"
+          python waqf_layer.py --json /tmp/waqf.json | tee -a measurement.txt
+          python - <<'PY'
+          import json, sys
+          a = json.load(open("waqf_v0.json", encoding="utf-8"))
+          b = json.load(open("/tmp/waqf.json", encoding="utf-8"))
+          if a != b:
+              print("::error::waqf_v0.json المودَع خالف ما يُنتجه المحرّك — صريخ")
+              sys.exit(1)
+          print("waqf_v0.json مُعاد الإنتاج بفارق صفر ✓")
+          PY
+
       - name: إيداع تقرير القياس
         if: always()
         uses: actions/upload-artifact@v4
