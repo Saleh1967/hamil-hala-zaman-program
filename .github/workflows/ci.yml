@@ -256,6 +256,118 @@ jobs:
           print("مصالحةُ الشرط محروسة، وصفُّ التاء وسمُ وضعٍ بالاسم ✓")
           PY
 
+      - name: بوّابةُ الجرّ — الأبوابُ المُحياةُ والحدُّ المختوم، ومصادمة jar_gate.json
+        run: |
+          set -eu
+          python jar_gate.py --json /tmp/jar_gate.json | tee -a measurement.txt
+          python - <<'PY'
+          import json, sys
+          a = json.load(open("jar_gate.json", encoding="utf-8"))
+          b = json.load(open("/tmp/jar_gate.json", encoding="utf-8"))
+          if a != b:
+              print("::error::jar_gate.json المودَع خالف ما يُنتجه المحرّك — صريخ")
+              sys.exit(1)
+          print("jar_gate.json مُعاد الإنتاج بفارق صفر ✓")
+          S = a["بوابة_الجر"]["الشرط"]
+          # لا بابَ ميّتًا بعد اليوم: كلُّ مفسّرٍ معلنٍ يُعَدّ مستقلًّا، وصفرُه يعني كودًا ميّتًا.
+          dead = [k for k, n in S["gates_alone"].items() if n == 0]
+          missing = [k for k in ("جار-ملتصق", "جار-ملتصق(كاف-مفتوحة)", "حرف-جر-سابق", "إضافة",
+                                 "إضافة-مشتبهة", "تابع-معطوف", "تابع-غير-معطوف",
+                                 "ضمير-متصل", "ممنوع-من-الصرف",
+                                 "تابع-لمقصور (جرٌّ مقدَّر)",
+                                 "تابع-لمجرورٍ-بالياء (مثنى/ج.م.سالم)",
+                                 "تابع-معطوف-بمنفصل",
+                                 "تابع-عابرٌ-لحدّ-الآية") if k not in S["gates_alone"]]
+          if dead or missing:
+              print(f"::error::أبوابٌ ميتةٌ عادت ({dead + missing}) — صريخ")
+              sys.exit(1)
+          if sum(S["causes"].values()) != S["jar_positions"]:
+              print("::error::مصالحةُ البسط خُولفت — صريخ")
+              sys.exit(1)
+          if sum(S["residue_kinds"].values()) != S["unexplained"]:
+              print("::error::أجناسُ المتبقّي لا تُصالِح عدَّ السقوط — صريخ")
+              sys.exit(1)
+          # حكمُ التسجيل المسبق يُعرَض بنصّه ولا يُخفى — والسقوطُ المسمّى نتيجةٌ تُودَع.
+          print(f"حكمُ التسجيل المسبق للجولة الثالثة: {S['preregistration']}")
+          print(f"حكمُ التسجيل المسبق للجولة الرابعة: {S['preregistration_r4']}")
+          # §٨ لا يُرفَع بمقامٍ أُعلن بعده: حكمُ الثالثة محسوبٌ على الخام ويبقى ساقطًا.
+          if not S["preregistration"].startswith("سقط"):
+              print("::error::حكمُ الجولة الثالثة رُفع عن سقوطه — صريخ")
+              sys.exit(1)
+          if S["narrowed_candidate"] + S["not_jarr_material"] != S["raw_positions"]:
+              print("::error::مصالحةُ التضييق خُولفت (مضيَّق + مطروح ≠ خام) — صريخ")
+              sys.exit(1)
+          if S["excluded_explained"] + S["excluded_unexplained"] != S["not_jarr_material"] \
+             or S["unexplained"] + S["excluded_unexplained"] != S["raw_unexplained"]:
+              print("::error::مصالحةُ صنفَي المطروح خُولفت — صريخ")
+              sys.exit(1)
+          # شرطُ النزاهة المسجَّل: اتفاقيةُ التضييق لا تكون مفصَّلةً على العتبة.
+          if S["excluded_explained"] < 0.25 * S["not_jarr_material"]:
+              print("::error::المطروحُ الذي كان مفسَّرًا < 25% — اتفاقيةٌ مفصَّلةٌ على العتبة — صريخ")
+              sys.exit(1)
+          print(f"حكمُ التسجيل المسبق للجولة الخامسة: {S['preregistration_r5']}")
+          # الأحكامُ المجمَّدة لا تتبدّل بجولةٍ تالية — الحكمُ يُختَم يومَ صدوره بأرقامه.
+          if "656" not in S["preregistration"] or "1,065" not in S["preregistration"]:
+              print("::error::حكمُ §٨ المجمَّد تبدّلت أرقامُه — إعادةُ كتابةٍ للتاريخ — صريخ")
+              sys.exit(1)
+          if "506" not in S["preregistration_r4"] or "538" not in S["preregistration_r4"]:
+              print("::error::حكمُ §٩ المجمَّد تبدّلت أرقامُه — صريخ")
+              sys.exit(1)
+          # كاشفُ كسر الوصل لا يكون مفصَّلًا على المتبقّي: نسبةُ «كان مفسَّرًا» فيه ≥ 40%.
+          if S["wasl_kasra"] and S["wasl_kasra_explained"] < 0.40 * S["wasl_kasra"]:
+              print("::error::كاشفُ كسر الوصل مفصَّلٌ على المتبقّي (< 40%) — صريخ")
+              sys.exit(1)
+          print(f"حكمُ التسجيل المسبق للجولة السادسة: {S['preregistration_r6']}")
+          if "319" not in S["preregistration_r5"] or "384" not in S["preregistration_r5"]:
+              print("::error::حكمُ §١٠ المجمَّد تبدّلت أرقامُه — صريخ")
+              sys.exit(1)
+          # الجولةُ السادسة منعت المِقَصَّ **على نفسها**، لا على ما بعدها. فحارسُها الحيُّ
+          # (المطروحُ = 709) رُفع في الجولة السابعة **معلنًا** لأنّها تطرح جنسًا سابعًا
+          # بحقٍّ مسجَّل؛ ومحلُّه حارسُ النصّ المجمَّد أدناه: رقمُ 709 محفوظٌ في حكم §١١
+          # فلا يضيع. ورفعُ حارسٍ يُكتَب ولا يُسكَت عنه.
+          if "709" not in S["preregistration_r6"] or "325" not in S["preregistration_r6"]:
+              print("::error::حكمُ §١١ المجمَّد تبدّلت أرقامُه — صريخ")
+              sys.exit(1)
+          # كلفةُ الإصلاح ⓪ رقمٌ مسجَّلٌ مسبقًا: تبدُّلُها صامتةً يُخفي مسًّا بالمحمول.
+          if S["repair_cost_r7"] != 26:
+              print("::error::كلفةُ إصلاح is_majrur تبدّلت عن 26 — صريخ")
+              sys.exit(1)
+          if S["nida_mudaf"] and S["nida_mudaf_explained"] < 0.50 * S["nida_mudaf"]:
+              print("::error::طرحُ المنادى المضاف مفصَّلٌ على المتبقّي (< 50%) — صريخ")
+              sys.exit(1)
+          print(f"حكمُ التسجيل المسبق للجولة السابعة: {S['preregistration_r7']}")
+          if S["residue_kinds"].get("غيرُ ذلك", 0) >= 25:
+              print("::error::«غيرُ ذلك» في المتبقّي ≥ 25 — تبويبٌ ناقص — صريخ")
+              sys.exit(1)
+          # ═══ تفويضُ صاحب المستودع: القناةُ محروسةٌ بنفسها ═════════════════════════
+          # التفويضُ قُبل قناةً لا يدًا، فالقناةُ تُحرَس: رفعٌ بلا قيدٍ في السجلّ رفعٌ صامت،
+          # ورفعٌ بلا بديلٍ مصرَّحٍ به رفعٌ أعمى، وكلاهما يُبطِل معنى الحارس.
+          if not S.get("delegation"):
+              print("::error::نصُّ التفويض غائبٌ عن الوديعة — رفعٌ بلا سند — صريخ")
+              sys.exit(1)
+          for g in S["lifted_guards"]:
+              if not g.get("البديل") or not g.get("بتفويض"):
+                  print(f"::error::حارسٌ رُفع بلا بديلٍ أو بلا مفوِّضٍ مسمًّى: {g} — صريخ")
+                  sys.exit(1)
+          print(f"حرّاسٌ مرفوعةٌ بالسجلّ: {len(S['lifted_guards'])} "
+                f"({' | '.join(g['الحارس'] for g in S['lifted_guards'])})")
+          # حدُّ التفويض: حارسُ السياسة يُرفَع، وحارسُ التاريخ لا. فالحكمُ المختومُ الساقط
+          # يبقى ساقطًا مهما رُفع من حرّاس — ورفعُه محوُ قياسٍ لا رفعُ حارس.
+          for key in ("preregistration", "preregistration_r5",
+                      "preregistration_r6", "preregistration_r7"):
+              if not S[key].startswith("سقط"):
+                  print(f"::error::حكمٌ مختومٌ ساقطٌ انقلب إلى صمود ({key}) — "
+                        "هذا محوُ قياسٍ لا رفعُ حارس — صريخ")
+                  sys.exit(1)
+          # عيبُ الخانة (ثلاثُ جولاتٍ سقطت بالتوقيع لا بالكود): كلُّ فاصلٍ يسمّي مقياسه.
+          for b in S["signed_bounds"]:
+              if not b.get("المقياس"):
+                  print(f"::error::فاصلٌ موقَّعٌ بلا مقياسٍ مسمًّى: {b} — صريخ")
+                  sys.exit(1)
+          print(f"فواصلُ موقَّعةٌ بمقاييسها: {len(S['signed_bounds'])} ✓")
+          print("الأبوابُ الثلاثةَ عشرَ حيّةٌ معدودةٌ مستقلّةً، والبسطان والمتبقّي مُصالَحةٌ ✓")
+          PY
+
       - name: إيداع تقرير القياس
         if: always()
         uses: actions/upload-artifact@v4
