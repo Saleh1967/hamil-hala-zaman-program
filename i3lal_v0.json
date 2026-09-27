@@ -1,6 +1,55 @@
 {
   "الإعلال_v0": {
-    "cost_bits": 736,
+    "constants_guard": {
+      "batch_quartet": [
+        254,
+        50,
+        45,
+        335
+      ],
+      "batch_quartet_formula": "⌊log₂(3ⁿ/4)⌋",
+      "checks": [
+        {
+          "deposited": [
+            254,
+            49,
+            44,
+            335
+          ],
+          "formula": "⌊log₂S(n,3)⌋",
+          "holds": true,
+          "rebuilt": [
+            254,
+            49,
+            44,
+            335
+          ]
+        },
+        {
+          "deposited": [
+            254,
+            50,
+            45,
+            335
+          ],
+          "formula": "⌊log₂(3ⁿ/4)⌋",
+          "holds": true,
+          "rebuilt": [
+            254,
+            50,
+            45,
+            335
+          ]
+        }
+      ],
+      "convention": "المرجعُ الحاكم: log₂S(n,3) بالدالّة المودَعة (induction_engine.stirling) لا بتقريب. والسريرُ عرضٌ لا حكم — ولا يُنقَل سريرٌ بلا وسمِ صيغته.",
+      "floor_status": "عرضٌ لا حكم — موسومٌ بصيغته في كلِّ موضع",
+      "governing_formula": "log₂S(n,3)",
+      "quartets_distinct": true,
+      "untagged_numbers": 0,
+      "verdict": "اتفاقيةٌ واحدةٌ معلنة: الرباعيُّ الذي تحقّق في الدفعة (254 · 50 · 45 · 335) هو ⌊log₂(3ⁿ/4)⌋، وسريرُ الاتفاقية الحاكمة (254 · 49 · 44 · 335) غيرُه في موضعين — فلا يُنقَل أحدُهما مكانَ الآخر."
+    },
+    "cost_bits": 768,
     "debts": {
       "qac_fork": {
         "missing": "ختمٌ معلن (sha256 · طول · مصدرٌ · مَن صحّح الجذورَ وبأيِّ ضابط)",
@@ -54,47 +103,56 @@
     },
     "stirling_audit": {
       "constant_overcharge_bits": 0.585,
+      "convention": "المرجعُ الحاكم: log₂S(n,3) بالدالّة المودَعة (induction_engine.stirling) لا بتقريب. والسريرُ عرضٌ لا حكم — ولا يُنقَل سريرٌ بلا وسمِ صيغته.",
       "floors_shifted": 2,
       "rows": [
         {
           "claimed_bits": 254.8,
           "exact_bits": 254.179,
           "exact_floor": 254,
+          "exact_floor_formula": "⌊log₂S(n,3)⌋",
           "formula_3n_over_4": 254.7639,
           "k": 3,
           "n": 162,
           "overcharge_bits": 0.585,
-          "their_floor": 254
+          "their_floor": 254,
+          "their_floor_formula": "⌊log₂(3ⁿ/4)⌋"
         },
         {
           "claimed_bits": 50.3,
           "exact_bits": 49.7188,
           "exact_floor": 49,
+          "exact_floor_formula": "⌊log₂S(n,3)⌋",
           "formula_3n_over_4": 50.3038,
           "k": 3,
           "n": 33,
           "overcharge_bits": 0.585,
-          "their_floor": 50
+          "their_floor": 50,
+          "their_floor_formula": "⌊log₂(3ⁿ/4)⌋"
         },
         {
           "claimed_bits": 45.5,
           "exact_bits": 44.9639,
           "exact_floor": 44,
+          "exact_floor_formula": "⌊log₂S(n,3)⌋",
           "formula_3n_over_4": 45.5489,
           "k": 3,
           "n": 30,
           "overcharge_bits": 0.585,
-          "their_floor": 45
+          "their_floor": 45,
+          "their_floor_formula": "⌊log₂(3ⁿ/4)⌋"
         },
         {
           "claimed_bits": 335.6,
           "exact_bits": 335.0121,
           "exact_floor": 335,
+          "exact_floor_formula": "⌊log₂S(n,3)⌋",
           "formula_3n_over_4": 335.597,
           "k": 3,
           "n": 213,
           "overcharge_bits": 0.585,
-          "their_floor": 335
+          "their_floor": 335,
+          "their_floor_formula": "⌊log₂(3ⁿ/4)⌋"
         }
       ],
       "verdict": "نقضٌ معلن: الميزانُ ليس سترلنج بل 3ⁿ/4 — زيادةٌ ثابتةٌ log₂(3/2) على كلِّ رقم، تُزيح سريرين من أربعة. «أربعةٌ أربعة» لا تصمد."

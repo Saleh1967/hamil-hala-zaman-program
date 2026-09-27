@@ -206,7 +206,7 @@ jobs:
           print("field112_laws.json مُعاد الإنتاج بفارق صفر ✓")
           PY
 
-      - name: الإعلال — تحقّقُ سترلنج وحارسا التيار، ومصادمة i3lal_v0.json
+      - name: الإعلال — سترلنج بحارس ثوابته وحارسا التيار، ومصادمة i3lal_v0.json
         run: |
           set -eu
           python i3lal_layer.py --json /tmp/i3lal.json | tee -a measurement.txt
@@ -218,6 +218,18 @@ jobs:
               print("::error::i3lal_v0.json المودَع خالف ما يُنتجه المحرّك — صريخ")
               sys.exit(1)
           print("i3lal_v0.json مُعاد الإنتاج بفارق صفر ✓")
+          G = a["الإعلال_v0"]["constants_guard"]
+          if G["governing_formula"] != "log₂S(n,3)" or not G["convention"]:
+              print("::error::حارسُ الثوابت بلا اتفاقيةٍ معلنة — صريخ")
+              sys.exit(1)
+          if not all(c["holds"] for c in G["checks"]) or not G["quartets_distinct"]:
+              print("::error::رباعيُّ أَسِرَّةٍ خالف صيغتَه المعلنة — صريخ")
+              sys.exit(1)
+          if G["batch_quartet"] != [254, 50, 45, 335] \
+             or G["batch_quartet_formula"] != "⌊log₂(3ⁿ/4)⌋":
+              print("::error::رباعيُّ الدفعة قُرئ بغير صيغته — صيغتان صامتتان: صريخ")
+              sys.exit(1)
+          print("حارسُ الثوابت: اتفاقيةٌ واحدةٌ معلنة وكلُّ سريرٍ موسومٌ بصيغته ✓")
           PY
 
       - name: إيداع تقرير القياس

@@ -29,6 +29,19 @@ FIELD112 = os.path.join(ROOT, "field112_laws.json")          # وديعةٌ مص
 MADD = ("ا", "و", "ي", "ى")                                  # حروفُ المدّ في الرسم
 # ميزانُهم كما ورد: (n, k, الرقمُ المنقول بتًّا) — يُعادُ حسابُه لا يُصدَّق
 CLAIMED = ((162, 3, 254.8), (33, 3, 50.3), (30, 3, 45.5), (213, 3, 335.6))
+# ---------------------------------------------- اتفاقيةُ سترلنج المعتمدة (واحدةٌ معلنة)
+# الحاكمُ هو **القيمةُ الدقيقة** log₂S(n,3) من الدالّة المودَعة وحدَها. والسريرُ (floor)
+# **عرضٌ لا حكم**، ولا يُذكَر سريرٌ إلّا موسومًا بصيغته. فالرباعيُّ الجاري في الدفعة
+# 254/50/45/335 هو ⌊log₂(3ⁿ/4)⌋ — لا ⌊log₂S(n,3)⌋ (وذاك 254/49/44/335). صيغتان
+# صامتتان ممنوعتان: كلُّ رقمٍ يحمل اسمَ صيغته، والحارسُ يصرخ إن اختلطتا.
+STIRLING_CONVENTION = (
+    "المرجعُ الحاكم: log₂S(n,3) بالدالّة المودَعة (induction_engine.stirling) لا بتقريب. "
+    "والسريرُ عرضٌ لا حكم — ولا يُنقَل سريرٌ بلا وسمِ صيغته."
+)
+FLOORS_BY_FORMULA = {                 # كلُّ رباعيٍّ موسومٌ بصيغته، لا رباعيَّ بلا اسم
+    "⌊log₂S(n,3)⌋": (254, 49, 44, 335),        # سريرُ الاتفاقية الحاكمة
+    "⌊log₂(3ⁿ/4)⌋": (254, 50, 45, 335),        # سريرُ الدفعة — صيغتُهم لا صيغتُنا
+}
 # أفعالُ عائلة «دعو» بصورتيها — جدولٌ مسمّى مُسعَّر، لا استنباطَ جذرٍ ولا معجم
 NAQIS_LONG = ("يدعو", "تدعو", "ندعو", "أدعو")                # الصورةُ الراجعة (بحرف المدّ)
 NAQIS_SHORT = ("يدع", "تدع", "ندع", "ادع")                   # الصورةُ المقصورة (بحذفه)
@@ -66,12 +79,41 @@ def stirling_balance():
         shifted += int(exact) != int(theirs)
         rows.append(dict(n=n, k=k, claimed_bits=claimed,
                          exact_bits=round(exact, 4), exact_floor=int(exact),
+                         exact_floor_formula="⌊log₂S(n,3)⌋",
                          formula_3n_over_4=round(theirs, 4), their_floor=int(theirs),
+                         their_floor_formula="⌊log₂(3ⁿ/4)⌋",
                          overcharge_bits=round(theirs - exact, 4)))
     return dict(rows=rows, constant_overcharge_bits=round(log2(1.5), 4),
-                floors_shifted=shifted,
+                floors_shifted=shifted, convention=STIRLING_CONVENTION,
                 verdict="نقضٌ معلن: الميزانُ ليس سترلنج بل 3ⁿ/4 — زيادةٌ ثابتةٌ log₂(3/2) "
                         "على كلِّ رقم، تُزيح سريرين من أربعة. «أربعةٌ أربعة» لا تصمد.")
+
+
+# ------------------------------------------------------- حارسُ الثوابت (اتفاقيةٌ واحدة)
+def constants_guard(ST):
+    """يُعيد بناءَ كلِّ رباعيِّ أَسِرَّةٍ من الدالّة المودَعة، ويصادمه بالمودَع في
+    `FLOORS_BY_FORMULA` **باسم صيغته**. غرضُه واحد: أن لا يُقرأ الرباعيُّ 254/50/45/335
+    يومًا على أنّه سريرُ سترلنج — فهو سريرُ 3ⁿ/4. صيغتان صامتتان ممنوعتان."""
+    rebuilt = {
+        "⌊log₂S(n,3)⌋": tuple(r["exact_floor"] for r in ST["rows"]),
+        "⌊log₂(3ⁿ/4)⌋": tuple(r["their_floor"] for r in ST["rows"]),
+    }
+    checks = [dict(formula=f, deposited=list(FLOORS_BY_FORMULA[f]), rebuilt=list(v),
+                   holds=FLOORS_BY_FORMULA[f] == v) for f, v in rebuilt.items()]
+    batch = rebuilt["⌊log₂(3ⁿ/4)⌋"]
+    return dict(
+        convention=STIRLING_CONVENTION,
+        governing_formula="log₂S(n,3)",
+        floor_status="عرضٌ لا حكم — موسومٌ بصيغته في كلِّ موضع",
+        checks=checks,
+        batch_quartet=list(batch),
+        batch_quartet_formula="⌊log₂(3ⁿ/4)⌋",
+        quartets_distinct=rebuilt["⌊log₂S(n,3)⌋"] != rebuilt["⌊log₂(3ⁿ/4)⌋"],
+        untagged_numbers=0,
+        verdict="اتفاقيةٌ واحدةٌ معلنة: الرباعيُّ الذي تحقّق في الدفعة "
+                f"({' · '.join(map(str, batch))}) هو ⌊log₂(3ⁿ/4)⌋، وسريرُ الاتفاقية "
+                f"الحاكمة ({' · '.join(map(str, rebuilt['⌊log₂S(n,3)⌋']))}) غيرُه في "
+                "موضعين — فلا يُنقَل أحدُهما مكانَ الآخر.")
 
 
 # --------------------------------------------- ٢+٣) حارسا التيار والشاهدُ الثالث
@@ -199,20 +241,22 @@ def debts():
 def run(path=CORPUS):
     verses = parse_verses(path)
     ST = stirling_balance()
+    CG = constants_guard(ST)
     W = wasl_stream(verses)
     N = naqis_paradigm(verses)
     E = named_errors(verses)
     S = signature(verses, W)
     D = debts()
-    named = ["ميزان سترلنج (نقضٌ معلن)", "التقصير — قانونٌ صوتيّ", "بقاء الحرف — وسمُ وضع",
+    named = ["ميزان سترلنج (نقضٌ معلن)", "اتفاقيةُ سترلنج المعتمدة (السريرُ موسومٌ بصيغته)",
+             "التقصير — قانونٌ صوتيّ", "بقاء الحرف — وسمُ وضع",
              "الشاهد الثالث (مدٌّ قبل رأس وصل)", "رأس الوصل — ألفٌ عارية",
              "و-وقف/وصل — الحكمُ الموقَّع", "قسمةٌ بالموضع لا باختيارٍ شامل"] \
         + list(NAQIS_LONG) + list(NAQIS_SHORT) + list(NAMED_ERRORS) + list(PREFIX)
     R = dict(
         seals=dict(mujammad_sha256_prefix="8b387ea8", words=sum(len(w) for w in verses),
                    verses=len(verses)),
-        stirling_audit=ST, wasl_stream=W, naqis_paradigm=N, named_errors=E,
-        waqf_wasl_signature=S, debts=D,
+        stirling_audit=ST, constants_guard=CG, wasl_stream=W, naqis_paradigm=N,
+        named_errors=E, waqf_wasl_signature=S, debts=D,
         cost_bits=len(named) * 8 * 4,     # المسمَّى وحدَه يُسعَّر؛ لا جدولَ هيئاتٍ مودَعًا
     )
     # ---------- أَسِرَّةُ الصريخ: ما لا يصمد يُسقِط الطبقةَ لا يُهمَس به ----------
@@ -220,6 +264,11 @@ def run(path=CORPUS):
                for r in ST["rows"]), "زيادةُ ميزانهم ليست ثابتةً — صريخ"
     assert ST["floors_shifted"] == 2, \
         f"عددُ الأَسِرَّة المُزاحة تغيّر: {ST['floors_shifted']} — صريخ"
+    assert all(c["holds"] for c in CG["checks"]) and CG["quartets_distinct"], \
+        "حارسُ الثوابت: رباعيُّ أَسِرَّةٍ خالف صيغتَه المعلنة — صريخ"
+    assert tuple(CG["batch_quartet"]) == FLOORS_BY_FORMULA["⌊log₂(3ⁿ/4)⌋"] \
+        != FLOORS_BY_FORMULA["⌊log₂S(n,3)⌋"], \
+        "رباعيُّ الدفعة 254/50/45/335 قُرئ سريرَ سترلنج — صيغتان صامتتان: صريخ"
     assert W["rasm_retained"] == W["sites"] and W["rasm_deleted"] == 0, \
         "دعوى بقاء الرسم خُولفت — صريخ"
     assert N["short_total"] > N["long_total"], \
@@ -245,6 +294,12 @@ def main(argv=None):
               f"(سريرٌ {r['their_floor']}) · زيادةٌ {r['overcharge_bits']}")
     print(f"    زيادةٌ ثابتة {ST['constant_overcharge_bits']} بتٍّ · أَسِرَّةٌ مُزاحة "
           f"{ST['floors_shifted']}/4 — {ST['verdict']}")
+    CG = R["constants_guard"]
+    print(f"حارسُ الثوابت — اتفاقيةٌ واحدة معلنة: {CG['convention']}")
+    for c in CG["checks"]:
+        print(f"    {c['formula']}: مودَعٌ {c['deposited']} · مُعادُ البناء {c['rebuilt']} · "
+              f"صمد {c['holds']}")
+    print(f"    {CG['verdict']}")
     print(f"حارسا التيار على الحقل 112: مواضعُ المدّ قبل رأس الوصل {W['sites']:,} في "
           f"{W['forms']:,} هيئة (" + " · ".join(f"{k}={v:,}" for k, v in W["by_letter"].items())
           + ")")
