@@ -119,6 +119,51 @@ def hit(word, layer, nz=False):
     return (first[0], first[1], k) if first else None
 
 
+# ---------- الطبقتان المسحوبتان: تشخيصٌ معدود، لا تغطيةٌ تُحتسب ----------
+# لا تدخلان ⚑ ولا الكلفة. غايتُهما وحدَها إعادةُ إنتاج ميكانيزم التقدير المسحوب (55.72%):
+#   س١-حر   : الحركاتُ مُهمَلة، والشدّةُ تُفكّ حرفين (R5 الموروث)، وف/ع/ل بدائلُ حرّةٌ مستقلّة
+#             ⟹ II يصير «أيَّ رباعيّ»، وI «أيَّ ثلاثيّ» — وهمُ التغطية.
+#   س٢-مربوط: س١ نفسُها بقيدٍ واحد: تكرارُ الموضع يُلزم تكرارَ الحرف (ع=ع · ل=ل).
+# الفارقُ بينهما هو الأشباحُ المقتلَعة بالربط وحده — معدودةً لا مرويّة.
+DIAG = ("س١-حر", "س٢-مربوط")
+
+
+def expand_shadda(word):
+    """فكُّ الشدّة حرفين — R5 الموروث بعينه، مطبَّقًا على الكلمة والقالب سواء."""
+    out = []
+    for ch, _, dbl in word:
+        out.append(ch)
+        if dbl:
+            out.append(ch)
+    return out
+
+
+TMPL_FREE = {n: expand_shadda(t) for n, t in TMPL.items()}
+assert "".join(TMPL_FREE["II"]) == "فععل" and len(TMPL_FREE["II"]) == 4, \
+    "فكُّ شدّة القالب II خُولف — صريخ"
+
+
+def diag_match(letters, tmpl, link):
+    if len(letters) != len(tmpl):
+        return False
+    bind = {}
+    for a, t in zip(letters, tmpl):
+        if t in SLOTS:
+            if link:
+                if bind.setdefault(t, a) != a:
+                    return False
+        elif a != t:
+            return False
+    return True
+
+
+def diag(word, link):
+    """المخرَج (الوزن الأول، عددُ القوالب المطابِقة) أو None — الجمعُ والوحدةُ كلاهما معروض."""
+    s = expand_shadda(word)
+    hits = [n for n in ORDER if diag_match(s, TMPL_FREE[n], link)]
+    return (hits[0], len(hits)) if hits else None
+
+
 def run(path=CORPUS):
     from dictionary_engine import classify_word, skel_of      # استيرادٌ متأخّر: لا حلقةَ استيراد
     verses = parse_verses(path)
@@ -139,6 +184,9 @@ def run(path=CORPUS):
     chance = {L: 0 for L in LAYERS}                           # موجب الصدفة المعدود
     weak = {L: 0 for L in LAYERS}                             # سالب الضعف: ربحُ التسوية المعلنة
     shadda_hits = 0                                           # ما تغطّيه ح-شدة أصلًا — لا ازدواج
+    dcov = {D: 0 for D in DIAG}                               # الطبقتان المسحوبتان — تشخيصٌ لا تغطية
+    dsum = {D: 0 for D in DIAG}                               # مجموعُ المطابقات لا الكلمات (قوالبُ تتزاحم)
+    dw = {D: Counter() for D in DIAG}
     for va, vb in zip(verses, rich):
         for wa, wb in zip(va, vb):
             if classify_word(wa, sup)[0] not in ("ث", "ع"):
@@ -161,6 +209,12 @@ def run(path=CORPUS):
                 widest = L
             if widest is not None and any(d for _, _, d in wb):
                 shadda_hits += 1
+            for D, link in zip(DIAG, (False, True)):
+                g = diag(wb, link)
+                if g is not None:
+                    dcov[D] += 1
+                    dsum[D] += g[1]
+                    dw[D][g[0]] += 1
     bits = sum(len(t) for t in T.values()) * 8 + len(PREFIX) * 8 * 4
     return dict(
         pending=pending,
@@ -174,6 +228,12 @@ def run(path=CORPUS):
         matched_widest_no_shadda=cov[LAYERS[-1]] - shadda_hits,
         shadda_overlap=shadda_hits,
         roots_widest=sorted(roots[LAYERS[-1]]),
+        retracted=dict(
+            note="طبقتان تشخيصيّتان مسحوبتان — لا تُحتسبان تغطيةً ولا تمسّان ⚑ ولا الكلفة",
+            layers={D: dict(words=dcov[D], pct=round(dcov[D] / pending * 100, 2),
+                            template_hits=dsum[D], weights=dict(dw[D].most_common()))
+                    for D in DIAG},
+            ghosts_killed_by_binding=dsum[DIAG[0]] - dsum[DIAG[1]]),
         table_cost_bits=bits)
 
 
@@ -193,6 +253,13 @@ def main(argv=None):
     print(f"الأوسع ({R['widest']}): {R['matched_widest']:,} — منها {R['shadda_overlap']:,} تغطّيها ح-شدة، "
           f"فالربح الصافي على ⚑ = {R['matched_widest_no_shadda']:,}")
     print(f"كلفة جدول الأوزان معلنة: {R['table_cost_bits']} بت — تُخصم من أي ربحٍ يُبنى عليها")
+    RT = R["retracted"]
+    print("الطبقتان المسحوبتان (تشخيصٌ معدود — لا تغطية):")
+    for D in DIAG:
+        d = RT["layers"][D]
+        print(f"  {D}: كلمات {d['words']:,} ({d['pct']}%) · مطابقاتُ قوالبَ {d['template_hits']:,} | "
+              + " · ".join(f"{k}={v:,}" for k, v in list(d["weights"].items())[:4]))
+    print(f"  أشباحٌ يقتلعها ربطُ التضاعف وحده: {RT['ghosts_killed_by_binding']:,} مطابقة")
     if a.json:
         json.dump({"الأوزان_v0": R}, open(a.json, "w", encoding="utf-8"),
                   ensure_ascii=False, indent=2, sort_keys=True)

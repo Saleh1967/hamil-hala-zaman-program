@@ -70,6 +70,50 @@
     "matched_widest": 4043,
     "matched_widest_no_shadda": 3098,
     "pending": 52331,
+    "retracted": {
+      "ghosts_killed_by_binding": 13728,
+      "layers": {
+        "س١-حر": {
+          "pct": 49.02,
+          "template_hits": 27368,
+          "weights": {
+            "I": 10454,
+            "II": 10747,
+            "IX": 3518,
+            "V": 306,
+            "VII": 4,
+            "VIII": 92,
+            "X": 29,
+            "XI": 34,
+            "XII": 50,
+            "XIV": 417
+          },
+          "words": 25651
+        },
+        "س٢-مربوط": {
+          "pct": 25.82,
+          "template_hits": 13640,
+          "weights": {
+            "I": 10454,
+            "II": 1136,
+            "III": 366,
+            "IV": 1084,
+            "IX": 199,
+            "V": 97,
+            "VI": 30,
+            "VII": 4,
+            "VIII": 92,
+            "X": 29,
+            "XI": 2,
+            "XIII": 5,
+            "XIV": 8,
+            "XV": 4
+          },
+          "words": 13510
+        }
+      },
+      "note": "طبقتان تشخيصيّتان مسحوبتان — لا تُحتسبان تغطيةً ولا تمسّان ⚑ ولا الكلفة"
+    },
     "roots_widest": [
       "أبت",
       "أبق",
