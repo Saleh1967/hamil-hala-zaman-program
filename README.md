@@ -14,3 +14,4 @@ python algebra_engine.py --json=baselines/results-measured.json --require-corpus
 - المتطلّب الوحيد: `numpy`.
 - `fetch_uthmani.sh` يجلب **النسخة العثمانية** (`quran-uthmani.txt`) إلى `uthmani.txt` — المقام الثاني لطبقة حدود الجملة (المرحلة ٢). بايتاتُها مودَعةٌ بختمها (`UTHMANI.md`)، والبصمةُ تُقرأ من `waqf_layer.py` نفسه.
 - `python waqf_layer.py --json waqf_v0.json`: المقارنةُ المقيسة لمقترحات حدّ الجملة الثلاثة، وطبقةُ الوقف بمواضعها، والمواءمةُ بين المقامين، والتصادم — `PHASE2-STATUS.md`.
+- `python harakat_layer.py --json harakat_v0.json`: دفعةُ الحركات — الحارسان الصوتيان assertين، وقاعدةُ «و-وقف/وصل» المسمّاة، وجسرُ الحاكم السابق داخلَ العيّنة وخارجها، والدَّينان («الثلاثون» وشرطا «بعد الجار») — `PHASE2-STATUS.md`. لا يحتاج `numpy` ولا النسخةَ العثمانية.
