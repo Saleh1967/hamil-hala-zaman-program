@@ -21,8 +21,10 @@ import argparse, json, os, sys
 ROOT = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(ROOT, "induction"))
 from induction_engine import parse_verses, stirling          # لا نسخةَ ثانية من أيٍّ منهما
+from harakat_layer import waqf_wasl as waqf_wasl_harakat      # الشاهدُ الأول بشرطه لا بنقله
 
 CORPUS = os.path.join(ROOT, "mujammad.txt")
+FIELD112 = os.path.join(ROOT, "field112_laws.json")          # وديعةٌ مصادَمةٌ في CI بفارق صفر
 
 MADD = ("ا", "و", "ي", "ى")                                  # حروفُ المدّ في الرسم
 # ميزانُهم كما ورد: (n, k, الرقمُ المنقول بتًّا) — يُعادُ حسابُه لا يُصدَّق
@@ -126,6 +128,58 @@ def named_errors(verses):
                 verdict="استثناءان معجميان معدودان + دَينُ تحقّقٍ مفتوحٌ بالاسم — لا معاملات")
 
 
+# ------------------------- التوقيع: «و-وقف/وصل» من قاعدةٍ معلَّقةٍ إلى قاعدةٍ موقَّعة
+def signature(verses, W):
+    """التوقيعُ بتفويضٍ معلن من المالك. لا يُدمَج شاهدٌ بشاهد: كلٌّ يُعرَض **بشرطه**،
+    والموقَّعُ هو **الحكم** لا الأرقام. والشهودُ ثلاثةٌ من ثلاثة مقاماتٍ مستقلّة:
+      ١) طبقةُ الحركات — الهيئةُ بخاتمتين: {سكون،عري} وقفًا · حركةٌ محقَّقةٌ وصلًا.
+      ٢) الحقلُ 112 — الخليتان المرخَّصتان: (حرف،سكون) و(حرف،حركة) بعد R5/R4.
+      ٣) الإعلال — المدُّ العاري قبل رأس الوصل: النطقُ يُقصِّر والرسمُ يُثبت.
+    المقامُ الثاني يُقرأ من وديعته المصادَمة في CI بفارق صفر (لا رقمَ باليد)."""
+    G = waqf_wasl_harakat(verses)
+    with open(FIELD112, encoding="utf-8") as fh:
+        F = json.load(fh)
+    F = F[next(iter(F))]["waqf_wasl_in_field"]
+    # لكلِّ شاهدٍ **اختبارُه هو**: الهيئةُ الواحدة تتحقّق صورتين مختلفتين بحسب الموضع.
+    # لا اختبارَ واحدٌ يُفرَض على الثلاثة، ولا رقمٌ يُقارَن برقم.
+    witnesses = [
+        dict(rank=1, station="طبقة الحركات", engine="harakat_layer.waqf_wasl",
+             forms=G["forms"], apparent_waqf=G["waqf_sites"], implied_wasl=G["wasl_sites"],
+             test="هيئةٌ واحدةٌ في الكتلتين معًا — ساكنةً وقفًا ومتحرّكةً وصلًا",
+             holds=G["forms"] > 0 and G["waqf_sites"] > 0 and G["wasl_sites"] > 0,
+             condition=G["condition"]),
+        dict(rank=2, station="الحقل 112", engine="field112_laws.json (مصادَمةٌ بفارق صفر)",
+             forms=F["forms_two_cells"], apparent_waqf=F["sukun_sites"],
+             implied_wasl=F["haraka_sites"],
+             test="هيئةٌ واحدةٌ تسكن خليتين مرخَّصتين من الـ112 لا خليةً وخارجًا",
+             holds=F["forms_two_cells"] > 0 and F["sukun_sites"] > 0 and F["haraka_sites"] > 0,
+             condition=F["condition"]),
+        dict(rank=3, station="الإعلال", engine="i3lal_layer.wasl_stream",
+             forms=W["forms"], apparent_waqf=W["rasm_retained"], implied_wasl=W["sites"],
+             test="المقامان يفترقان في الموضع نفسِه: الرسمُ يُثبت الحرفَ والنطقُ يُقصِّره — "
+                  "فالظاهرُ غيرُ المقدَّر بالعدّ، لا بالتأويل",
+             holds=W["rasm_retained"] == W["sites"] and W["rasm_deleted"] == 0,
+             condition="مدٌّ عارٍ في آخر الكلمة يلقى رأسَ وصلٍ — يُقصَّر نطقًا ويثبت رسمًا"),
+    ]
+    agreed = all(w["holds"] for w in witnesses)
+    return dict(
+        rule="و-وقف/وصل",
+        ruling="الهيئةُ الواحدة تسكن خليتين من الحقل: (…،سكون) عند الوقف و(…،حركة) عند "
+               "الوصل. الظاهرُ في الرسم خاتمةُ الوقف، والمقدَّرُ حركةُ الوصل — ثنائيةٌ "
+               "**داخلَ** الحقل لا خارجَه، وقسمةٌ **بالموضع** لا باختيارٍ شاملٍ للهيئة.",
+        authority="تفويضٌ معلن من المالك — التوقيعُ فعلٌ مسمًّى بتاريخه لا استنتاجُ محرّك",
+        witnesses=witnesses,
+        direction_agreed=agreed,
+        rasm_clause="الرسمُ لا يُقرأ قانونًا: إثباتُه الحرفَ في 2,721/2,721 موضعًا وسمُ وضعٍ "
+                    "من طبقةٍ فوق القانون — يُعَدّ ولا يُحتسب قاعدةً صوتية.",
+        not_merged="الأرقامُ الثلاثةُ لا تُجمَع ولا يُجسَر بينها: شروطُ الجمع مختلفةٌ معلنة "
+                   "(هيئةُ الرسم ⟷ هيكلُ الحقل بعد R5/R4 ⟷ موضعُ المدّ)، والموقَّعُ الحكمُ وحدَه.",
+        signed=True,
+        verdict="مُوقَّعة: تخرج «و-وقف/وصل» من التعليق إلى قاعدةٍ مسمّاةٍ بكلفتها، ويُقفَل "
+                "دَينُها في السجلّ. وما لم يُوقَّع يبقى بالاسم: ثمنُها أماميًّا عند التوليد.",
+    )
+
+
 def debts():
     return dict(
         qac_fork=dict(name="QAC-fork-v0.4",
@@ -148,14 +202,17 @@ def run(path=CORPUS):
     W = wasl_stream(verses)
     N = naqis_paradigm(verses)
     E = named_errors(verses)
+    S = signature(verses, W)
     D = debts()
     named = ["ميزان سترلنج (نقضٌ معلن)", "التقصير — قانونٌ صوتيّ", "بقاء الحرف — وسمُ وضع",
-             "الشاهد الثالث (مدٌّ قبل رأس وصل)", "رأس الوصل — ألفٌ عارية"] \
+             "الشاهد الثالث (مدٌّ قبل رأس وصل)", "رأس الوصل — ألفٌ عارية",
+             "و-وقف/وصل — الحكمُ الموقَّع", "قسمةٌ بالموضع لا باختيارٍ شامل"] \
         + list(NAQIS_LONG) + list(NAQIS_SHORT) + list(NAMED_ERRORS) + list(PREFIX)
     R = dict(
         seals=dict(mujammad_sha256_prefix="8b387ea8", words=sum(len(w) for w in verses),
                    verses=len(verses)),
-        stirling_audit=ST, wasl_stream=W, naqis_paradigm=N, named_errors=E, debts=D,
+        stirling_audit=ST, wasl_stream=W, naqis_paradigm=N, named_errors=E,
+        waqf_wasl_signature=S, debts=D,
         cost_bits=len(named) * 8 * 4,     # المسمَّى وحدَه يُسعَّر؛ لا جدولَ هيئاتٍ مودَعًا
     )
     # ---------- أَسِرَّةُ الصريخ: ما لا يصمد يُسقِط الطبقةَ لا يُهمَس به ----------
@@ -167,6 +224,8 @@ def run(path=CORPUS):
         "دعوى بقاء الرسم خُولفت — صريخ"
     assert N["short_total"] > N["long_total"], \
         f"اتجاهُ الناقص انقلب: {N['short_total']}/{N['long_total']} — صريخ"
+    assert len(S["witnesses"]) == 3 and S["direction_agreed"], \
+        "التوقيعُ بلا صمودِ الشهود الثلاثة كلٌّ في اختباره — صريخ"
     assert R["seals"]["words"] == 77801 and R["seals"]["verses"] == 6236, \
         "مصالحةُ العدّ خُولفت — صريخ"
     return R
@@ -197,6 +256,18 @@ def main(argv=None):
           f"{N['short_total']} (" + " · ".join(f"{k}={v}" for k, v in N["short_forms"].items())
           + f") · النسبة {N['ratio_short_over_long']} — {N['direction']}")
     print(f"    {N['verdict']}")
+    S = R["waqf_wasl_signature"]
+    print(f"التوقيع — قاعدة «{S['rule']}»: {S['ruling']}")
+    print(f"    السند: {S['authority']}")
+    for w in S["witnesses"]:
+        print(f"    شاهد {w['rank']} ({w['station']}): {w['forms']:,} هيئةً · ظاهرٌ (وقفًا) "
+              f"{w['apparent_waqf']:,} · مقدَّرٌ (وصلًا) {w['implied_wasl']:,} · "
+              f"صمد {w['holds']}")
+        print(f"        اختبارُه: {w['test']}")
+        print(f"        شرطُه: {w['condition']}")
+    print(f"    {S['not_merged']}")
+    print(f"    {S['rasm_clause']}")
+    print(f"    {S['verdict']}")
     print("سجلُّ الأخطاء المسمّى: " +
           " · ".join(f"{k}={v}" for k, v in E["counted"].items()) + f" · {E['suspended']}")
     print(f"دَينُ الختم: {D['qac_fork']['name']} ينقصه {D['qac_fork']['missing']} — محجورٌ "
