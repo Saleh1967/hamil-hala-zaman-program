@@ -206,6 +206,20 @@ jobs:
           print("field112_laws.json مُعاد الإنتاج بفارق صفر ✓")
           PY
 
+      - name: الإعلال — تحقّقُ سترلنج وحارسا التيار، ومصادمة i3lal_v0.json
+        run: |
+          set -eu
+          python i3lal_layer.py --json /tmp/i3lal.json | tee -a measurement.txt
+          python - <<'PY'
+          import json, sys
+          a = json.load(open("i3lal_v0.json", encoding="utf-8"))
+          b = json.load(open("/tmp/i3lal.json", encoding="utf-8"))
+          if a != b:
+              print("::error::i3lal_v0.json المودَع خالف ما يُنتجه المحرّك — صريخ")
+              sys.exit(1)
+          print("i3lal_v0.json مُعاد الإنتاج بفارق صفر ✓")
+          PY
+
       - name: إيداع تقرير القياس
         if: always()
         uses: actions/upload-artifact@v4
