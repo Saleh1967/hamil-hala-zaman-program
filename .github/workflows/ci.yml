@@ -232,6 +232,30 @@ jobs:
           print("حارسُ الثوابت: اتفاقيةٌ واحدةٌ معلنة وكلُّ سريرٍ موسومٌ بصيغته ✓")
           PY
 
+      - name: الإسناد — صفَّا «أنيت» والتاء والشرطُ المصحَّح، ومصادمة isnad_v0.json
+        run: |
+          set -eu
+          python isnad_layer.py --json /tmp/isnad.json | tee -a measurement.txt
+          python - <<'PY'
+          import json, sys
+          a = json.load(open("isnad_v0.json", encoding="utf-8"))
+          b = json.load(open("/tmp/isnad.json", encoding="utf-8"))
+          if a != b:
+              print("::error::isnad_v0.json المودَع خالف ما يُنتجه المحرّك — صريخ")
+              sys.exit(1)
+          print("isnad_v0.json مُعاد الإنتاج بفارق صفر ✓")
+          R = a["الإسناد_v0"]
+          C = R["corrected_condition"]
+          if C["matched"] != C["suffixed_excluded"] + C["bare"] \
+             or C["bare"] != C["nounish_excluded"] + C["read"]:
+              print("::error::مصالحةُ الشرط المصحَّح خُولفت — صريخ")
+              sys.exit(1)
+          if R["ta_row"]["status"] != "وسمُ وضعٍ لا قانون":
+              print("::error::صفُّ التاء قُرئ قانونًا لا وسمَ وضعٍ — صريخ")
+              sys.exit(1)
+          print("مصالحةُ الشرط محروسة، وصفُّ التاء وسمُ وضعٍ بالاسم ✓")
+          PY
+
       - name: إيداع تقرير القياس
         if: always()
         uses: actions/upload-artifact@v4
