@@ -28,6 +28,9 @@ import argparse, hashlib, json, math, os, sys
 from collections import Counter, defaultdict
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, ROOT)
+from deposit_law import verdict, degenerate      # المصادقُ المركزيّ — الحكمُ لا يُعاد كتابتُه
+
 CORPUS = os.path.join(ROOT, "mujammad.txt")
 SEAL = "8b387ea811bc8c658e1cab75488ce1aa69606deafd62759eeaf49ffe15c6d215"
 
@@ -225,7 +228,7 @@ def bill(verses):
     return dict(الخام=round(raw), رموزُ_الخام=sum(chars.values()), أبجديةُ_الخام=len(chars),
                 الحقل=round(tot), خلايا=round(fc), المنشأ=round(fo), الخنجرية=round(fd),
                 وحدات=sum(org.values()), فرق=round(tot - raw),
-                حكم="يُقبَل" if tot < raw else "يُرفَض")
+                حكم=verdict(tot - raw))
 
 
 # ═══ ٧) السلّم: صعودًا ونزولًا، بالصيغة الموروثة وحارسِ الانحلال ═════════════════
@@ -242,9 +245,9 @@ def rung(seq, name):
         joint[(a, b)] += 1
     b1 = sum(-n * math.log2(n / ctx[a]) for (a, b), n in joint.items())
     t0, t1 = b0 + V * math.log2(N + 1), b1 + len(joint) * math.log2(N + 1)
-    deg = V / N
+    deg, is_deg = degenerate(V, N)
     return dict(الدرجة=name, طول=N, أبجدية=V, رتبة٠=round(t0), رتبة١=round(t1),
-                فرق=round(t1 - t0), انحلال=round(deg, 4), منحلّ=deg > 0.5)
+                فرق=round(t1 - t0), انحلال=deg, منحلّ=is_deg)
 
 
 def ladder(verses):

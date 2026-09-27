@@ -204,12 +204,24 @@ def run_gates(verses):
     d_c = ce_table(tab_c, prv_c, tr_c, m_c)
     inv_con = d_c + 3 * log2(3) + 3 * 3 * log2(Ntr + 1)  # خريطة + جدول العناقيد
 
+    # H(تالي|سابق) باتفاقيةٍ واحدةٍ معلنة: **الجدولُ والمقاماتُ من الأزواج كلِّها** (وصفُ التيار
+    # لا فاتورةُ نموذج، فلا تقسيمَ تدريبٍ هنا). وكان المودَعُ سابقًا يخلط نصفًا بكلّ — جدولُ
+    # `train` على مقامات `pairs` — فتجمع كتلةُ كلِّ سابقةٍ ≈0.50 لا 1.0، فلا تكون إنتروبيا
+    # شرطيةً أصلًا: Hc 1.20497 و«ربح عبور» 0.2133. السحبُ بحسابٍ معروض: Hc ≈ (Hc_صحيح+1)/2.
     prv_all = Counter(a for a, _ in pairs)
+    tab_all = Counter(pairs)
     Hc = sum(prv_all[a] / Np * (-sum(v / prv_all[a] * log2(v / prv_all[a])
-             for (x, _), v in tab.items() if x == a)) for a in GATES5)
+             for (x, _), v in tab_all.items() if x == a)) for a in GATES5)
+    # حارسٌ يمنع عودةَ الخلط صامتًا: كتلةُ كلِّ سابقةٍ واحدٌ صحيح.
+    for a in GATES5:
+        mass = sum(v / prv_all[a] for (x, _), v in tab_all.items() if x == a)
+        assert abs(mass - 1.0) < 1e-9, f"كتلةُ السابقة {a} = {mass} — جدولٌ ومقامٌ من مقامين"
     return dict(Nv=len(seq), Np=Np, Ntr=Ntr, Nte=Nte,
                 marginal=Counter(seq), H_cond=Hc,
-                transitions={f"{a}→{b}": v for (a, b), v in tab.items()},
+                # التسميةُ تحمل مقامَها: الجدولُ الأول نصفُ التدريب (3,118)، والثاني الأزواجُ كلُّها
+                # (6,235) — وكان اسمٌ واحدٌ «transitions» يحمل الأوّلَ ويُقرَأ كأنه الثاني.
+                transitions_train={f"{a}→{b}": v for (a, b), v in tab.items()},
+                transitions_all={f"{a}→{b}": v for (a, b), v in tab_all.items()},
                 unigram=(inv_u, d_u, mod_u), markov=(inv_m, d_m, mod_m),
                 stirling={k: stirling(m, k) for k in range(1, m + 1)}, bell=bell(m),
                 stir_guard=stir_guard,
@@ -249,7 +261,9 @@ def main():
         io, do_, mo, ko, gr = R["optimal"]; ig, steps, gp = R["greedy"]
         te_u, te_m, te_o = R["test_ce"]; con_inv, con_data = R["for_then_on"]
         print(f"بوّابات {R['Nv']:,} آية · أزواج {Np:,} (عبور الحدّ معلن) · تدريب {R['Ntr']:,}/اختبار {R['Nte']:,} — α=1")
-        print(f"الهامش: " + " · ".join(f"{k}={ug[k]:,}" for k in GATES5) + f" | H={H:.4f} · H(تالي|سابق)={Hc:.4f} — ربح العبور {H - Hc:.4f} بت/آية")
+        print(f"الهامش: " + " · ".join(f"{k}={ug[k]:,}" for k in GATES5) +
+              f" | H={H:.4f} · H(تالي|سابق)={Hc:.4f} — ربح العبور {H - Hc:.4f} بت/آية"
+              f"  [التيار: بوّابات-الآيات-بالعبور · الدالة: run_gates ⟵ gate() · المقام: الأزواج كلُّها 6,235]")
         print(f"الاستقراء ON: أحاديّ فاتورة {iu:.1f} (بيانات {du:.1f}+نموذج {mu:.1f}) · ماركوف25 {im:.1f} ({dm:.1f}+{mm:.1f})")
         print(f"الاستقراء FOR (استنفاد 52 بحراسة ستيرلنج): أمثل {io:.1f} (بيانات {do_:.1f}+نموذج {mo:.1f}، k={ko}: " +
               " + ".join("/".join(v) for v in gr.values()) + ")")
