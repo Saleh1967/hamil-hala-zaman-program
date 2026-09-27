@@ -16,6 +16,32 @@
       "shadda_words": 21705
     },
     "n_var": 1692,
+    "q_rasm": {
+      "by_ending": {
+        "ا": {
+          "definite": 135,
+          "forms": 2412,
+          "words": 13959
+        },
+        "ى": {
+          "definite": 18,
+          "forms": 87,
+          "words": 590
+        },
+        "ي": {
+          "definite": 381,
+          "forms": 429,
+          "words": 2861
+        }
+      },
+      "total": {
+        "definite": 534,
+        "definite_pct": 3.07,
+        "forms": 2928,
+        "words": 17410
+      },
+      "verdict": "ق-فراغ صنفٌ رابعٌ نهائيّ"
+    },
     "q_split": {
       "آ": 1,
       "ا": 13959,
