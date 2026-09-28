@@ -8,3 +8,5 @@ maqayis_by_root_csv_999.csv
 measurement.txt
 # نصوصُ المصادر لا تُودَع — يُودَع مِهرُها في sources_manifest.tsv (SOURCES.md)
 corpora/sources/
+# ومثلُها ملفّاتُ المصدر المحلّيّ التي يضعها المالكُ بيده قبلَ الختم
+corpora/inbox/

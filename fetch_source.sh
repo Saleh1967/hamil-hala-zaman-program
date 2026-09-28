@@ -1,15 +1,20 @@
 #!/usr/bin/env bash
-# fetch_source.sh — جلبُ نصوص المصادر من OpenITI بالبصمة، على نمط fetch_corpus.sh.
+# fetch_source.sh — جلبُ نصوص المصادر بالبصمة، على نمط fetch_corpus.sh.
 #
 # الملفّاتُ لا تُودَع في المستودع؛ المودَعُ مِهرُها: بصمةُ كائن git + الطول + sha256،
 # وكلُّها في sources_manifest.tsv — مصدرُ حقيقةٍ واحد. من خالف واحدًا منها فليس
 # المصدرَ، ولا يُقاس على بديلٍ صامت.
 #
+# طريقان لا ثالثَ لهما، يُميَّزان بحقل repo في البيان:
+#   owner/name  مستودعُ git (OpenITI) — استنساخٌ blobless وحلُّ المسار على الشجرة
+#   local       ملفٌّ يضعه المالكُ في corpora/inbox/ بحرف اسمِه المكتوبِ في حقل path
+# والبصماتُ الثلاثُ تُقاس في الطريقين من البايتات الحاضرة، لا تُنقَل عن تقرير.
+#
 # الأطوار:
 #   --list                عرضُ البيان كما هو
-#   --resolve <id|--all>  استنساخٌ blobless وحلُّ النمط على الشجرة؛ يعرض المسارَ
-#                         وبصمةَ الكائن والطولَ (بلا تنزيل بايتاتٍ أصلًا)
-#   --fetch   <id|--all>  إخراجُ الملف وحدَه والتحقّقُ الثلاثيّ ثمّ إيداعُه في corpora/sources/
+#   --resolve <id|--all>  في الطريق البعيد: حلُّ النمط على الشجرة بلا تنزيل بايتة؛
+#                         وفي المحلّيّ: عرضُ القياس الثلاثيّ للملف الحاضر
+#   --fetch   <id|--all>  إحضارُ الملف والتحقّقُ الثلاثيّ (البعيدُ يُودَع corpora/sources/)
 #   --check   <id|--all>  التحقّقُ من نسخةٍ حاضرةٍ دون شبكة
 #   --seal    <id>        كتابةُ الختم المقيس في البيان — بيد المالك وحدَه
 #
@@ -19,6 +24,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MANIFEST="${SOURCES_MANIFEST:-$ROOT/sources_manifest.tsv}"
 STORE="${SOURCES_DIR:-$ROOT/corpora/sources}"
+INBOX="${SOURCES_INBOX:-$ROOT/corpora/inbox}"
 HOST="${OPENITI_HOST:-https://github.com}"
 
 E_FETCH=1; E_USAGE=2; E_MANIFEST=3; E_SEAL=4
@@ -110,6 +116,18 @@ do_resolve() { # do_resolve <id>
   local row dir out
   row="$(row_of "$1")" || die "لا معرِّفَ «$1» في البيان"
   excused_guard "$row" || return 0
+
+  if [ "$(field "$row" 2)" = "local" ]; then
+    FETCHED=""; MEASURED=""
+    fetch_one "$row" || return $?
+    echo "$1 حاضرٌ محلّيًّا:"
+    echo "  الملف: $FETCHED"
+    echo "  بصمةُ الكائن: $(printf '%s' "$MEASURED" | cut -f2)"
+    echo "  الطول: $(printf '%s' "$MEASURED" | cut -f3) بايتًا"
+    echo "  sha256: $(printf '%s' "$MEASURED" | cut -f4)"
+    return 0
+  fi
+
   dir="$WORK/$(field "$row" 1)"
   clone_blobless "$(field "$row" 2)" "$(field "$row" 3)" "$dir" || return "$E_FETCH"
   out="$(resolve_one "$dir" "$(field "$row" 4)")" || return "$E_FETCH"
@@ -123,19 +141,33 @@ do_resolve() { # do_resolve <id>
 # fetch_one يُخرج الملفَّ وحدَه ويُرجع مساره المؤقَّت في FETCHED، وقياساتِه في MEASURED.
 fetch_one() { # fetch_one <row>
   local row="$1" dir path blob bytes out got_blob got_len
-  dir="$WORK/$(field "$row" 1)"
-  clone_blobless "$(field "$row" 2)" "$(field "$row" 3)" "$dir" || return "$E_FETCH"
 
-  path="$(field "$row" 5)"
-  if [ "$path" = "-" ]; then
-    out="$(resolve_one "$dir" "$(field "$row" 4)")" || return "$E_FETCH"
-    path="$(printf '%s' "$out" | cut -f1)"
+  if [ "$(field "$row" 2)" = "local" ]; then
+    # الطريقُ المحلّيّ: لا استنساخَ ولا شبكة. الملفُّ يضعه المالكُ في INBOX بحرف
+    # اسمِه المكتوبِ في حقل path، والبصماتُ الثلاثُ تُقاس من بايتاته حاضرةً.
+    path="$(field "$row" 5)"
+    [ "$path" = "-" ] && { echo "«$(field "$row" 1)» محلّيٌّ بلا اسمِ ملفٍّ في حقل path" >&2; return "$E_MANIFEST"; }
+    FETCHED="$INBOX/$path"
+    [ -f "$FETCHED" ] || {
+      echo "لا ملفَّ محلّيًّا: $FETCHED" >&2
+      echo "  ضعه بحرف اسمِه هناك (أو أعلن مجلّدًا: SOURCES_INBOX=<مسار>)" >&2
+      return "$E_FETCH"
+    }
+  else
+    dir="$WORK/$(field "$row" 1)"
+    clone_blobless "$(field "$row" 2)" "$(field "$row" 3)" "$dir" || return "$E_FETCH"
+
+    path="$(field "$row" 5)"
+    if [ "$path" = "-" ]; then
+      out="$(resolve_one "$dir" "$(field "$row" 4)")" || return "$E_FETCH"
+      path="$(printf '%s' "$out" | cut -f1)"
+    fi
+
+    git -C "$dir" checkout -q HEAD -- "$path" 2>/dev/null \
+      || { echo "تعذّر إخراجُ «$path» من $(field "$row" 2)" >&2; return "$E_FETCH"; }
+    FETCHED="$dir/$path"
+    [ -f "$FETCHED" ] || { echo "لا ملفَّ بعد الإخراج: $FETCHED" >&2; return "$E_FETCH"; }
   fi
-
-  git -C "$dir" checkout -q HEAD -- "$path" 2>/dev/null \
-    || { echo "تعذّر إخراجُ «$path» من $(field "$row" 2)" >&2; return "$E_FETCH"; }
-  FETCHED="$dir/$path"
-  [ -f "$FETCHED" ] || { echo "لا ملفَّ بعد الإخراج: $FETCHED" >&2; return "$E_FETCH"; }
 
   # التحقُّق الثلاثيّ: بصمةُ كائن git أوّلًا (هي شهادةُ المصدر)، ثمّ الطول، ثمّ sha256.
   got_blob="$(git hash-object "$FETCHED")"
@@ -155,7 +187,7 @@ fetch_one() { # fetch_one <row>
 }
 
 do_fetch() { # do_fetch <id>
-  local row sha got rc
+  local row sha got rc dest
   row="$(row_of "$1")" || die "لا معرِّفَ «$1» في البيان"
   excused_guard "$row" || return 0
 
@@ -169,14 +201,21 @@ do_fetch() { # do_fetch <id>
     return "$E_SEAL"
   fi
 
-  mkdir -p "$STORE"
-  cp "$FETCHED" "$STORE/$1.txt"
-  if [ "$sha" = "-" ]; then
-    echo "$1 مجلوبٌ غيرَ مختوم → $STORE/$1.txt"
-    echo "  القياسُ الطازج: بصمةُ الكائن $(printf '%s' "$MEASURED" | cut -f2) · $(printf '%s' "$MEASURED" | cut -f3) بايتًا · sha256 $got"
-    echo "  الختمُ بيد المالك: bash fetch_source.sh --seal $1"
+  # المحلّيُّ يبقى حيث وضعه المالك؛ لا تُنسَخ بايتاتُه مرّةً ثانيةً في الشجرة.
+  if [ "$(field "$row" 2)" = "local" ]; then
+    dest="$FETCHED"
   else
-    echo "$1 مطابقُ الختم ✓ → $STORE/$1.txt ($sha)"
+    dest="$STORE/$1.txt"
+    mkdir -p "$STORE"
+    cp "$FETCHED" "$dest"
+  fi
+
+  if [ "$sha" = "-" ]; then
+    echo "$1 حاضرٌ غيرَ مختوم → $dest"
+    echo "  القياسُ الطازج: بصمةُ الكائن $(printf '%s' "$MEASURED" | cut -f2) · $(printf '%s' "$MEASURED" | cut -f3) بايتًا · sha256 $got"
+    echo "  الختمُ بيد المالك: SOURCES_SEAL_OWNER=1 bash fetch_source.sh --seal $1"
+  else
+    echo "$1 مطابقُ الختم ✓ → $dest ($sha)"
   fi
 }
 
@@ -185,7 +224,7 @@ do_check() { # do_check <id> — بلا شبكة
   row="$(row_of "$1")" || die "لا معرِّفَ «$1» في البيان"
   excused_guard "$row" || return 0
   [ "$(field "$row" 9)" = "مختوم" ] || { echo "$1: غيرُ مختومٍ بعد — لا شيءَ يُصادَم"; return 0; }
-  f="$STORE/$1.txt"
+  if [ "$(field "$row" 2)" = "local" ]; then f="$INBOX/$(field "$row" 5)"; else f="$STORE/$1.txt"; fi
   [ -f "$f" ] || { echo "$1: لا نسخةَ حاضرةً في $f" >&2; return "$E_FETCH"; }
   blob="$(field "$row" 6)"; bytes="$(field "$row" 7)"; sha="$(field "$row" 8)"
   [ "$(git hash-object "$f")" = "$blob" ] || { echo "$1: بصمةُ كائنٍ مخالفة" >&2; bad=1; }
@@ -223,7 +262,7 @@ do_seal() { # do_seal <id> — بيد المالك وحدَه
 }
 
 usage() {
-  sed -n '2,15p' "$ROOT/fetch_source.sh" | sed 's/^# \{0,1\}//'
+  awk 'NR == 1 { next } /^#/ { sub(/^# ?/, ""); print; next } { exit }' "${BASH_SOURCE[0]}"
   exit "$E_USAGE"
 }
 
