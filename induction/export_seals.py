@@ -35,7 +35,8 @@ ROOT = os.path.dirname(HERE)
 
 sys.path.insert(0, HERE)
 import seals
-from seals import GATE, WITNESS, SEALS, deposit_path, dig
+from seals import (GATE, WITNESS, DISCOVERED, SEALS, DISCOVERIES,
+                   deposit_path, dig)
 
 SEALS_FILE = os.path.join(HERE, "seals.py")
 
@@ -122,6 +123,12 @@ def deposit_reading(seal):
 def export():
     sites = seal_call_sites()
     gates, mismatches = [], []
+    # [مكتشَف] **لا يُصدَّر**، ومنعُه صريحٌ لا صامت: لو صُدِّر مع أختام البوّابة لقرأه
+    # المستهلكُ خارجَ الشجرة سندًا — وهو قياسٌ من مصدرٍ **غيرِ مختوم** قد ينزاح غدًا
+    # فينقلب الجوابُ كاذبًا بلا إنذار. وصمتُ الغياب يحتمل السهو، والصريخُ لا يحتمله.
+    for seal in SEALS:
+        if seal["صنف"] == DISCOVERED:
+            mismatches.append(f"{seal['اسم']}: {DISCOVERED} في SEALS — ولا يُصدَّر")
     for seal, site in zip(SEALS, sites):
         if seal["صنف"] != GATE:
             continue
@@ -147,7 +154,11 @@ def export():
         "بصمة_السجل": {"ملف": "induction/seals.py", "sha256": sha256_of(SEALS_FILE)},
         "العدّ": {"الكلّ": len(SEALS),
                   GATE: sum(1 for s in SEALS if s["صنف"] == GATE),
-                  WITNESS: sum(1 for s in SEALS if s["صنف"] == WITNESS)},
+                  WITNESS: sum(1 for s in SEALS if s["صنف"] == WITNESS),
+                  DISCOVERED: {"عدّ": len(DISCOVERIES),
+                               "مصدَّرٌ": False,
+                               "علّة": ("قياسٌ من مصدرٍ غيرِ مختوم — يُرجِّح ولا يحكم، "
+                                        "فلا يُقرَأ سندًا خارج الشجرة")}},
         "أختام_البوّابة": gates,
         "الفواتير": [{"دعوى": claim, "Δ": delta, "الحكمُ_المشتقّ": حكم}
                      for claim, delta, حكم in seals._bill_rows()],
