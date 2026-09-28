@@ -217,7 +217,7 @@ bash test_fetch_source.sh     # 0 إن طابق كلُّ مخرجٍ عقدَه
 | مخارجُ التقشير | `0·2·5·6·7` | `normalize.py` (`E_USAGE`·`E_DECODE`·`E_NFC`·`E_HEADER`) | `test_normalize.py` يستدعي `main` ويقيس |
 | مصادماتُ الجلب | 33 | `test_fetch_source.sh` | تشغيلُه بلا شبكة |
 | مصادماتُ التقشير | 19 | `test_normalize.py` | تشغيلُه بلا اعتماد |
-| أختامُ [بوّابة] المصدَّرة | 52 | `induction/seals.py` · `SEALS` | `induction/export_seals.py` بإزاحاتها |
+| أختامُ [بوّابة] المصدَّرة | 62 | `induction/seals.py` · `SEALS` | `induction/export_seals.py` بإزاحاتها |
 
 **وفاتورةُ هذا السطر أنّه قابلٌ للسقوط.** يحرسه `test_normalize.py` في المصادمة
 `test_contract_line_is_collided`: تُقرأ الأعدادُ من بايتات هذه الوثيقة نفسِها
