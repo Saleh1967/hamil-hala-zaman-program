@@ -51,7 +51,7 @@ sys.path.insert(0, os.path.join(ROOT, "induction"))
 import sources_census                                   # لا نسخةَ ثانيةَ من مصادمة البايتات
 from induction_engine import parse_verses, TAN          # ولا قارئَ ثانيًا للمجمَّد
 from deposit_law import price, verdict, ALPHA
-from alama_layer import omega_drop                      # ω = 0 يحذف الحافةَ لا العقدة
+from alama_layer import n0_gate, omega_drop            # الحارسان يُستدعيان ولا يُنسَخان
 
 CORPUS = os.path.join(ROOT, "induction", "mujammad.txt")
 
@@ -557,14 +557,9 @@ def ban_our_limit(rows, outside_share):
 
 
 # ═══ ⑥ الحكم: n₀ ثمّ الشذوذ ثمّ الفاتورة ════════════════════════════════════════════
-def n0_gate(observed):
-    t = THRESHOLDS["n₀ مواضع"]
-    return observed >= t["قيمة"], t["قيمة"]
-
-
 def rule_verdict(bill, triggers):
     """الحكمُ الواحد: دون n₀ «غيرُ مختبَر» — ثمّ الشذوذُ ثمّ الفاتورةُ بحكم القانون."""
-    tested, _ = n0_gate(triggers)
+    tested, _ = n0_gate("n₀ مواضع", triggers, THRESHOLDS)
     if not tested:
         return "غيرُ مختبَر"
     if bill["نسبةُ_المخالفة"] > THRESHOLDS["فاصلُ الشذوذ"]["قيمة"]:

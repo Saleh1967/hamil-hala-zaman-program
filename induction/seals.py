@@ -1051,6 +1051,22 @@ def falsify(verbose=True):
     trials["حَكَمٌ ثانٍ يُكتَب"] = ("رفض ✓ — القانونُ يُستدعى ولا يُنسَخ (الحكمُ وحدُّ الانحلال معًا)"
                                    if len(copies) == 2 else "لم يرفض ✗")
 
+    # سجلُّ الأسانيد يُكذَّب ببنيته لا بمحتواه: ختمٌ على وديعةٍ بلا سندٍ مُعلَن، وسندٌ
+    # مُعلَنٌ لختمٍ زال من SEALS — والحارسُ يلتقط الطرفين أو لا يحرس شيئًا.
+    _saved = dict(SANAD)
+    try:
+        SEALS.append(S("ختمٌ بلا سند", "بلا_سند_v0.json", ("مقيس",), 1, "د", "مقام", GATE))
+        SANAD["سندٌ لختمٍ زائل"] = "مجمَّد"
+        found = sanad_ledger(verbose=False)
+        ok = (any("ختمٌ بلا سند" in p for p in found)
+              and any("لختمٍ لا وجودَ له" in p for p in found))
+    finally:
+        SEALS.pop()
+        SANAD.clear()
+        SANAD.update(_saved)
+    trials["ختمٌ بلا سند"] = ("رفض ✓ — لا رقمَ يحكم ولا يُعرَف من أين استمدَّ حجّيَّته"
+                              if ok else "لم يرفض ✗")
+
     trials["حكمٌ يخالف فاتورتَه"] = ("رفض ✓ — «يُقبَل» فوق Δ موجبةٍ لا تمرّ"
                                      if _verdict_of(+69037) == "يُرفَض"
                                      and _verdict_of(-5427) == "يُقبَل" else "لم يرفض ✗")
