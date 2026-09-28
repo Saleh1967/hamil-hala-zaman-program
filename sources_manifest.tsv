@@ -17,31 +17,36 @@
 #   state    مرشَّح | محلول | مختوم | معذور
 #   note     كلمةٌ عربيةٌ تُفسّر الحال (بلا جدولةٍ ولا فراغ)
 #
-# حالُ الأختام: المختومُ هنا قِيسَ من بايتاته في هذا المستودع، والمرشَّحُ بلا رقمٍ
-# أصلًا. أمّا نصوصُ OpenITI الثلاثةُ فالشبكةُ إليها محجوبةٌ في صندوق الكتابة (401
-# على info/refs، و403 على api.github.com)، فتبقى «مرشَّحة» حتى يحلَّها المالكُ
-# بـ‏`--resolve` ثمّ يختمها بـ‏`--seal`. الرقمُ المكتوبُ هنا مقيسٌ أو معدومٌ، ولا
-# ثالثَ بينهما — ولا يُكتب ختمٌ إلا من قياسٍ طازج.
+# حالُ الأختام: كلُّ ختمٍ هنا قِيسَ من بايتاته — نصوصُ OpenITI استُنسخت شجرتُها
+# أجوفَ وحُلَّ النمطُ عليها ونُزِّلت البايتاتُ فقِيست، والجزآن قُرئا من تاريخ هذا
+# المستودع. الرقمُ المكتوبُ هنا مقيسٌ أو معدومٌ، ولا ثالثَ بينهما.
+#
+# شاهدٌ واحدٌ = سطرٌ واحد: الكتابُ ذو النسخ الثلاث ثلاثةُ أختامٍ لا ختمٌ يُجمِلها.
+#
+# مستودعاتُ OpenITI مبوَّبةٌ بأرباع القرن لا بسنة الوفاة: الطبريُّ (ت ٣١٠) في
+# 0325AH، والنحّاسُ (ت ٣٣٨) في 0350AH، وابنُ مالكٍ (ت ٦٧٢) في 0675AH، وابنُ
+# هشامٍ (ت ٧٦١) في 0775AH. و401 على info/refs جوابُ GitHub عن مستودعٍ لا وجودَ
+# له، لا دليلَ حجبٍ — فلا يُستنتَج الحجبُ منه بلا مستودعٍ شاهدٍ يُجرَّب.
 #
 # وحالُ المسارات: pattern نمطُ بحثٍ يُحلُّ على الشجرة الحقيقية. إن لم يُعطِ مطابقًا
 # صرخ السكربتُ وسقط؛ وإن أعطى أكثرَ من واحدٍ عرضَها ليختار المالكُ واحدًا بحرفه.
 # فالنمطُ المخطئ يسقط ولا يجلب ملفًّا آخرَ صامتًا.
 #
 #id	repo	ref	pattern	path	blob	bytes	sha256	state	note
-tabari_jamic_jk	OpenITI/0325AH	master	0310Tabari\.JamicBayan\.JK000164-ara1$	-	-	-	-	مرشَّح	الطبري_جامع_البيان_شاهدُ_الجامع_الكبير
-tabari_jamic_sham43	OpenITI/0325AH	master	0310Tabari\.JamicBayan\.Shamela0000043-ara1$	-	-	-	-	مرشَّح	الطبري_جامع_البيان_شاهدُ_الشاملة
-tabari_jamic_shia	OpenITI/0325AH	master	0310Tabari\.JamicBayan\.Shia002468Vols-ara1$	-	-	-	-	مرشَّح	الطبري_جامع_البيان_شاهدُ_الشيعة_مجلَّدًا
-tabari_jamic_tafsir01	OpenITI/0325AH	master	0310Tabari\.JamicBayan\.Tafsir01001-ara1$	-	-	-	-	مرشَّح	الطبري_جامع_البيان_شاهدُ_altafsir
-nahhas_icrab_jk	OpenITI/0350AH	master	0338AbuJacfarNahhas\.IcrabQuran\.JK001417-ara1$	-	-	-	-	مرشَّح	النحاس_إعراب_القرآن_شاهدُ_الجامع_الكبير
-nahhas_icrab_shamay	OpenITI/0350AH	master	0338AbuJacfarNahhas\.IcrabQuran\.ShamAY0034083-ara1$	-	-	-	-	مرشَّح	النحاس_إعراب_القرآن_شاهدُ_الشاملة_الألفية
-nahhas_icrab_sham	OpenITI/0350AH	master	0338AbuJacfarNahhas\.IcrabQuran\.Shamela0023587-ara1$	-	-	-	-	مرشَّح	النحاس_إعراب_القرآن_شاهدُ_الشاملة
-ibnmalik_alfiyya	OpenITI/0675AH	master	0672IbnMalik\.Alfiyya\.Shamela0008522-ara1$	-	-	-	-	مرشَّح	ابن_مالك_الألفية_شاهدُ_الشاملة
-ibnhisham_mughni_jk	OpenITI/0775AH	master	0761JamalDinIbnHisham\.MughniLabib\.JK001131-ara1$	-	-	-	-	مرشَّح	ابن_هشام_مغني_اللبيب_شاهدُ_الجامع_الكبير
-ibnhisham_mughni_sham	OpenITI/0775AH	master	0761JamalDinIbnHisham\.MughniLabib\.Shamela0006972-ara1$	-	-	-	-	مرشَّح	ابن_هشام_مغني_اللبيب_شاهدُ_الشاملة
-ibnhisham_mughni_shia	OpenITI/0775AH	master	0761JamalDinIbnHisham\.MughniLabib\.Shia003952Vols-ara1$	-	-	-	-	مرشَّح	ابن_هشام_مغني_اللبيب_شاهدُ_الشيعة_مجلَّدًا
-ibnhisham_qatr_matn	OpenITI/0775AH	master	0761JamalDinIbnHisham\.MatnQatrNada\.Shamela0011376-ara1$	-	-	-	-	مرشَّح	ابن_هشام_متن_قطر_الندى_شاهدُ_الشاملة
-ibnhisham_qatr_jk	OpenITI/0775AH	master	0761JamalDinIbnHisham\.SharhQatrNada\.JK000007-ara1$	-	-	-	-	مرشَّح	ابن_هشام_شرح_قطر_الندى_شاهدُ_الجامع_الكبير
-ibnhisham_qatr_sham	OpenITI/0775AH	master	0761JamalDinIbnHisham\.SharhQatrNada\.Shamela0006970-ara1$	-	-	-	-	مرشَّح	ابن_هشام_شرح_قطر_الندى_شاهدُ_الشاملة
+tabari_jamic_jk	OpenITI/0325AH	master	0310Tabari\.JamicBayan\.JK000164-ara1$	data/0310Tabari/0310Tabari.JamicBayan/0310Tabari.JamicBayan.JK000164-ara1	b6e75276e484314a87d4a3fc59879f3a8112c453	26360746	a4f6aa118ed8fe3543862eedea5257e3a6bf0f4f83d31ec2605b590738c73e8d	مختوم	الطبري_جامع_البيان_شاهدُ_الجامع_الكبير
+tabari_jamic_sham43	OpenITI/0325AH	master	0310Tabari\.JamicBayan\.Shamela0000043-ara1$	data/0310Tabari/0310Tabari.JamicBayan/0310Tabari.JamicBayan.Shamela0000043-ara1	28ce64e4bc371994c995a5017d3c3b8568743ff2	28078622	e5b4a303a1919072b06e6480e95133e7a54643d017ff13c68566ca8baf39cefd	مختوم	الطبري_جامع_البيان_شاهدُ_الشاملة
+tabari_jamic_shia	OpenITI/0325AH	master	0310Tabari\.JamicBayan\.Shia002468Vols-ara1$	data/0310Tabari/0310Tabari.JamicBayan/0310Tabari.JamicBayan.Shia002468Vols-ara1	e09fb95fbf913a76dd7f7203b4f4df1af3762380	27064121	84f38a36b32b562c7ad642e10a71e789bca7603ee056b9a44ac172e64ebdd94d	مختوم	الطبري_جامع_البيان_شاهدُ_الشيعة_مجلَّدًا
+tabari_jamic_tafsir01	OpenITI/0325AH	master	0310Tabari\.JamicBayan\.Tafsir01001-ara1$	data/0310Tabari/0310Tabari.JamicBayan/0310Tabari.JamicBayan.Tafsir01001-ara1	bb620ced78540d2839b83f92b69d8b1e49ab0904	26177561	0a2e5bb66364f5eb81a7a22136a6ad9137940c372b66d5c65e409f8769f55499	مختوم	الطبري_جامع_البيان_شاهدُ_altafsir
+nahhas_icrab_jk	OpenITI/0350AH	master	0338AbuJacfarNahhas\.IcrabQuran\.JK001417-ara1$	data/0338AbuJacfarNahhas/0338AbuJacfarNahhas.IcrabQuran/0338AbuJacfarNahhas.IcrabQuran.JK001417-ara1	26e9412802498f1d21c3fd127572da4b8f668112	3072430	3537b0f461048d55eb0ce3ff4a72e09146f0ddcd37194217d5059ed61e1d1a30	مختوم	النحاس_إعراب_القرآن_شاهدُ_الجامع_الكبير
+nahhas_icrab_shamay	OpenITI/0350AH	master	0338AbuJacfarNahhas\.IcrabQuran\.ShamAY0034083-ara1$	data/0338AbuJacfarNahhas/0338AbuJacfarNahhas.IcrabQuran/0338AbuJacfarNahhas.IcrabQuran.ShamAY0034083-ara1	e835d8fe7f9e64d787cd7dc24cc627586f7a5df1	2947051	7d9d44765bd8c4ceb379fe0cd4a159b6af584748cc6b5a89f70b93694d895d66	مختوم	النحاس_إعراب_القرآن_شاهدُ_الشاملة_الألفية
+nahhas_icrab_sham	OpenITI/0350AH	master	0338AbuJacfarNahhas\.IcrabQuran\.Shamela0023587-ara1$	data/0338AbuJacfarNahhas/0338AbuJacfarNahhas.IcrabQuran/0338AbuJacfarNahhas.IcrabQuran.Shamela0023587-ara1	4f07e1939700023352c6b04c267f6f62f3402557	4170848	16d81f1f7b2852cc528bf6f9edc5f5f252d78f7c59b59fc18652d117e343a3aa	مختوم	النحاس_إعراب_القرآن_شاهدُ_الشاملة
+ibnmalik_alfiyya	OpenITI/0675AH	master	0672IbnMalik\.Alfiyya\.Shamela0008522-ara1$	data/0672IbnMalik/0672IbnMalik.Alfiyya/0672IbnMalik.Alfiyya.Shamela0008522-ara1	6e5b9fb177c8f4b477c0f848a93409578187bb00	97798	13b351a0a02d9060fdedbb5db568544718eb4e89bef323f5572b8a26c0921ca0	مختوم	ابن_مالك_الألفية_شاهدُ_الشاملة
+ibnhisham_mughni_jk	OpenITI/0775AH	master	0761JamalDinIbnHisham\.MughniLabib\.JK001131-ara1$	data/0761JamalDinIbnHisham/0761JamalDinIbnHisham.MughniLabib/0761JamalDinIbnHisham.MughniLabib.JK001131-ara1	d7197305150bd9861525d6e01db3a977c022cc29	1496219	57f5142f72a1d4a01a16c5ecdfda5ecb07b2a7a03ab2fc13b3e7202a6e7a686b	مختوم	ابن_هشام_مغني_اللبيب_شاهدُ_الجامع_الكبير
+ibnhisham_mughni_sham	OpenITI/0775AH	master	0761JamalDinIbnHisham\.MughniLabib\.Shamela0006972-ara1$	data/0761JamalDinIbnHisham/0761JamalDinIbnHisham.MughniLabib/0761JamalDinIbnHisham.MughniLabib.Shamela0006972-ara1	0d7ac2fae1df36b1c1c123f34be040fa8133c5e6	1486890	f37ac2bb4b273f59169053dd0ac2abf50a52846a7e87ddf689ee5c0b87f77e7d	مختوم	ابن_هشام_مغني_اللبيب_شاهدُ_الشاملة
+ibnhisham_mughni_shia	OpenITI/0775AH	master	0761JamalDinIbnHisham\.MughniLabib\.Shia003952Vols-ara1$	data/0761JamalDinIbnHisham/0761JamalDinIbnHisham.MughniLabib/0761JamalDinIbnHisham.MughniLabib.Shia003952Vols-ara1	6c7e5940c7f502c0aa0f7914d087f54b6d4eca9b	1572350	3ea0b3cefb368f08f362c6fd245122bfb0bc76a09fcf86dae3e0778e39ea2fbe	مختوم	ابن_هشام_مغني_اللبيب_شاهدُ_الشيعة_مجلَّدًا
+ibnhisham_qatr_matn	OpenITI/0775AH	master	0761JamalDinIbnHisham\.MatnQatrNada\.Shamela0011376-ara1$	data/0761JamalDinIbnHisham/0761JamalDinIbnHisham.MatnQatrNada/0761JamalDinIbnHisham.MatnQatrNada.Shamela0011376-ara1	daccba5aea480c1b3676c17a86e5bde3231e3d4d	40168	2d9241beca1b138187ace8f6782d5eed68f3864f402ec1d5fc90fdeb306ceb9d	مختوم	ابن_هشام_متن_قطر_الندى_شاهدُ_الشاملة
+ibnhisham_qatr_jk	OpenITI/0775AH	master	0761JamalDinIbnHisham\.SharhQatrNada\.JK000007-ara1$	data/0761JamalDinIbnHisham/0761JamalDinIbnHisham.SharhQatrNada/0761JamalDinIbnHisham.SharhQatrNada.JK000007-ara1	73d219dbff3e01f44e1ca983929e7fb3f29d1e2a	365360	03d7e5452f3068179200329c6197fc2ad4e4eb288da00ec515ac877179069e19	مختوم	ابن_هشام_شرح_قطر_الندى_شاهدُ_الجامع_الكبير
+ibnhisham_qatr_sham	OpenITI/0775AH	master	0761JamalDinIbnHisham\.SharhQatrNada\.Shamela0006970-ara1$	data/0761JamalDinIbnHisham/0761JamalDinIbnHisham.SharhQatrNada/0761JamalDinIbnHisham.SharhQatrNada.Shamela0006970-ara1	7bcefd625c51d9cec79a03e8e5db024c0a52deea	365865	9a418d9b6af0123a565302a9a14b60f9e017ef91a43c1f322fee197a2a5187b9	مختوم	ابن_هشام_شرح_قطر_الندى_شاهدُ_الشاملة
 ibnjinni_muluki	-	-	-	-	-	-	-	معذور	الملوكي_في_التصريف_فُتِّشت_شجرةُ_0392IbnJinniMawsili_في_0400AH_فلا_أثرَ_له_ينتظر_مرآةَ_الشاملة
 jurjani_awamil	-	-	-	-	-	-	-	معذور	العوامل_المئة_فُتِّشت_شجرةُ_0471CabdQahirJurjani_في_0475AH_فلا_أثرَ_له_ينتظر_مرآةَ_الشاملة
 shakhsiyya_j1	self	b7abcad328db8a69349e02ef3e4ad4076b1a7486	-	الشخصية الإسلامية الجزء الأول (1).docx	7de0bc2bfb71ba0c85003b44e7c7d7ccbf7d9ec4	283112	5e327aa2563af094962833951972b7537a872119a58bbfce5f2a813d20c88e17	مختوم	الشخصية_الإسلامية_ج١_مودَعٌ_في_تاريخ_هذا_المستودع
