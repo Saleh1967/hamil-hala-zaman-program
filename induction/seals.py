@@ -17,6 +17,7 @@
 # وتغييرُ رقمٍ مختومٍ لا يمرّ إلا بتعديلٍ معلنٍ في هذا الملفّ، مقرونٍ بفاتورته في رسالة الالتزام.
 import argparse
 import ast
+from collections import Counter
 import json
 import os
 import subprocess
@@ -588,6 +589,82 @@ def sole_judge(verbose=True, _dir=None):
     return problems
 
 
+# ═══ سجلُّ الأسانيد: من أين استمدَّ الرقمُ حجّيَّته ═══════════════════════════════════
+# دَينٌ سُمّي ولم يُدفَع: الفواتيرُ أربعٌ على ثلاث ودائع، والأختامُ على أكثرَ من عشر —
+# فكان في السجلِّ أختامٌ لا يُعرَف سندُها. ويُدفَع الدَّينُ ههنا **بسندٍ مُعلَنٍ مفصول**
+# لا بحقلٍ ثامنٍ في `S` (فذلك يكسر عقدَ المُصدِّر الذي يستهلكه Alghanem بثمانية حقول).
+# والسندُ مفرداتٌ مغلقة: لا يُقبَل صنفٌ لم يُعلَن ههنا، ولا وديعةٌ بلا سند.
+SANAD_KINDS = {
+    "مجمَّد": ("بايتاتُ mujammad.txt بختمها sha256 — القياسُ على نصٍّ مودَعٍ في الشجرة "
+               "لا على نقلٍ عنه"),
+    "شاهدٌ مختوم": ("بايتاتُ شاهدٍ في sources_manifest.tsv بتحقُّقه الثلاثيّ (كائنُ git · "
+                    "الطول · sha256) — لا مسارٌ مُدَّعًى"),
+    "فاتورة": ("Δ من deposit_law.price وحدَه — حَكَمٌ واحدٌ لا خمسةٌ متوافقةٌ بالصدفة"),
+    "شجرةٌ مودَعة": ("بايتاتُ ملفٍّ في هذه الشجرة تُقرأ بموضعها: قائمةٌ مُعلَنةٌ أو بيانٌ "
+                     "أو خطوةُ ci.yml — لا وعدٌ في نثر"),
+}
+
+# سندُ كلِّ وديعةٍ — ومنه يرث كلُّ ختمٍ عليها ما لم يُعلَن له سندٌ خاصٌّ في SANAD.
+SANAD_BY_DEPOSIT = {
+    "results.json": "مجمَّد", "online_peel.json": "مجمَّد", "mirror.json": "مجمَّد",
+    "pairs_v0.json": "مجمَّد", "context_ladder.json": "مجمَّد",
+    "jumla_links.json": "مجمَّد", "alama_v0.json": "مجمَّد",
+    "deposit_law.json": "فاتورة", "tensor_law.json": "فاتورة",
+    "jami3_mani3.json": "فاتورة", "hiyad.json": "فاتورة",
+    "sources_census.json": "شاهدٌ مختوم", "manhaj_v0.json": "شاهدٌ مختوم",
+}
+
+# سندٌ خاصٌّ لختمٍ بعينه حيث يفارق سندُ وديعتِه: يُكتَب هنا باسم الختم بحرفه.
+SANAD = {
+    "بابُ المعتلّ · فاتورةُ الأجوف": "فاتورة",
+    "فاتورةُ «لن» — أرقُّ الهوامش": "فاتورة",
+    "مواضعُ التصريح في الشاهد المُرسى": "شاهدٌ مختوم",
+    "المطابَقُ في المجمَّد بعد التصريح": "مجمَّد",
+    "نصيبُ مادّتهم الخارجةِ عن حدِّنا": "مجمَّد",
+    "إطلاقُ «لا يجتمع التنوين مع أل»": "مجمَّد",
+    "مخالفاتُ «التنوين وأل» غيرَ مطروحة": "مجمَّد",
+    "ذوبانُ الجارّة بالصورة": "مجمَّد",
+    "ما صمد من ترجمتنا لضابطهم": "فاتورة",
+}
+
+
+def sanad_of(seal):
+    """سندُ الختم: الخاصُّ إن أُعلن، وإلا سندُ وديعتِه — والمجهولُ لا يُقبَل."""
+    return SANAD.get(seal["اسم"]) or SANAD_BY_DEPOSIT.get(seal["وديعة"])
+
+
+def sanad_ledger(verbose=True):
+    """حارسُ الدَّين: لا ختمَ [بوّابة] بلا سندٍ من المفردات المغلقة.
+
+    ويُحرَس الطرفان: سندٌ لكلِّ ختمٍ يحكم، **و**لا سندَ معلنٌ لختمٍ لا وجودَ له (فلا
+    يشيخ هذا السجلُّ بأسماءَ زالت من SEALS).
+    """
+    problems = []
+    names = {s["اسم"] for s in SEALS}
+    for s in SEALS:
+        if s["صنف"] != GATE:
+            continue
+        kind = sanad_of(s)
+        if kind is None:
+            problems.append(f"ختمٌ بلا سند: «{s['اسم']}» على {s['وديعة']} — "
+                            f"رقمٌ يحكم ولا يُعرَف من أين استمدَّ حجّيَّته")
+        elif kind not in SANAD_KINDS:
+            problems.append(f"سندٌ خارجَ المفردات المُعلَنة: «{kind}» للختم «{s['اسم']}»")
+    for name in SANAD:
+        if name not in names:
+            problems.append(f"سندٌ مُعلَنٌ لختمٍ لا وجودَ له: «{name}» — سجلٌّ يشيخ")
+    for deposit in SANAD_BY_DEPOSIT:
+        if deposit not in GENERATORS and deposit not in CI_COLLIDED:
+            problems.append(f"سندُ وديعةٍ لا مولِّدَ لها ولا خطوة: «{deposit}»")
+    if verbose and not problems:
+        tally = Counter(sanad_of(s) for s in SEALS if s["صنف"] == GATE)
+        line = " · ".join(f"{k}: {v}" for k, v in sorted(tally.items()))
+        print(f"    ✓ لا ختمَ [بوّابة] بلا سند — {line}")
+    for p in problems:
+        print(f"::error::{p}")
+    return problems
+
+
 def contracts(verbose=True):
     """قاعدةُ «لا رقمَ بلا فاتورة»، مفحوصةً لا موعودة.
 
@@ -599,6 +676,7 @@ def contracts(verbose=True):
     """
     problems = []
     problems += sole_judge(verbose)
+    problems += sanad_ledger(verbose)
     for deposit in GENERATORS:
         if not any(s["وديعة"] == deposit and s["صنف"] == GATE for s in SEALS):
             problems.append(f"الوديعة «{deposit}» بلا ختمٍ {GATE} واحد — عرضٌ بلا حارس")
@@ -1035,6 +1113,9 @@ def record(trials, report, problems):
         اختبارُ_التكذيب=[dict(محاولة=k, مرفوضة=v.startswith("رفض")) for k, v in trials.items()],
         مسبارات=sorted(GENERATORS),
         بوّابات=sum(1 for s in SEALS if s["صنف"] == GATE),
+        # سندُ كلِّ ختمٍ يحكم، مودَعًا ليُصادَم: لا يكفي أن يُحسَب في الذاكرة.
+        أسانيد={s["اسم"]: sanad_of(s) for s in SEALS if s["صنف"] == GATE},
+        توزيعُ_الأسانيد=dict(Counter(sanad_of(s) for s in SEALS if s["صنف"] == GATE)),
         شواهد=sum(1 for s in SEALS if s["صنف"] == WITNESS),
         مكتشَفات=[dict(اسم=d["اسم"], مصدر=d["مصدر"], وسم=d["وسم"],
                        مسارُ_القياس=list(d["مسارُ_القياس"]),
