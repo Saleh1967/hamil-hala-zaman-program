@@ -111,22 +111,24 @@ jobs:
           print("results.json مُعاد الإنتاج بفارق صفر ✓")
           PY
 
-      - name: شاهدا التقشير — بايتاتُ OpenITI بختمها الثلاثيّ قبل سجلِّ الأختام
+      - name: شهودُ الخارج — بايتاتُ OpenITI بختمها الثلاثيّ قبل سجلِّ الأختام
         run: |
           set -euo pipefail
-          # وديعةُ sources_census.json وحدَها لا تُقاس على المجمَّد، بل على بايتاتِ
-          # شاهدين من OpenITI ليسا في الشجرة (corpora/sources/ مستثناةٌ في .gitignore).
-          # فتُجلَب هنا بـfetch_source.sh — وهو يصادم الطولَ والبصمةَ وبصمةَ كائن git،
-          # ويخرج بـ4 على المخالفة. وبلا هذه الخطوة يسقط السجلُّ بالمخرج 3 معلنًا
-          # الغيابَ باسمه — لا يقيس على الحاضرين صامتًا.
-          python - <<'PY' > /tmp/census_ids.txt
-          import sources_census
-          print("\n".join(sources_census.CENSUS))
+          # وديعتان لا تُقاسان على المجمَّد بل على بايتاتِ شهودٍ من OpenITI ليسوا في
+          # الشجرة (corpora/sources/ مستثناةٌ في .gitignore): sources_census.json
+          # وmanhaj_v0.json. فتُجلَب بايتاتُهم هنا **قبل خطوة سجلِّ الأختام**، لأنّ
+          # regen_all يعيد تشغيل كلِّ مولِّدٍ فيسقط مولِّدُهما بالمخرج 3 معلنًا الغيابَ
+          # باسمه — لا يقيس على الحاضرين صامتًا. والقائمتان تُقرآن من موضعيهما
+          # (CENSUS وWITNESSES) لا تُنسَخان هنا، فلا يشيخ هذا السطرُ إن زِيد شاهد.
+          python - <<'PY' > /tmp/outer_ids.txt
+          import sources_census, manhaj_gate
+          print("\n".join(dict.fromkeys(list(sources_census.CENSUS)
+                                         + list(manhaj_gate.WITNESSES))))
           PY
           while read -r id; do
             [ -n "$id" ] || continue
             bash fetch_source.sh --fetch "$id"
-          done < /tmp/census_ids.txt
+          done < /tmp/outer_ids.txt
 
       - name: سجلُّ الأختام الحيّة — كلُّ وديعةٍ وكلُّ ختمٍ يُعاد توليدُه ويُصادَم
         run: |
@@ -521,17 +523,8 @@ jobs:
       - name: بابُ المنهج — مراسٍ في بايتاتهم، وجسرُ تصريح، ومصادمة manhaj_v0.json
         run: |
           set -euo pipefail          # بلا pipefail يبتلع `| tee` سقوطَ المحرّك
-          # هذا البابُ يقرأ بايتاتِ شهودِ مغني اللبيب الثلاثة المختومة، وهي خارجَ
-          # الشجرة (corpora/sources/ مستثناةٌ في .gitignore) — فتُجلَب هنا بختمها
-          # الثلاثيّ. وبغيرها يسقط المحرّكُ بالمخرج 3 معلنًا الغيابَ باسمه.
-          python - <<'PY' > /tmp/manhaj_ids.txt
-          import manhaj_gate
-          print("\n".join(manhaj_gate.WITNESSES))
-          PY
-          while read -r id; do
-            [ -n "$id" ] || continue
-            bash fetch_source.sh --fetch "$id"
-          done < /tmp/manhaj_ids.txt
+          # بايتاتُ شهودِ مغني اللبيب الثلاثة جُلبت في خطوة «شهودُ الخارج» أعلاه،
+          # لأنّ سجلَّ الأختام يسبق هذه الخطوةَ ويعيد تشغيل هذا المولِّد.
           python manhaj_gate.py --json /tmp/manhaj_v0.json | tee -a measurement.txt
           python - <<'PY'
           import json, sys
