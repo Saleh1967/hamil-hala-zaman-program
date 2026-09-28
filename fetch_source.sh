@@ -71,9 +71,17 @@ validate() {
 # ــ الاستنساخ الأجوف ــــــــــــــــــــــــــــــــــــــــــــــــــــــــــــ
 # blobless: الشجرةُ كاملةٌ والبايتاتُ عند الطلب. فحلُّ المسار وقراءةُ بصمة الكائن
 # والطولِ تتمّ بلا تنزيل نصٍّ أصلًا.
+# مسارُ النسخة مفتاحُه المستودعُ والمرجعُ لا المعرِّف: المستودعُ الواحد يحمل شهودًا
+# كثيرين، فلو كان المفتاحُ معرِّفًا لاستُنسخ مرارًا بلا طائل. وبـSOURCES_CACHE تبقى
+# النسخةُ بين التشغيلات فلا يُعاد جلبُ الشجرة في كلِّ ختم.
+cache_dir() { # cache_dir <repo> <ref>
+  printf '%s/%s' "$CACHE" "$(printf '%s@%s' "$1" "$2" | tr -c 'A-Za-z0-9.@_-' '_')"
+}
+
 clone_blobless() { # clone_blobless <repo> <ref> <dir>
   local repo="$1" ref="$2" dir="$3"
   [ -d "$dir/.git" ] && return 0
+  mkdir -p "$(dirname "$dir")"
   GIT_TERMINAL_PROMPT=0 git clone --filter=blob:none --no-checkout --depth=1 \
     --branch "$ref" -q "$HOST/$repo.git" "$dir" 2>/dev/null && return 0
   echo "تعذّر استنساخُ $HOST/$repo.git على $ref" >&2
@@ -133,7 +141,7 @@ do_resolve() { # do_resolve <id>
     return 0
   fi
 
-  dir="$WORK/$(field "$row" 1)"
+  dir="$(cache_dir "$(field "$row" 2)" "$(field "$row" 3)")"
   clone_blobless "$(field "$row" 2)" "$(field "$row" 3)" "$dir" || return "$E_FETCH"
   out="$(resolve_one "$dir" "$(field "$row" 4)")" || return "$E_FETCH"
   echo "$1 محلولٌ:"
@@ -175,7 +183,7 @@ fetch_one() { # fetch_one <row>
     git -C "$ROOT" cat-file blob "$obj" > "$FETCHED" \
       || { echo "تعذّرت قراءةُ الكائن $obj" >&2; return "$E_FETCH"; }
   else
-    dir="$WORK/$(field "$row" 1)"
+    dir="$(cache_dir "$(field "$row" 2)" "$(field "$row" 3)")"
     clone_blobless "$(field "$row" 2)" "$(field "$row" 3)" "$dir" || return "$E_FETCH"
 
     path="$(field "$row" 5)"
@@ -319,6 +327,7 @@ main() {
 
   WORK="$(mktemp -d)"
   trap 'rm -rf "$WORK"' EXIT
+  CACHE="${SOURCES_CACHE:-$WORK/clones}"
 
   local id rc=0 one
   for id in "${targets[@]}"; do

@@ -28,12 +28,21 @@
 # فالنمطُ المخطئ يسقط ولا يجلب ملفًّا آخرَ صامتًا.
 #
 #id	repo	ref	pattern	path	blob	bytes	sha256	state	note
-tabari_tafsir	OpenITI/0310AH	master	Tabari.*Tafsir.*-ara1	-	-	-	-	مرشَّح	تفسير_الطبري
-nahhas_i3rab	OpenITI/0338AH	master	Nahhas.*(I.rab|Irab).*-ara1	-	-	-	-	مرشَّح	إعراب_القرآن_للنحاس
-ibnmalik_alfiyya	OpenITI/0672AH	master	IbnMalik.*Alfiyya.*-ara1	-	-	-	-	مرشَّح	ألفية_ابن_مالك
-ibnjinni_muluki	-	-	-	-	-	-	-	معذور	الملوكي_لا_ملفَّ_نصٍّ_في_OpenITI_ينتظر_مرآةَ_الشاملة
-jurjani_awamil	-	-	-	-	-	-	-	معذور	العوامل_المئة_لا_ملفَّ_نصٍّ_في_OpenITI_ينتظر_مرآةَ_الشاملة
-ibnhisham_mughni	-	-	-	-	-	-	-	معذور	مغني_اللبيب_ابنُ_هشامٍ_غائبٌ_من_OpenITI_ينتظر_مرآةَ_الشاملة
-ibnhisham_qatr	-	-	-	-	-	-	-	معذور	قطر_الندى_ابنُ_هشامٍ_غائبٌ_من_OpenITI_ينتظر_مرآةَ_الشاملة
+tabari_jamic_jk	OpenITI/0325AH	master	0310Tabari\.JamicBayan\.JK000164-ara1$	-	-	-	-	مرشَّح	الطبري_جامع_البيان_شاهدُ_الجامع_الكبير
+tabari_jamic_sham43	OpenITI/0325AH	master	0310Tabari\.JamicBayan\.Shamela0000043-ara1$	-	-	-	-	مرشَّح	الطبري_جامع_البيان_شاهدُ_الشاملة
+tabari_jamic_shia	OpenITI/0325AH	master	0310Tabari\.JamicBayan\.Shia002468Vols-ara1$	-	-	-	-	مرشَّح	الطبري_جامع_البيان_شاهدُ_الشيعة_مجلَّدًا
+tabari_jamic_tafsir01	OpenITI/0325AH	master	0310Tabari\.JamicBayan\.Tafsir01001-ara1$	-	-	-	-	مرشَّح	الطبري_جامع_البيان_شاهدُ_altafsir
+nahhas_icrab_jk	OpenITI/0350AH	master	0338AbuJacfarNahhas\.IcrabQuran\.JK001417-ara1$	-	-	-	-	مرشَّح	النحاس_إعراب_القرآن_شاهدُ_الجامع_الكبير
+nahhas_icrab_shamay	OpenITI/0350AH	master	0338AbuJacfarNahhas\.IcrabQuran\.ShamAY0034083-ara1$	-	-	-	-	مرشَّح	النحاس_إعراب_القرآن_شاهدُ_الشاملة_الألفية
+nahhas_icrab_sham	OpenITI/0350AH	master	0338AbuJacfarNahhas\.IcrabQuran\.Shamela0023587-ara1$	-	-	-	-	مرشَّح	النحاس_إعراب_القرآن_شاهدُ_الشاملة
+ibnmalik_alfiyya	OpenITI/0675AH	master	0672IbnMalik\.Alfiyya\.Shamela0008522-ara1$	-	-	-	-	مرشَّح	ابن_مالك_الألفية_شاهدُ_الشاملة
+ibnhisham_mughni_jk	OpenITI/0775AH	master	0761JamalDinIbnHisham\.MughniLabib\.JK001131-ara1$	-	-	-	-	مرشَّح	ابن_هشام_مغني_اللبيب_شاهدُ_الجامع_الكبير
+ibnhisham_mughni_sham	OpenITI/0775AH	master	0761JamalDinIbnHisham\.MughniLabib\.Shamela0006972-ara1$	-	-	-	-	مرشَّح	ابن_هشام_مغني_اللبيب_شاهدُ_الشاملة
+ibnhisham_mughni_shia	OpenITI/0775AH	master	0761JamalDinIbnHisham\.MughniLabib\.Shia003952Vols-ara1$	-	-	-	-	مرشَّح	ابن_هشام_مغني_اللبيب_شاهدُ_الشيعة_مجلَّدًا
+ibnhisham_qatr_matn	OpenITI/0775AH	master	0761JamalDinIbnHisham\.MatnQatrNada\.Shamela0011376-ara1$	-	-	-	-	مرشَّح	ابن_هشام_متن_قطر_الندى_شاهدُ_الشاملة
+ibnhisham_qatr_jk	OpenITI/0775AH	master	0761JamalDinIbnHisham\.SharhQatrNada\.JK000007-ara1$	-	-	-	-	مرشَّح	ابن_هشام_شرح_قطر_الندى_شاهدُ_الجامع_الكبير
+ibnhisham_qatr_sham	OpenITI/0775AH	master	0761JamalDinIbnHisham\.SharhQatrNada\.Shamela0006970-ara1$	-	-	-	-	مرشَّح	ابن_هشام_شرح_قطر_الندى_شاهدُ_الشاملة
+ibnjinni_muluki	-	-	-	-	-	-	-	معذور	الملوكي_في_التصريف_فُتِّشت_شجرةُ_0392IbnJinniMawsili_في_0400AH_فلا_أثرَ_له_ينتظر_مرآةَ_الشاملة
+jurjani_awamil	-	-	-	-	-	-	-	معذور	العوامل_المئة_فُتِّشت_شجرةُ_0471CabdQahirJurjani_في_0475AH_فلا_أثرَ_له_ينتظر_مرآةَ_الشاملة
 shakhsiyya_j1	self	b7abcad328db8a69349e02ef3e4ad4076b1a7486	-	الشخصية الإسلامية الجزء الأول (1).docx	7de0bc2bfb71ba0c85003b44e7c7d7ccbf7d9ec4	283112	5e327aa2563af094962833951972b7537a872119a58bbfce5f2a813d20c88e17	مختوم	الشخصية_الإسلامية_ج١_مودَعٌ_في_تاريخ_هذا_المستودع
 shakhsiyya_j3	self	b7abcad328db8a69349e02ef3e4ad4076b1a7486	-	الشخصية الاسلامية الجزء الثالث ورد (2).docx	3529f2f21e53391e4c11caa64adf38bc86713814	673537	360f7653df4e3396d18153d0ea31e607523d33e0cb552b419340400b2211d5bd	مختوم	الشخصية_الإسلامية_ج٣_مودَعٌ_في_تاريخ_هذا_المستودع
