@@ -295,6 +295,9 @@ def test_contract_line_is_collided():
     sys.path.insert(0, os.path.join(ROOT, "induction"))
     import seals as S                                  # noqa: PLC0415 — يُحمَّل عند الحاجة
     got["أختامُ [بوّابة] المصدَّرة"] = sum(1 for s in S.SEALS if s["صنف"] == S.GATE)
+    # وسندُ كلِّ ختمٍ يحكم: العددان يتساويان بالبناء أو ثَمَّ ختمٌ بلا سند.
+    got["أختامٌ بسندٍ مُعلَن"] = sum(1 for s in S.SEALS
+                                     if s["صنف"] == S.GATE and S.sanad_of(s))
 
     for key, value in got.items():
         assert key in rows, f"بندٌ غائبٌ عن سطر العقد: {key}"
