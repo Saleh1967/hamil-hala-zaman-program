@@ -106,6 +106,11 @@ do_list() {
   done < <(rows)
 }
 
+# الطريقان بلا شبكة: المحلّيُّ (ملفٌّ بيد المالك) والمستودعُ نفسُه (كائنٌ في تاريخه).
+offline_route() { # offline_route <row>
+  case "$(field "$1" 2)" in local|self) return 0 ;; *) return 1 ;; esac
+}
+
 excused_guard() { # excused_guard <row>
   [ "$(field "$1" 9)" = "معذور" ] || return 0
   echo "«$(field "$1" 1)» معذورٌ بالاسم: $(field "$1" 10) — لا يُجلَب من OpenITI" >&2
@@ -117,11 +122,11 @@ do_resolve() { # do_resolve <id>
   row="$(row_of "$1")" || die "لا معرِّفَ «$1» في البيان"
   excused_guard "$row" || return 0
 
-  if [ "$(field "$row" 2)" = "local" ]; then
+  if offline_route "$row"; then
     FETCHED=""; MEASURED=""
     fetch_one "$row" || return $?
-    echo "$1 حاضرٌ محلّيًّا:"
-    echo "  الملف: $FETCHED"
+    echo "$1 حاضرٌ ($(field "$row" 2)):"
+    echo "  المسار: $(printf '%s' "$MEASURED" | cut -f1)"
     echo "  بصمةُ الكائن: $(printf '%s' "$MEASURED" | cut -f2)"
     echo "  الطول: $(printf '%s' "$MEASURED" | cut -f3) بايتًا"
     echo "  sha256: $(printf '%s' "$MEASURED" | cut -f4)"
@@ -140,7 +145,7 @@ do_resolve() { # do_resolve <id>
 
 # fetch_one يُخرج الملفَّ وحدَه ويُرجع مساره المؤقَّت في FETCHED، وقياساتِه في MEASURED.
 fetch_one() { # fetch_one <row>
-  local row="$1" dir path blob bytes out got_blob got_len
+  local row="$1" dir path ref obj blob bytes out got_blob got_len
 
   if [ "$(field "$row" 2)" = "local" ]; then
     # الطريقُ المحلّيّ: لا استنساخَ ولا شبكة. الملفُّ يضعه المالكُ في INBOX بحرف
@@ -153,6 +158,22 @@ fetch_one() { # fetch_one <row>
       echo "  ضعه بحرف اسمِه هناك (أو أعلن مجلّدًا: SOURCES_INBOX=<مسار>)" >&2
       return "$E_FETCH"
     }
+  elif [ "$(field "$row" 2)" = "self" ]; then
+    # طريقُ المستودع نفسِه: البايتاتُ في تاريخ هذا المستودع عند إيداعٍ مثبَّتٍ
+    # بالاسم في حقل ref. تُقرأ بـcat-file بلا شبكةٍ ولا صندوقِ وارد، فتبقى
+    # مستردَّةً لكلِّ من استنسخ المستودعَ ولو حُذف الملفُّ من الرأس بعدُ.
+    path="$(field "$row" 5)"; ref="$(field "$row" 3)"
+    if [ "$path" = "-" ] || [ "$ref" = "-" ]; then
+      echo "«$(field "$row" 1)» من المستودع نفسِه بلا ref أو path" >&2
+      return "$E_MANIFEST"
+    fi
+    git -C "$ROOT" rev-parse --verify -q "$ref^{commit}" >/dev/null \
+      || { echo "لا إيداعَ «$ref» في هذا المستودع — جرّب: git fetch origin" >&2; return "$E_FETCH"; }
+    obj="$(git -C "$ROOT" rev-parse --verify -q "$ref:$path" 2>/dev/null)" \
+      || { echo "لا «$path» في شجرة $ref" >&2; return "$E_FETCH"; }
+    FETCHED="$WORK/$(field "$row" 1).bytes"
+    git -C "$ROOT" cat-file blob "$obj" > "$FETCHED" \
+      || { echo "تعذّرت قراءةُ الكائن $obj" >&2; return "$E_FETCH"; }
   else
     dir="$WORK/$(field "$row" 1)"
     clone_blobless "$(field "$row" 2)" "$(field "$row" 3)" "$dir" || return "$E_FETCH"
@@ -202,8 +223,8 @@ do_fetch() { # do_fetch <id>
   fi
 
   # المحلّيُّ يبقى حيث وضعه المالك؛ لا تُنسَخ بايتاتُه مرّةً ثانيةً في الشجرة.
-  if [ "$(field "$row" 2)" = "local" ]; then
-    dest="$FETCHED"
+  if offline_route "$row"; then
+    dest="$(printf '%s' "$MEASURED" | cut -f1)"
   else
     dest="$STORE/$1.txt"
     mkdir -p "$STORE"
@@ -224,7 +245,16 @@ do_check() { # do_check <id> — بلا شبكة
   row="$(row_of "$1")" || die "لا معرِّفَ «$1» في البيان"
   excused_guard "$row" || return 0
   [ "$(field "$row" 9)" = "مختوم" ] || { echo "$1: غيرُ مختومٍ بعد — لا شيءَ يُصادَم"; return 0; }
-  if [ "$(field "$row" 2)" = "local" ]; then f="$INBOX/$(field "$row" 5)"; else f="$STORE/$1.txt"; fi
+  if offline_route "$row"; then
+    # لا نسخةَ تُفتَّش: البايتاتُ تُقرأ من موضعها الأصليِّ ويُصادَم الختمُ عليها.
+    FETCHED=""; MEASURED=""
+    fetch_one "$row" || return $?
+    [ "$(printf '%s' "$MEASURED" | cut -f4)" = "$(field "$row" 8)" ] \
+      || { echo "$1: sha256 مخالفة" >&2; return "$E_SEAL"; }
+    echo "$1 مطابقٌ ثلاثيًّا ✓"
+    return 0
+  fi
+  f="$STORE/$1.txt"
   [ -f "$f" ] || { echo "$1: لا نسخةَ حاضرةً في $f" >&2; return "$E_FETCH"; }
   blob="$(field "$row" 6)"; bytes="$(field "$row" 7)"; sha="$(field "$row" 8)"
   [ "$(git hash-object "$f")" = "$blob" ] || { echo "$1: بصمةُ كائنٍ مخالفة" >&2; bad=1; }
