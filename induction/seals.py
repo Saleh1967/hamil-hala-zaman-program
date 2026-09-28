@@ -57,11 +57,15 @@ GENERATORS = {
     "pairs_v0.json": ["pairs_engine.py"],
     "context_ladder.json": ["context_ladder.py"],
     "jumla_links.json": ["jumla_links.py"],
+    # الوحيدةُ التي لا تُقاس على المجمَّد: مولِّدُها يقرأ بايتاتِ شهودٍ مختومين من
+    # corpora/sources/ (غيرِ المودَعة في الشجرة)، ويسقط بالمخرج 3 إن غابت — فلا
+    # يُصادَم هذا السجلُّ إلا بعد «bash fetch_source.sh --fetch» لشاهدَي التعداد.
+    "sources_census.json": ["sources_census.py"],
 }
 
 # موضعُ كلِّ وديعةٍ في الشجرة — الأصلُ induction/، وما خرج عنه يُعلَن هنا بمساره.
 DEPOSIT_DIR = {"pairs_v0.json": ROOT, "context_ladder.json": ROOT,
-               "jumla_links.json": ROOT}
+               "jumla_links.json": ROOT, "sources_census.json": ROOT}
 
 
 def deposit_path(deposit):
@@ -265,6 +269,28 @@ SEALS = [
       "noun_doors ⟵ marfu3_antecedent", "1,299 من 1,592 — الحارسُ قائمٌ في المقامين", GATE),
     S("الحياد · الألفُ تفرّق", "hiyad.json", ("دعوى_الحياد", "حيادٌ_تقابليّ", "ا", "مواضع"), 11024,
       "contrastive", "موضعًا — الألفُ محايدةٌ في الحالة لا في الحرف", GATE),
+
+    # ——— تعدادُ الشهود: أوّلُ مقدارٍ مختومٍ مقيسٍ على غير المجمَّد ———
+    # كلُّ ما فوق هذا السطر مقيسٌ على mujammad.txt وحدَه. وهذه الأربعةُ مقيسةٌ على
+    # بايتاتِ شاهدين من OpenITI: تُصادَم ببصمتها في البيان ثمّ تُقشَّر بـnormalize.py.
+    S("أسطرُ متن النحّاس المقشورة", "sources_census.json",
+      ("تعدادُ_الشهود", "nahhas_icrab_shamay", "أسطر"), 35679,
+      "census_of ⟵ normalize.read_lines",
+      "إعرابُ القرآن للنحّاس — ما بعد ‎#META#Header#End#‎ سطرًا سطرًا، والبومُ مقشورٌ لا معدود",
+      GATE),
+    S("سطورُ الوصل في النحّاس", "sources_census.json",
+      ("تعدادُ_الشهود", "nahhas_icrab_shamay", "أصناف", "وصل"), 19642,
+      "census_of ⟵ normalize.classify",
+      "‎~~‎ وصلُ فقرةٍ سابقة — أكثرُ من نصف المتن، فمن عدَّ السطرَ فقرةً أخطأ نصفَ العدّ",
+      GATE),
+    S("مواضعُ الترقيم في النحّاس", "sources_census.json",
+      ("تعدادُ_الشهود", "nahhas_icrab_shamay", "ترقيم"), 3948,
+      "census_of ⟵ normalize.PAGE",
+      "PageVxxPyy منتزَعًا حقلًا لا محذوفًا — من PageV01P001 إلى PageV05P317", GATE),
+    S("أسطرُ متن الألفية المقشورة", "sources_census.json",
+      ("تعدادُ_الشهود", "ibnmalik_alfiyya", "أسطر"), 1255,
+      "census_of ⟵ normalize.read_lines",
+      "شاهدٌ ثانٍ مخالفُ الهيئة (بلا بومٍ وبلا وصلٍ البتّة) — يُعرَض ولا يحكم", WITNESS),
 ]
 
 

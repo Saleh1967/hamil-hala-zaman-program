@@ -111,6 +111,23 @@ jobs:
           print("results.json مُعاد الإنتاج بفارق صفر ✓")
           PY
 
+      - name: شاهدا التقشير — بايتاتُ OpenITI بختمها الثلاثيّ قبل سجلِّ الأختام
+        run: |
+          set -euo pipefail
+          # وديعةُ sources_census.json وحدَها لا تُقاس على المجمَّد، بل على بايتاتِ
+          # شاهدين من OpenITI ليسا في الشجرة (corpora/sources/ مستثناةٌ في .gitignore).
+          # فتُجلَب هنا بـfetch_source.sh — وهو يصادم الطولَ والبصمةَ وبصمةَ كائن git،
+          # ويخرج بـ4 على المخالفة. وبلا هذه الخطوة يسقط السجلُّ بالمخرج 3 معلنًا
+          # الغيابَ باسمه — لا يقيس على الحاضرين صامتًا.
+          python - <<'PY' > /tmp/census_ids.txt
+          import sources_census
+          print("\n".join(sources_census.CENSUS))
+          PY
+          while read -r id; do
+            [ -n "$id" ] || continue
+            bash fetch_source.sh --fetch "$id"
+          done < /tmp/census_ids.txt
+
       - name: سجلُّ الأختام الحيّة — كلُّ وديعةٍ وكلُّ ختمٍ يُعاد توليدُه ويُصادَم
         run: |
           set -euo pipefail          # بلا pipefail كان `| tee` يبتلع سقوطَ السجلِّ ويُخضِر الخطوة
