@@ -414,6 +414,52 @@ jobs:
           print("الأبوابُ الثلاثةَ عشرَ حيّةٌ معدودةٌ مستقلّةً، والبسطان والمتبقّي مُصالَحةٌ ✓")
           PY
 
+      - name: محرّكُ الربط — الأسبابُ الاثنا عشر بمقامَيها، ومصادمة jumla_links.json
+        run: |
+          set -euo pipefail          # بلا pipefail يبتلع `| tee` سقوطَ المحرّك
+          python jumla_links.py --json /tmp/jumla_links.json | tee -a measurement.txt
+          python - <<'PY'
+          import json, sys
+          a = json.load(open("jumla_links.json", encoding="utf-8"))
+          b = json.load(open("/tmp/jumla_links.json", encoding="utf-8"))
+          if a != b:
+              print("::error::jumla_links.json المودَع خالف ما يُنتجه المحرّك — صريخ")
+              sys.exit(1)
+          print("jumla_links.json مُعاد الإنتاج بفارق صفر ✓")
+          R = a["الربط_v0"]
+          W, C = R["مقامات"]["داخل_الآية"], R["مقامات"]["العبور"]
+          # المقامان لا يُجمَعان: لكلٍّ عدُّه ومصالحتُه، وأزواجُ العبور 6,235 بنصِّ التسجيل.
+          if C["حدود"] != 6235:
+              print(f"::error::أزواجُ العبور ليست 6,235 بل {C['حدود']} — صريخ")
+              sys.exit(1)
+          for name, t in (("داخل الآية", W), ("العبور", C)):
+              if t["مصنَّف"] + t["معلَّق"] != t["حدود"] \
+                 or sum(t["أجناسُ_المتبقّي"].values()) != t["معلَّق"]:
+                  print(f"::error::مصالحةُ «{name}» خُولفت — صريخ")
+                  sys.exit(1)
+              # الشرطُ الثاني المختوم: لا موضعَ بلا جنسٍ مسمًّى — و«غيرُ ذلك» صفرٌ أو سقط.
+              if t["غيرُ_المسمّى"]:
+                  print(f"::error::متبقٍّ غيرُ مسمًّى في «{name}»: {t['غيرُ_المسمّى']} — صريخ")
+                  sys.exit(1)
+          # حكمُ التسجيل المسبق يُعرَض بنصّه ولا يُخفى — والسقوطُ المسمّى نتيجةٌ تُودَع.
+          print(f"حكمُ التسجيل المسبق لمحرّك الربط: {R['preregistration']}")
+          # حارسُ التاريخ: الحكمُ الساقطُ يبقى ساقطًا بأرقامه، ولا يُرفَع بجولةٍ تالية.
+          if not R["preregistration"].startswith("سقط"):
+              print("::error::حكمُ محرّك الربط انقلب عن سقوطه بلا جولةٍ مسجَّلة — صريخ")
+              sys.exit(1)
+          if "0.3289" not in R["preregistration"] or "0.3416" not in R["preregistration"]:
+              print("::error::أرقامُ حكم محرّك الربط المجمَّدة تبدّلت — صريخ")
+              sys.exit(1)
+          # العطفُ ليس سببًا: تعليقُه معدودٌ بجنسه، ولا يدخل تغطيةً بحالٍ من الأحوال.
+          if any(r not in R["أسبابٌ_معلنة"] for r in W["أسباب"]) or len(R["أسبابٌ_معلنة"]) != 12:
+              print("::error::الأسبابُ ليست الاثني عشر المعلنة — صريخ")
+              sys.exit(1)
+          if W["تغطية"] * W["حدود"] < W["مصنَّف"] - 1:
+              print("::error::التغطيةُ لا تُصالِح المصنَّف — صريخ")
+              sys.exit(1)
+          print("المقامان معدودان مستقلّين، والمتبقّي مسمًّى كلُّه بأجناسه ✓")
+          PY
+
       - name: إيداع تقرير القياس
         if: always()
         uses: actions/upload-artifact@v4
