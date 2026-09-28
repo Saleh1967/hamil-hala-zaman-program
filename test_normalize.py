@@ -266,6 +266,59 @@ def test_sealed_witness_if_fetchable():
         f"{k} {m['أصناف'][k]}" for k in N.KINDS) + f" · ترقيم {m['ترقيم']}")
 
 
+# ــ ⑧ سطرُ العقد — مقاديرُه تُقرأ من بايتات الوثيقة وتُصادَم بمواضعها ــــــــ
+def test_contract_line_is_collided():
+    """«سطرُ العقد» في SOURCES.md ليس نثرًا يشيخ: كلُّ مقدارٍ فيه يُقرأ من موضعه.
+
+    والعلّةُ ملموسة: سطرُ عقدٍ يُكتَب مرّةً ثمّ يُزاد حقلٌ في البيان أو يُختَم شاهدٌ
+    فيبقى السطرُ معروضًا صادقَ الظاهر كاذبَ المقدار. فتُنتزَع الأعدادُ من بايتاته
+    هنا وتُصادَم بما تعطيه مواضعُها؛ ولا يُقرَأ مقدارٌ من الوثيقة إلى الحساب.
+    """
+    doc = open(os.path.join(ROOT, "SOURCES.md"), encoding="utf-8").read()
+    rows = {}
+    for line in doc.splitlines():
+        if line.startswith("| ") and line.count("|") == 5:
+            cells = [c.strip() for c in line.strip("|").split("|")]
+            rows[cells[0]] = cells[1]
+    assert rows, "لا جدولَ في سطر العقد — الحارسُ بلا مادّة"
+
+    manifest = [ln.rstrip("\n").split("\t") for ln in
+                open(os.path.join(ROOT, "sources_manifest.tsv"), encoding="utf-8")
+                if ln.strip() and not ln.startswith("#")]
+    states = [r[8] for r in manifest]
+    got = {
+        "حقولُ البيان": len({len(r) for r in manifest}) == 1 and len(manifest[0]),
+        "شهودٌ مختومون": states.count("مختوم"),
+        "معذورون بالاسم": states.count("معذور"),
+        "مصادماتُ التقشير": sum(1 for n in globals() if n.startswith("test_")),
+    }
+    sys.path.insert(0, os.path.join(ROOT, "induction"))
+    import seals as S                                  # noqa: PLC0415 — يُحمَّل عند الحاجة
+    got["أختامُ [بوّابة] المصدَّرة"] = sum(1 for s in S.SEALS if s["صنف"] == S.GATE)
+
+    for key, value in got.items():
+        assert key in rows, f"بندٌ غائبٌ عن سطر العقد: {key}"
+        assert rows[key] == str(value), (
+            f"سطرُ العقد يعلن «{key} = {rows[key]}» وموضعُه يعطي {value}")
+
+    # المخارجُ المعلنةُ في السطر هي مخارجُ الطبقتين بأعيانها، لا وصفًا لها.
+    assert rows["مخارجُ التقشير"] == "`0·2·5·6·7`" and (
+        N.E_USAGE, N.E_DECODE, N.E_NFC, N.E_HEADER) == (2, 5, 6, 7)
+    fetch = open(os.path.join(ROOT, "fetch_source.sh"), encoding="utf-8").read()
+    assert rows["مخارجُ الجلب"] == "`0·1·2·3·4`"
+    for name in ("E_FETCH", "E_USAGE", "E_MANIFEST", "E_SEAL"):
+        assert name in fetch, f"مخرجٌ معلَنٌ في سطر العقد بلا موضعٍ في fetch_source.sh: {name}"
+
+    # وعددُ مصادمات الجلب يُقاس بتشغيلها لا بعدِّ سطورها.
+    if shutil.which("bash"):
+        out = subprocess.run(["bash", os.path.join(ROOT, "test_fetch_source.sh")],
+                             capture_output=True, text=True, timeout=600)
+        assert out.returncode == 0, out.stdout[-400:] + out.stderr[-400:]
+        passed = [w for w in out.stdout.split() if w.isdigit()]
+        assert rows["مصادماتُ الجلب"] in passed, (
+            f"سطرُ العقد يعلن {rows['مصادماتُ الجلب']} مصادمةً للجلب، والتشغيلُ يعطي غيرَها")
+
+
 # ــ المُشغِّلُ عديمُ الاعتماد ــــــــــــــــــــــــــــــــــــــــــــــــــــ
 def run():
     tests = [(n, f) for n, f in sorted(globals().items())
