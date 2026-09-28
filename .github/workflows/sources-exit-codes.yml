@@ -1,0 +1,74 @@
+name: عقدُ المخارج الخمسة — fetch_source.sh
+
+# متى: عند مساسِ المصادر وحدَها — لا دقائقَ تُحرَق على تعديلٍ بعيدٍ عنها.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'fetch_source.sh'
+      - 'test_fetch_source.sh'
+      - 'sources_manifest.tsv'
+      - 'normalize.py'
+      - 'test_normalize.py'
+      - 'corpora/**'
+      - '.github/workflows/sources-exit-codes.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'fetch_source.sh'
+      - 'test_fetch_source.sh'
+      - 'sources_manifest.tsv'
+      - 'normalize.py'
+      - 'test_normalize.py'
+      - 'corpora/**'
+      - '.github/workflows/sources-exit-codes.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  exit-codes:
+    name: مصادمةُ المخارج بلا شبكة
+    runs-on: ubuntu-latest
+    steps:
+      - name: سحب المستودع
+        uses: actions/checkout@v4
+        with:
+          # التاريخُ كاملًا: أختامُ طريق self تُقرأ من إيداعٍ مثبَّتٍ بأربعين
+          # محرفًا، والسحبُ الضحلُ لا يحمله فيسقط الفحصُ بلا ذنبِ ختم.
+          fetch-depth: 0
+
+      - name: بيانُ المصادر سليمٌ — عشرةُ حقولٍ وحالٌ معروفةٌ ولا معرِّفَ مكرَّر
+        run: bash fetch_source.sh --list
+
+      - name: المخارجُ الخمسة — 0 · 1 · 2 · 3 · 4
+        run: bash test_fetch_source.sh
+
+      - name: تهيئة بايثون
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: طبقةُ التقشير — القراءةُ والتصنيفُ والعدّ
+        run: python test_normalize.py
+
+      - name: الأختامُ المحفوظةُ في تاريخ المستودع تُصادَم بلا شبكة
+        run: |
+          set -u
+          # طريقُ self وحدَه: بايتاتُه في تاريخ هذا المستودع، فيُصادَم ختمُه
+          # ولو كانت OpenITI محجوبةً. والبعيدُ لا يُجرَّب هنا عمدًا.
+          rc=0
+          while IFS=$'\t' read -r id repo _rest; do
+            [ "$repo" = "self" ] || continue
+            echo "— $id"
+            bash fetch_source.sh --check "$id" || rc=$?
+          done < <(grep -v '^[[:space:]]*#' sources_manifest.tsv | grep -v '^[[:space:]]*$')
+          if [ "$rc" != "0" ]; then
+            echo "صريخ: ختمُ مصدرٍ محفوظٍ في التاريخ مخالفٌ (خرج $rc) — لا يُدمَج" >&2
+            exit "$rc"
+          fi
