@@ -8,6 +8,8 @@ on:
       - 'fetch_source.sh'
       - 'test_fetch_source.sh'
       - 'sources_manifest.tsv'
+      - 'normalize.py'
+      - 'test_normalize.py'
       - 'corpora/**'
       - '.github/workflows/sources-exit-codes.yml'
   pull_request:
@@ -16,6 +18,8 @@ on:
       - 'fetch_source.sh'
       - 'test_fetch_source.sh'
       - 'sources_manifest.tsv'
+      - 'normalize.py'
+      - 'test_normalize.py'
       - 'corpora/**'
       - '.github/workflows/sources-exit-codes.yml'
   workflow_dispatch:
@@ -44,6 +48,14 @@ jobs:
 
       - name: المخارجُ الخمسة — 0 · 1 · 2 · 3 · 4
         run: bash test_fetch_source.sh
+
+      - name: تهيئة بايثون
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: طبقةُ التقشير — القراءةُ والتصنيفُ والعدّ
+        run: python test_normalize.py
 
       - name: الأختامُ المحفوظةُ في تاريخ المستودع تُصادَم بلا شبكة
         run: |
