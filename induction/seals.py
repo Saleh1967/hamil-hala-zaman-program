@@ -206,7 +206,9 @@ DEPOSIT_DIR = {"pairs_v0.json": ROOT, "context_ladder.json": ROOT,
                "qisma_v0.json": ROOT, "duyun_v0.json": ROOT,
                "tamakkun_v0.json": ROOT,
                "sigha_v0.json": ROOT,
-               "wasl_v0.json": ROOT, "niyaba_v0.json": ROOT}
+               "wasl_v0.json": ROOT, "niyaba_v0.json": ROOT,
+               "sarf_v0.json": ROOT, "tawlid_v0.json": ROOT,
+               "tawhid_v0.json": ROOT}
 
 
 def deposit_path(deposit):
@@ -2054,7 +2056,8 @@ def regenerate(deposit, outdir):
         return json.load(fh)
 
 
-def coverage(verbose=True, _found=None, _ci=None):
+def coverage(verbose=True, _found=None, _ci=None, _generators=None,
+             _deposit_dir=None, _here=None):
     """حارسُ التغطية الذاتي: كلُّ وديعةِ JSON في الشجرة مبوَّبةٌ — أو يسقط CI من لحظة ولادتها.
 
     العلّةُ التي يقتلها: `pairs_v0.json` و`context_ladder.json` عاشتا خارج كلِّ بوّابةٍ
@@ -2064,6 +2067,9 @@ def coverage(verbose=True, _found=None, _ci=None):
     لا تُصدَّق بكتابتها هنا، بل تُفتَّش في بايتات ci.yml.
     """
     problems = []
+    generators = GENERATORS if _generators is None else _generators
+    deposit_dir = DEPOSIT_DIR if _deposit_dir is None else _deposit_dir
+    here = HERE if _here is None else _here
     if _found is None:
         _found = set()
         for base, dirs, files in os.walk(ROOT):
@@ -2082,7 +2088,12 @@ def coverage(verbose=True, _found=None, _ci=None):
         if dep not in ci:
             problems.append(f"الوديعة «{dep}» مدَّعًى أنّها مبوَّبةٌ في ci.yml ولا ذكرَ لها فيه")
 
-    gated = set(GENERATORS) | set(CI_COLLIDED)
+    for dep in generators:
+        if dep not in deposit_dir and not os.path.isfile(os.path.join(here, dep)):
+            problems.append(f"الوديعة «{dep}» لا في induction ولا بمسارٍ جذريٍّ مُعلَن — "
+                            "افتراضُ الموضع الصامت يوجّهها إلى غير موضعها")
+
+    gated = set(generators) | set(CI_COLLIDED)
     for dep in sorted(found - gated):
         problems.append(f"وديعةٌ يتيمة: «{dep}» في الشجرة ولا بوّابةَ تمرّ عليها — "
                         f"تُدخَل في GENERATORS (بمولِّدها) أو في CI_COLLIDED (بخطوتها)")
@@ -2881,6 +2892,14 @@ def falsify(verbose=True):
     claim = coverage(verbose=False, _found=set(GENERATORS) | set(CI_COLLIDED), _ci="")
     trials["دعوى تبويبٍ كاذبة"] = ("رفض ✓ — «مبوَّبٌ في ci.yml» تُفتَّش لا تُصدَّق"
                                    if len(claim) >= len(CI_COLLIDED) else "لم يرفض ✗")
+
+    with tempfile.TemporaryDirectory() as td:
+        misplaced = coverage(verbose=False, _found={"مفقود.json"}, _ci=ci_text(),
+                             _generators={"مفقود.json": ["مولّد.py"]},
+                             _deposit_dir={}, _here=td)
+    trials["وديعةٌ بلا عنوان"] = ("رفض ✓ — لا افتراضَ صامتًا لموضع الوديعة"
+                                  if any("لا في induction" in p for p in misplaced)
+                                  else "لم يرفض ✗")
 
     with tempfile.TemporaryDirectory() as td:
         with open(os.path.join(td, "ناسخ.py"), "w", encoding="utf-8") as fh:
