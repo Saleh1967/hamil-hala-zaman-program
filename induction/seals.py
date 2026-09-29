@@ -226,6 +226,16 @@ def deposit_path(deposit):
     return os.path.join(DEPOSIT_DIR.get(deposit, HERE), deposit)
 
 
+# لا وديعةَ بلا عنوان: ما لم يُذكَر في DEPOSIT_DIR يُفترَض في induction/ افتراضًا
+# صامتًا — فوديعةٌ جذريّةٌ نُسيت خريطتُها تُوجَّه بصمتٍ إلى مسارٍ غيرِ موضعها بدل
+# صريخٍ واضح. الحارسُ يصرخ ساعةَ الولادة، لا بـFileNotFoundError ملتبسٍ لاحقًا.
+for _dep in GENERATORS:
+    if _dep not in DEPOSIT_DIR:
+        assert os.path.isfile(os.path.join(HERE, _dep)), \
+            f"الوديعة «{_dep}» لا في induction ولا بمسارٍ جذريٍّ مُعلَن — صريخ"
+del _dep
+
+
 # الودائعُ المبوَّبةُ في ci.yml لا في هذا الملفّ — لكلِّ واحدةٍ خطوةُ مصادمةٍ باسمها.
 # الحارسُ أدناه يتحقّق من الدعوى في بايتات ci.yml، فلا تُقبَل بمجرّد كتابتها هنا.
 CI_COLLIDED = (
@@ -2421,6 +2431,11 @@ SANAD_BY_DEPOSIT = {
     # محسوبةٌ على تلك المواضع بأعيانها — فسندُه المجمَّد. والصورُ مقروءةٌ من
     # وديعتين لكلٍّ منهما سندُها في موضعه.
     "tawhid_v0.json": "مجمَّد",
+    # وبابُ التوليد: corpus_words تقرأ صورَ كلماتِ المجمَّدِ وأطوالَ آياته وحدَها.
+    "tawlid_v0.json": "مجمَّد",
+    # وبابُ الصرف: عدٌّ وحصصٌ على مواضع المجمَّد — والثلاثةُ من فاتورة
+    # bill_station مُفردةٌ بسندها الخاصِّ «فاتورة» في SANAD أدناه.
+    "sarf_v0.json": "مجمَّد",
     "results.json": "مجمَّد", "online_peel.json": "مجمَّد", "mirror.json": "مجمَّد",
     "pairs_v0.json": "مجمَّد", "context_ladder.json": "مجمَّد",
     "jumla_links.json": "مجمَّد", "alama_v0.json": "مجمَّد",
