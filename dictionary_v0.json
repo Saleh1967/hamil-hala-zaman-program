@@ -10,10 +10,16 @@
     "coverage": {
       "awzan_gain": 3098,
       "awzan_words": 4043,
+      "header_words": 27,
       "jar_mabni_words": 1588,
+      "rasm_marks": 4578,
+      "raw_minus_positions": 4605,
       "raw_words": 82406,
       "scream": 57603,
-      "shadda_words": 21705
+      "scream_positions": 52998,
+      "shadda_only_positions": 56096,
+      "shadda_words": 21705,
+      "word_positions": 77801
     },
     "n_var": 1692,
     "q_rasm": {

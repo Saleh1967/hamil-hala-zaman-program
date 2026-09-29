@@ -100,17 +100,31 @@ def run(path=CORPUS):
                 mabni_words += 1
     z_chk = cnt["ز"]
     assert Nw == 77801 and z_chk == 3153, f"مصالحة hamil خُالفت: Nw={Nw} ز={z_chk} — صريخ"
-    # تغطية القواعد المعلنة: الشدة في النص الخام (لا توسيع R5 هنا — هذا v0 السطحي)
+    # تغطية القواعد المعلنة: الشدة في النص الخام (لا توسيع R5 هنا — هذا v0 السطحي).
+    # والفرقُ بين المقام الخام والمفكوك مصنَّفٌ هنا صنفين لا رقمًا مبهمًا:
+    #   علامات-رسم: كتلةٌ بلا حرفٍ عربيّ (ۖ ۚ ۗ ۞ …) — تسقطها parse_verses لأنها ليست موضعَ كلمة
+    #   ترويسة: أسطرُ إسناد النسخة (GlobalQuran/Tanzil) بلا حرفٍ عربيٍّ البتّة
     raw_words = 0; shadda_words = 0
+    word_positions = 0; rasm_marks = 0; header_words = 0
     blob = open(path, encoding="utf-8").read()
     for ln in blob.splitlines():
         if not ln.strip():
             continue
+        arabic_line = any("\u0621" <= ch <= "\u064a" for ch in ln)
         for w in ln.split(" "):
-            if w.strip():
-                raw_words += 1
+            if not w.strip():
+                continue
+            raw_words += 1
+            if not arabic_line:
+                header_words += 1
+            elif not any("\u0621" <= ch <= "\u064a" for ch in w):
+                rasm_marks += 1
+            else:
+                word_positions += 1
                 if "ّ" in w:
                     shadda_words += 1
+    assert word_positions == Nw and word_positions + rasm_marks + header_words == raw_words, \
+        f"مقامُ المواضع خُولف: مواضع={word_positions} علامات={rasm_marks} ترويسة={header_words} — صريخ"
     n_var = sum(1 for c in sup.values() if len(c) >= 2)
     sup_states = Counter()
     for c in sup.values():
@@ -120,12 +134,17 @@ def run(path=CORPUS):
     awzan_words, awzan_shadda, awzan_bits = awzan_cover(path, verses, sup)
     awzan_gain = awzan_words - awzan_shadda          # الجديدُ وحده: ما لم تغطّه ح-شدة
     scream = raw_words - shadda_words - awzan_gain
+    # المتبقّي على مقامٍ واحد: مقامُ المواضع المفكوكة (77,801) لا الخام — فالعلاماتُ والترويسةُ
+    # ليست مواضعَ كلماتٍ أصلًا، ولا تحملُ شدّةً البتّة، فبقاؤها في ⚑ تضخيمٌ لا دَين.
+    scream_positions = word_positions - shadda_words - awzan_gain
     cost_bits = len(["ز-مزاح", "ق-فراغ", "ع-تبدل", "ث-وحدة",
                      "ح-شدة", "ح-جار-ملتصق"]) * 8 * 4 + awzan_bits
     # حكمُ الرسم: «ق» صنفٌ رابعٌ نهائيّ — الطبقة التاليةُ تشخيصيّةٌ معدودة لا تُحتسب تغطيةً
     # ولا تُسعَّر، فالحدّان ⚑ والكلفة محروسان بالعدّ هنا صراحةً.
     assert scream == 57603 and cost_bits == 1456, \
         f"حدُّ حكم الرسم خُولف: ⚑={scream} كلفة={cost_bits} — صريخ"
+    assert scream_positions == 52998 and rasm_marks == 4578 and header_words == 27, \
+        f"تصنيفُ الفرق خُولف: ⚑مواضع={scream_positions} علامات={rasm_marks} ترويسة={header_words} — صريخ"
     q_rasm = {e: dict(words=q_words[e], forms=len(q_forms[e]), definite=q_defi[e])
               for e in Q_RASM}
     q_rasm_total = dict(words=sum(q_words.values()), forms=sum(len(f) for f in q_forms.values()),
@@ -135,9 +154,14 @@ def run(path=CORPUS):
                 q_rasm=dict(by_ending=q_rasm, total=q_rasm_total, verdict="ق-فراغ صنفٌ رابعٌ نهائيّ"),
                 skeletons=len(sup), n_var=n_var, sup_states=dict(sup_states),
                 coverage=dict(raw_words=raw_words, shadda_words=shadda_words,
+                              word_positions=word_positions,
+                              rasm_marks=rasm_marks, header_words=header_words,
+                              raw_minus_positions=raw_words - word_positions,
                               jar_mabni_words=mabni_words,
                               awzan_words=awzan_words, awzan_gain=awzan_gain,
-                              scream=scream),  # ⚑ المتبقّي بلا قاعدة
+                              scream=scream,          # ⚑ على المقام الخام (تاريخيّ — مُضخَّم بالعلامات)
+                              shadda_only_positions=word_positions - shadda_words,
+                              scream_positions=scream_positions),  # ⚑ الحقيقيّ على مقام المواضع
                 rules_cost_bits=cost_bits)
 
 def main():
@@ -154,6 +178,11 @@ def main():
     print(f"تغطية المبني السطحية: شدّة {R['coverage']['shadda_words']:,} كلمة · جار ملتصق {R['coverage']['jar_mabni_words']:,} · "
           f"أوزان {R['coverage']['awzan_words']:,} (جديدها {R['coverage']['awzan_gain']:,}) · "
           f"⚑ المتبقّي {R['coverage']['scream']:,} (لا قاعدة سطحية له — دَين المعجم الكامل)")
+    C = R["coverage"]
+    print(f"مقامان لا يُخلطان: خام {C['raw_words']:,} = مواضع {C['word_positions']:,} + "
+          f"علامات رسمٍ {C['rasm_marks']:,} + ترويسة إسنادٍ {C['header_words']:,} "
+          f"(الفرق {C['raw_minus_positions']:,} ليس كلماتٍ أصلًا ولا يحمل شدّةً) — "
+          f"فـ⚑ على مقام المواضع {C['scream_positions']:,} (وبالشدّة وحدها {C['shadda_only_positions']:,})")
     print(f"كلفة القواعد الست + جدول الأوزان معلنة: {R['rules_cost_bits']} بت — تُخصم من أي ربحٍ يُبنى عليها")
     if out:
         json.dump({"المعجم_v0": R}, open(out, "w", encoding="utf-8"), ensure_ascii=False, indent=2, sort_keys=True)
