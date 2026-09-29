@@ -228,6 +228,8 @@ bash test_fetch_source.sh     # 0 إن طابق كلُّ مخرجٍ عقدَه
 | مخارجُ التقشير | `0·2·5·6·7` | `normalize.py` (`E_USAGE`·`E_DECODE`·`E_NFC`·`E_HEADER`) | `test_normalize.py` يستدعي `main` ويقيس |
 | مصادماتُ الجلب | 33 | `test_fetch_source.sh` | تشغيلُه بلا شبكة |
 | مصادماتُ التقشير | 19 | `test_normalize.py` | تشغيلُه بلا اعتماد |
+| أختامُ [بوّابة] المصدَّرة | 480 | `induction/seals.py` · `SEALS` | `induction/export_seals.py` بإزاحاتها |
+| أختامٌ بسندٍ مُعلَن | 480 | `induction/seals.py` · `SANAD_BY_DEPOSIT`/`SANAD` | `sanad_ledger` في `contracts` |
 | أختامُ [بوّابة] المصدَّرة | 413 | `induction/seals.py` · `SEALS` | `induction/export_seals.py` بإزاحاتها |
 | أختامٌ بسندٍ مُعلَن | 413 | `induction/seals.py` · `SANAD_BY_DEPOSIT`/`SANAD` | `sanad_ledger` في `contracts` |
 
