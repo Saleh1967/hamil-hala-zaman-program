@@ -360,7 +360,7 @@ def test_ci_steps_are_self_contained():
             assert key in seals[0], (
                 f"خطوة «{name}» تنتهي بطباعةِ بابٍ آخر: {seals[0]}")
 
-    assert steps == 11, f"خطواتُ الأبوابِ المحروسةُ {steps} — خالفت وديعتَها 11"
+    assert steps == 12, f"خطواتُ الأبوابِ المحروسةُ {steps} — خالفت وديعتَها 12"
     total_open = sum(1 for l in lines if "<<'PY'" in l)
     total_close = sum(1 for l in lines if l.strip() == "PY")
     assert total_open == total_close, (
