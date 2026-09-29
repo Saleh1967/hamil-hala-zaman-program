@@ -222,14 +222,14 @@ bash test_fetch_source.sh     # 0 إن طابق كلُّ مخرجٍ عقدَه
 | البند | المقدار | موضعُه | مُصادِمُه |
 |---|---|---|---|
 | حقولُ البيان | 10 | `sources_manifest.tsv` | عدُّ الحقول في كلِّ سطرٍ غيرِ مُعلَّق |
-| شهودٌ مختومون | 22 | الحقلُ التاسع من البيان | عدُّ `مختوم` |
-| معذورون بالاسم | 2 | الحقلُ التاسع من البيان | عدُّ `معذور` — والغيابُ مسمًّى لا مطويّ |
+| شهودٌ مختومون | 28 | الحقلُ التاسع من البيان | عدُّ `مختوم` |
+| معذورون بالاسم | 4 | الحقلُ التاسع من البيان | عدُّ `معذور` — والغيابُ مسمًّى لا مطويّ |
 | مخارجُ الجلب | `0·1·2·3·4` | ترويسةُ `fetch_source.sh` | `test_fetch_source.sh` يُشغِّل ويقيس |
 | مخارجُ التقشير | `0·2·5·6·7` | `normalize.py` (`E_USAGE`·`E_DECODE`·`E_NFC`·`E_HEADER`) | `test_normalize.py` يستدعي `main` ويقيس |
 | مصادماتُ الجلب | 33 | `test_fetch_source.sh` | تشغيلُه بلا شبكة |
 | مصادماتُ التقشير | 19 | `test_normalize.py` | تشغيلُه بلا اعتماد |
-| أختامُ [بوّابة] المصدَّرة | 104 | `induction/seals.py` · `SEALS` | `induction/export_seals.py` بإزاحاتها |
-| أختامٌ بسندٍ مُعلَن | 104 | `induction/seals.py` · `SANAD_BY_DEPOSIT`/`SANAD` | `sanad_ledger` في `contracts` |
+| أختامُ [بوّابة] المصدَّرة | 116 | `induction/seals.py` · `SEALS` | `induction/export_seals.py` بإزاحاتها |
+| أختامٌ بسندٍ مُعلَن | 116 | `induction/seals.py` · `SANAD_BY_DEPOSIT`/`SANAD` | `sanad_ledger` في `contracts` |
 
 **وفاتورةُ هذا السطر أنّه قابلٌ للسقوط.** يحرسه `test_normalize.py` في المصادمة
 `test_contract_line_is_collided`: تُقرأ الأعدادُ من بايتات هذه الوثيقة نفسِها
