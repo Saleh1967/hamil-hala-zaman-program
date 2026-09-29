@@ -150,7 +150,7 @@ DEPOSIT_DIR = {"pairs_v0.json": ROOT, "context_ladder.json": ROOT,
                "jumla_links.json": ROOT, "sources_census.json": ROOT,
                "alama_v0.json": ROOT, "manhaj_v0.json": ROOT,
                "shakhsiyya_v0.json": ROOT, "dalalat_v0.json": ROOT,
-               "ta3allum_v0.json": ROOT, "aqsam_v0.json": ROOT}
+               "ta3allum_v0.json": ROOT, "aqsam_v0.json": ROOT,
                "imla_v0.json": ROOT, "tashkil_v0.json": ROOT}
 
 
