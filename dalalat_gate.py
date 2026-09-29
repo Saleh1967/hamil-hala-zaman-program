@@ -519,7 +519,7 @@ def external_verification(rows, folded):
 
 
 # ═══ ⑥ محاولاتُ التكذيب — كلُّ حارسٍ يُعرَض عليه ما يكسره ══════════════════════════
-def falsify(blob, rows, folded=None):
+def falsify(blob, rows, folded):
     T = []
 
     # ① مرساةٌ زحفت بايتةً واحدةً تُقبَل.
@@ -584,33 +584,32 @@ def falsify(blob, rows, folded=None):
     cut = omega_drop([("أ", 0), ("ب", 0)])
     T.append(("عقدةٌ بلا حافةٍ موجبةٍ بقيت موصولة", cut["موصولة"]))
 
-    if folded is not None:
-        # ⑧ قاعدةُ النسختين حبرٌ: مقتطَعٌ يقع في نسخةٍ واحدةٍ لا غير يُقبَل.
-        probe = [dict(صفّ="مصنوع", شاهد=FABRICATED_ONE_EDITION, في_حدِّنا=False)]
-        saved = set(ACCEPTED_EXTERNAL)
-        try:
-            trial = external_verification(probe, folded)
-            lone = trial["مقبول"] > 0
-            # وهو قيدٌ يحرس شيئًا: لا بدَّ أن يكون المقتطَعُ واقعًا في نسخةٍ فعلًا،
-            # وإلّا كان الردُّ لغيابٍ لا لقاعدة — واختبارٌ على الخواء ليس اختبارًا.
-            struck = sum(1 for n in trial["صفوف"][0]["وقوعٌ_بالنسخ"].values() if n)
-        finally:
-            ACCEPTED_EXTERNAL.clear()
-            ACCEPTED_EXTERNAL.update(saved)
-        T.append(("مقتطَعٌ في نسخةٍ واحدةٍ قُبل", lone))
-        T.append(("مقتطَعُ التكذيب لا يقع في نسخةٍ أصلًا — فالردُّ لغيابٍ لا لقاعدة",
-                  struck != 1))
-
-        # ⑨ القبولُ الخارجيُّ وُصل بالحكم: تُفرَّغ مجموعةُ المقبولين وتُعاد الأحكام،
-        #    فإن تحرّك حكمٌ واحدٌ فقد صار الشاهدُ برهانًا — وهو ما مُنع من أوّل الباب.
-        before = [r["حكم"] for r in rows]
-        saved = set(ACCEPTED_EXTERNAL)
+    # ⑧ قاعدةُ النسختين حبرٌ: مقتطَعٌ يقع في نسخةٍ واحدةٍ لا غير يُقبَل.
+    probe = [dict(صفّ="مصنوع", شاهد=FABRICATED_ONE_EDITION, في_حدِّنا=False)]
+    saved = set(ACCEPTED_EXTERNAL)
+    try:
+        trial = external_verification(probe, folded)
+        lone = trial["مقبول"] > 0
+        # وهو قيدٌ يحرس شيئًا: لا بدَّ أن يكون المقتطَعُ واقعًا في نسخةٍ فعلًا،
+        # وإلّا كان الردُّ لغيابٍ لا لقاعدة — واختبارٌ على الخواء ليس اختبارًا.
+        struck = sum(1 for n in trial["صفوف"][0]["وقوعٌ_بالنسخ"].values() if n)
+    finally:
         ACCEPTED_EXTERNAL.clear()
-        try:
-            after = [row_verdict(r["صفّ_خام"], r["إطلاقُ_خام"])[0] for r in rows]
-        finally:
-            ACCEPTED_EXTERNAL.update(saved)
-        T.append(("القبولُ الخارجيُّ زحزح حكمَ صفٍّ", before != after))
+        ACCEPTED_EXTERNAL.update(saved)
+    T.append(("مقتطَعٌ في نسخةٍ واحدةٍ قُبل", lone))
+    T.append(("مقتطَعُ التكذيب لا يقع في نسخةٍ أصلًا — فالردُّ لغيابٍ لا لقاعدة",
+              struck != 1))
+
+    # ⑨ القبولُ الخارجيُّ وُصل بالحكم: تُفرَّغ مجموعةُ المقبولين وتُعاد الأحكام،
+    #    فإن تحرّك حكمٌ واحدٌ فقد صار الشاهدُ برهانًا — وهو ما مُنع من أوّل الباب.
+    before = [r["حكم"] for r in rows]
+    saved = set(ACCEPTED_EXTERNAL)
+    ACCEPTED_EXTERNAL.clear()
+    try:
+        after = [row_verdict(r["صفّ_خام"], r["إطلاقُ_خام"])[0] for r in rows]
+    finally:
+        ACCEPTED_EXTERNAL.update(saved)
+    T.append(("القبولُ الخارجيُّ زحزح حكمَ صفٍّ", before != after))
 
     return [dict(محاولة=n, نجحت=bool(ok)) for n, ok in T]
 
@@ -648,6 +647,7 @@ def run():
     shawahid = shawahid_census(matn_folded, corpus_folded)
     hadith, hadith_seals = hadith_folded()
     external = external_verification(shawahid["صفوف"], hadith)
+    trials = falsify(blob, rows, hadith)
     tally = Counter(r["حكم"] for r in rows)
 
     measured = {
@@ -658,6 +658,7 @@ def run():
         "شاهدٌ_خارجيٌّ_معلَّق": external["معلَّق"],
         "الشواهدُ_المقبولةُ_جملةً": shawahid["في_حدِّنا"] + external["مقبول"],
         "كتبٌ_مختومةٌ_للتحقُّق": len(HADITH_BOOKS),
+        "محاولاتُ_تكذيب": len(trials),
         "إطلاقُ_الشرط_صورةً": next(r for r in rows if r["صفّ"] == "الشرط")["إطلاق"]["بالصورة"],
         "إطلاقُ_الشرط_بالعلامة": next(r for r in rows if r["صفّ"] == "الشرط")["إطلاق"]["بالعلامة"],
         "إطلاقُ_الغاية": next(r for r in rows if r["صفّ"] == "الغاية")["إطلاق"]["بالعلامة"],
@@ -671,7 +672,6 @@ def run():
         head = " · ".join(f"{k}: مودَعٌ {a} ⟷ مقيسٌ {b}" for k, (a, b) in list(drift.items())[:4])
         raise DalalaError(E_SEAL, f"حكمٌ مجمَّدٌ خالف مقياسَه — {head}")
 
-    trials = falsify(blob, rows, hadith)
     if any(t["نجحت"] for t in trials):
         head = " · ".join(t["محاولة"] for t in trials if t["نجحت"])
         raise DalalaError(E_SEAL, f"محاولةُ تكذيبٍ نجحت — {head}")
@@ -728,7 +728,8 @@ def show(R):
     print(f"    ③ شواهدُه: في حدِّنا {out['شواهدُ_في_حدِّنا']} "
           f"· خارجَه {out['شواهدُ_خارجَ_حدِّنا']} — تُعلَن ولا تدخل حكمًا")
     ext = R["تحقُّقُ_الشواهد_الخارجية"]
-    print(f"\n  قبولُ الخارجيِّ بقاعدة النسختين ({len(ext['كتبٌ'])} كتابًا مختومًا):")
+    print(f"\n  قبولُ الخارجيِّ بقاعدة النسختين — كتبٌ مختومة: "
+          + " · ".join(ext["كتبٌ"]) + ":")
     for v in ext["صفوف"]:
         mark = "قُبل " if v["حكم"].startswith("مقبول") else "معلَّق"
         books = "·".join(v["كتبٌ_بنسختيها"]) or "—"
