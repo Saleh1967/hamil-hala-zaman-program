@@ -576,6 +576,57 @@ jobs:
           print(f"توزيعُ أصنافِ العطب: {t['توزيعُ_أصنافِ_العطب']}")
           PY
 
+      - name: بابُ الإيداع — الشخصيةُ ج٣ نصًّا مقيسًا، ومصادمة shakhsiyya_v0.json
+        run: |
+          set -euo pipefail          # بلا pipefail يبتلع `| tee` سقوطَ المحرّك
+          # الحاويةُ مودَعةٌ في الشجرة، فلا جلبَ ههنا — والبصمةُ تُقرأ من المُستخرِج
+          # نفسِه لا من نسخةٍ ثانيةٍ تتخلّف.
+          SHA="$(sed -n 's/^CONTAINER_SHA256 = "\([0-9a-f]\{64\}\)".*/\1/p' shakhsiyya_extract.py | head -n 1)"
+          GOT="$(sha256sum "الشخصية الاسلامية الجزء الثالث ورد (2).docx" | cut -d' ' -f1)"
+          if [ "$GOT" != "$SHA" ]; then
+            echo "::error::حاويةُ الشخصية ج٣ خالفت بصمتَها ($GOT) — لا استخراجَ على بديلٍ صامت"
+            exit 1
+          fi
+          echo "حاويةُ الشخصية ج٣ بالبصمة ✓ ($SHA)"
+          # الوديعتان تُعادان من الحاوية وتُصادمان ببايتاتهما — فارقُ صفرٍ أو صريخ.
+          python shakhsiyya_extract.py --check | tee -a measurement.txt
+          python shakhsiyya_extract.py --json /tmp/shakhsiyya_v0.json | tee -a measurement.txt
+          python - <<'PY'
+          import json, sys
+          a = json.load(open("shakhsiyya_v0.json", encoding="utf-8"))
+          b = json.load(open("/tmp/shakhsiyya_v0.json", encoding="utf-8"))
+          if a != b:
+              print("::error::shakhsiyya_v0.json المودَع خالف ما يُنتجه المُستخرِج — صريخ")
+              sys.exit(1)
+          print("shakhsiyya_v0.json مُعاد الإنتاج بفارق صفر ✓")
+          R = a["الشخصية_ج٣"]
+          # ① الأداةُ مسمّاةٌ بإصدارها — فلا استخراجَ بيدٍ مجهولة.
+          if not R["الأداة"]["اسم"] or not R["الأداة"]["إصدار"]:
+              print("::error::نصٌّ مقيسٌ بلا أداةٍ مسمّاةٍ بإصدارها — صريخ")
+              sys.exit(1)
+          # ② تخالفُ NFC ترتيبٌ لا تأليف: تبدُّلُ حرفٍ واحدٍ يُسقِط البابَ.
+          for name, d in R["تخالفُ_NFC"].items():
+              if d["تأليف"]:
+                  print(f"::error::تيارُ {name}: {d['تأليف']} سطرًا يتبدّل جردُه تحت NFC — صريخ")
+                  sys.exit(1)
+          # ③ الطبعةُ مقيسةٌ من بايتات الحاوية لا منقولةٌ عن دعوى.
+          marks = R["الحاوية"]["شواهدُ_الطبعة"]
+          for key in ("الطبعة الثالثة", "1426", "معتمدة"):
+              if not marks.get(key):
+                  print(f"::error::شاهدُ الطبعة «{key}» معدومٌ في المتن المقيس — صريخ")
+                  sys.exit(1)
+          # ④ الحواشي تيارٌ ثانٍ مختومٌ لا يدخل المتن — وصفرُه معلَنٌ لا مطويّ.
+          if R["الحواشي"]["طول"] or R["الحواشي"]["أسطر"]:
+              print("::error::تيارُ الحواشي تحرّك عن صفره المختوم — يُحدَّث ختمُه بيدٍ معلنة")
+              sys.exit(1)
+          # ⑤ المقصيُّ معدودٌ لا مبتلَع، والجداولُ مرفوعةٌ بأبعادها.
+          led = R["المقصيُّ_معدودًا"]
+          print("المقصيُّ معدودًا: " + " · ".join(
+              f"{k}={v}" for k, v in led.items() if isinstance(v, int)))
+          print(f"جداولُ رُفعت للمراجعة: {R['مراجعةٌ_للمالك']['جداولُ_تحمل_متنًا']}")
+          print(f"المتنُ المقيس: {R['المتن']['طول']:,} بايتًا · {R['المتن']['كلمات']:,} كلمةً")
+          PY
+
       - name: محرّكُ الربط — الأسبابُ الاثنا عشر بمقامَيها، ومصادمة jumla_links.json
         run: |
           set -euo pipefail          # بلا pipefail يبتلع `| tee` سقوطَ المحرّك
