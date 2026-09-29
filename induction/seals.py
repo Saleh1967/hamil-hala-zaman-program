@@ -206,11 +206,23 @@ DEPOSIT_DIR = {"pairs_v0.json": ROOT, "context_ladder.json": ROOT,
                "qisma_v0.json": ROOT, "duyun_v0.json": ROOT,
                "tamakkun_v0.json": ROOT,
                "sigha_v0.json": ROOT,
-               "wasl_v0.json": ROOT, "niyaba_v0.json": ROOT}
+               "wasl_v0.json": ROOT, "niyaba_v0.json": ROOT,
+               "sarf_v0.json": ROOT, "tawlid_v0.json": ROOT,
+               "tawhid_v0.json": ROOT}
 
 
 def deposit_path(deposit):
     return os.path.join(DEPOSIT_DIR.get(deposit, HERE), deposit)
+
+
+# لا وديعةَ بلا عنوان — والافتراضُ الصامتُ (HERE) يُصادَم ساعةَ تحميلِ السجلّ:
+# كلُّ وديعةٍ بمولِّدٍ إمّا مُعلَنٌ موضعُها في DEPOSIT_DIR، أو هي حاضرةٌ في induction/
+# فعلًا. ولولا هذا لَسقطَ CI بـFileNotFoundError ملتبسٍ في خطوةٍ لاحقة (وهو ما وقع:
+# سرف/التوليد/التوحيد وُلدت ودائعُها في الجذر ولم تُدرَج، فانكسر regen_all عند أوّلها).
+for _dep in GENERATORS:
+    assert _dep in DEPOSIT_DIR or os.path.isfile(os.path.join(HERE, _dep)), \
+        f"الوديعة «{_dep}» لا في induction/ ولا بموضعٍ مُعلَنٍ في DEPOSIT_DIR — صريخ"
+del _dep
 
 
 # الودائعُ المبوَّبةُ في ci.yml لا في هذا الملفّ — لكلِّ واحدةٍ خطوةُ مصادمةٍ باسمها.
