@@ -249,10 +249,44 @@ SHAWAHID = {
     "الإشارة": ("وحمله وفصاله ثلاثون شهرا", "وفصاله في عامين"),
 }
 
+# ⑧½ شهودُ الحديث المختومون — بابُ **قبول** الشاهد الخارجيّ ─────────────────────────
+#    الشواهدُ الستّةُ الخارجةُ عن المجمَّد أحاديثُ، وكانت تُعَدّ وتُترَك. وتَركُها ليس
+#    حيادًا: هو حكمٌ بالغياب على نصٍّ **له بايتاتٌ تُجلَب وتُختَم**. فبابُ القبول هنا
+#    يوسّع الحدَّ لتحقُّقِ الشاهد وحدَه — ولا يوسّعه لمقامِ قياس. وقاعدتُه:
+#
+#      شاهدٌ خارجَ المجمَّد يُقبَل إن وقع **بحرفه** — بالطيّ نفسِه المطبَّق على الطرفين —
+#      في **نسختَي** كتابٍ مختومٍ معًا. ونسخةٌ واحدةٌ دون أختها **أثرُ طبعةٍ لا نصُّ
+#      كتاب**، فتُرَدّ وتُعَدّ مردودةً باسمها.
+#
+#    وشرطُ النسختين ليس تزيُّدًا: مطابقةُ نسخةٍ واحدةٍ تُصدِّق ما انفردت به طبعةٌ، وهو
+#    عينُ العلّة التي فُتح لأجلها هذا الباب. ولذلك يُعرَض عليه في `falsify` مقتطَعٌ
+#    موجودٌ في نسخةٍ واحدةٍ لا غير: إن قَبِله سقط الباب.
+#
+#    والبايتاتُ لا تُودَع في الشجرة — تُجلَب بـ`fetch_source.sh` وتُصادَم بختمها من
+#    `sources_manifest.tsv` (مصدرُ حقيقةٍ واحد، لا نسخةَ ثانيةً ههنا). وغيابُها صريخٌ
+#    بالمخرج 3 باسمِ الشاهد: **ولا يُقاس على غيابٍ مطويّ**.
+HADITH_BOOKS = {
+    "البخاري·الصحيح": ("bukhari_sahih_jk", "bukhari_sahih_sham"),
+    "مسلم·الصحيح": ("muslim_sahih_jk", "muslim_sahih_sham"),
+}
+HADITH = tuple(i for pair in HADITH_BOOKS.values() for i in pair)
+
+# ⑧¾ مقتطَعٌ مصنوعٌ لتكذيب قاعدة النسختين: مقيسٌ من بايتات الشاهدَين — يقع في نسخة
+#     «الجامع الكبير» من البخاريِّ ولا يقع في نسخة «الشاملة». فلو قَبِله بابُ القبول
+#     لكانت القاعدةُ حبرًا. ولا يُستعمَل هذا المقتطَعُ في حكمٍ ولا يُعَدّ شاهدًا.
+FABRICATED_ONE_EDITION = "حدثنا محمد بن عبيد قال حدثنا عيسي بن يونس"
+
+# ⑧⅞ والقبولُ لا يُحتسَب في حكمٍ البتّة: هذه المجموعةُ تُملأ بالمقبولين، ولا يقرؤها
+#     `row_verdict` بحال. ومحاولةُ تكذيبٍ تفرّغها ثمّ تعيد حسابَ الأحكام: لو تحرّك
+#     حكمٌ واحدٌ سقط الباب — فالحارسُ يمنع أن يُوصَل القبولُ بالحكم في تعديلٍ لاحق.
+ACCEPTED_EXTERNAL = set()
+
 # ⑨ الأحكامُ المجمَّدة: تُشتقُّ من مواضعها في كلِّ تشغيلٍ وتُصادَم بفارق صفرٍ في `run`.
 SEALED_DALALAT = {
     "دعاوى": 7, "صفوف": 11, "مُطلِقٌ_منصوص": 5,
     "شواهدُ_مذكورة": 21, "شواهدُ_في_حدِّنا": 15,
+    "شاهدٌ_خارجيٌّ_مقبول": 2, "شاهدٌ_خارجيٌّ_معلَّق": 4,
+    "الشواهدُ_المقبولةُ_جملةً": 17, "كتبٌ_مختومةٌ_للتحقُّق": 2,
     "إطلاقُ_الشرط_صورةً": 1605, "إطلاقُ_الشرط_بالعلامة": 357,
     "إطلاقُ_الغاية": 572, "إطلاقُ_العدد": 11,
     "إطلاقُ_الاقتضاء": 871, "إطلاقُ_الإيماء": 5008,
@@ -399,8 +433,93 @@ def shawahid_census(matn_folded, corpus_folded):
                 صفوف=rows)
 
 
+# ═══ ⑤½ شهودُ الحديث: بايتاتُهم مصادَمةٌ بختمها قبل أن تُقرَأ ══════════════════════
+def manifest_row(ident):
+    """سطرُ الشاهد من `sources_manifest.tsv` — مصدرُ حقيقةٍ واحدٌ لا نسخةَ عنه هنا."""
+    path = os.path.join(ROOT, "sources_manifest.tsv")
+    if not os.path.exists(path):
+        raise DalalaError(E_MISSING, "بيانُ المصادر غائب: sources_manifest.tsv")
+    for line in open(path, encoding="utf-8"):
+        if line.startswith("#") or not line.strip():
+            continue
+        f = line.rstrip("\n").split("\t")
+        if len(f) >= 10 and f[0] == ident:
+            return dict(معرِّف=f[0], مسار=f[4], بصمة=f[5], طول=f[6],
+                        sha256=f[7], حال=f[8], ملحوظة=f[9])
+    raise DalalaError(E_SEAL, f"لا معرِّفَ «{ident}» في بيان المصادر")
+
+
+def hadith_folded():
+    """بايتاتُ الشهود المختومين مطويّةً — والختمُ يُصادَم قبل الطيّ لا بعده.
+
+    والغيابُ يُسمّى باسمه بالمخرج 3 مع أمرِ جلبِه؛ فلا يُقاس على حاضرٍ وحدَه صامتًا،
+    ولا يُقبَل شاهدٌ لأنّ نسخةً من نسختَيه لم تُجلَب.
+    """
+    out, sealed = {}, {}
+    for ident in HADITH:
+        row = manifest_row(ident)
+        if row["حال"] != "مختوم":
+            raise DalalaError(E_SEAL, f"شاهدُ «{ident}» غيرُ مختومٍ في البيان ({row['حال']})")
+        path = os.path.join(ROOT, "corpora", "sources", f"{ident}.txt")
+        if not os.path.exists(path):
+            raise DalalaError(
+                E_MISSING,
+                f"«{ident}»: بايتاتُه غائبةٌ عن الصندوق ({path}) — "
+                f"تُجلَب بـ«bash fetch_source.sh --fetch {ident}» ولا يُقاس على غيابٍ مطويّ")
+        blob = open(path, "rb").read()
+        got = hashlib.sha256(blob).hexdigest()
+        if got != row["sha256"] or len(blob) != int(row["طول"]):
+            raise DalalaError(E_SEAL, f"شاهدُ «{ident}» خالف ختمَه ({got}، {len(blob)} بايتًا)")
+        out[ident] = fold(blob.decode("utf-8"))
+        sealed[ident] = dict(sha256=got, طول=len(blob), مطويٌّ=len(out[ident]))
+    return out, sealed
+
+
+def external_verification(rows, folded):
+    """قبولُ الشاهد الخارجيِّ بقاعدة النسختين — والمردودُ يُعَدّ باسمه لا يُطوى.
+
+    لكلِّ شاهدٍ خارجَ المجمَّد: عددُ وقوعِه في كلِّ نسخةٍ مقيسًا، ثمّ كتابٌ يُقبَل به
+    إن وقع في نسختَيه معًا. والمقبولُ يُرسى على المطويِّ (إزاحةٌ · بصمةُ المقتطَع ·
+    اسمُ النسخة) — مرساةٌ على المطويِّ لا على البايت، مُعلنةً بذلك: فالطيُّ دالّةٌ
+    واحدةٌ مجمَّدةٌ تُطبَّق على الطرفين، فموضعُها يُعاد إنتاجُه بفارق صفر.
+    """
+    ACCEPTED_EXTERNAL.clear()
+    verdicts, one_edition = [], 0
+    for r in rows:
+        if r["في_حدِّنا"]:
+            continue
+        text = r["شاهد"]
+        hits = {i: folded[i].count(text) for i in HADITH}
+        books, partial = {}, []
+        for book, (a, b) in HADITH_BOOKS.items():
+            both = bool(hits[a]) and bool(hits[b])
+            books[book] = both
+            if not both and (hits[a] or hits[b]):
+                partial.append(book)
+        accepted = [b for b, ok in books.items() if ok]
+        one_edition += len(partial)
+        rec = dict(صفّ=r["صفّ"], شاهد=text, وقوعٌ_بالنسخ=hits,
+                   كتبٌ_بنسختيها=accepted, نسخةٌ_واحدةٌ_فقط=partial,
+                   حكم="مقبولٌ بالتحقُّق" if accepted else "معلَّقٌ بلا تحقُّق")
+        if accepted:
+            ident = HADITH_BOOKS[accepted[0]][0]
+            off = folded[ident].find(text)
+            rec["مرساة"] = dict(نوع="مطويّ", نسخة=ident, إزاحةٌ_في_المطويّ=off,
+                                طول=len(text),
+                                بصمة=hashlib.sha256(text.encode("utf-8")).hexdigest())
+            ACCEPTED_EXTERNAL.add(text)
+        else:
+            rec["علّةُ_التعليق"] = ("لم يقعْ بحرفه في نسختَي كتابٍ مختوم — "
+                                    "يُعلَن معلَّقًا ولا يُرَدّ ولا يُقبَل")
+        verdicts.append(rec)
+    accepted_n = sum(1 for v in verdicts if v["حكم"] == "مقبولٌ بالتحقُّق")
+    return dict(خارجيٌّ=len(verdicts), مقبول=accepted_n,
+                معلَّق=len(verdicts) - accepted_n, نسخةٌ_واحدةٌ_مردودة=one_edition,
+                كتبٌ=list(HADITH_BOOKS), صفوف=verdicts)
+
+
 # ═══ ⑥ محاولاتُ التكذيب — كلُّ حارسٍ يُعرَض عليه ما يكسره ══════════════════════════
-def falsify(blob, rows):
+def falsify(blob, rows, folded=None):
     T = []
 
     # ① مرساةٌ زحفت بايتةً واحدةً تُقبَل.
@@ -465,6 +584,34 @@ def falsify(blob, rows):
     cut = omega_drop([("أ", 0), ("ب", 0)])
     T.append(("عقدةٌ بلا حافةٍ موجبةٍ بقيت موصولة", cut["موصولة"]))
 
+    if folded is not None:
+        # ⑧ قاعدةُ النسختين حبرٌ: مقتطَعٌ يقع في نسخةٍ واحدةٍ لا غير يُقبَل.
+        probe = [dict(صفّ="مصنوع", شاهد=FABRICATED_ONE_EDITION, في_حدِّنا=False)]
+        saved = set(ACCEPTED_EXTERNAL)
+        try:
+            trial = external_verification(probe, folded)
+            lone = trial["مقبول"] > 0
+            # وهو قيدٌ يحرس شيئًا: لا بدَّ أن يكون المقتطَعُ واقعًا في نسخةٍ فعلًا،
+            # وإلّا كان الردُّ لغيابٍ لا لقاعدة — واختبارٌ على الخواء ليس اختبارًا.
+            struck = sum(1 for n in trial["صفوف"][0]["وقوعٌ_بالنسخ"].values() if n)
+        finally:
+            ACCEPTED_EXTERNAL.clear()
+            ACCEPTED_EXTERNAL.update(saved)
+        T.append(("مقتطَعٌ في نسخةٍ واحدةٍ قُبل", lone))
+        T.append(("مقتطَعُ التكذيب لا يقع في نسخةٍ أصلًا — فالردُّ لغيابٍ لا لقاعدة",
+                  struck != 1))
+
+        # ⑨ القبولُ الخارجيُّ وُصل بالحكم: تُفرَّغ مجموعةُ المقبولين وتُعاد الأحكام،
+        #    فإن تحرّك حكمٌ واحدٌ فقد صار الشاهدُ برهانًا — وهو ما مُنع من أوّل الباب.
+        before = [r["حكم"] for r in rows]
+        saved = set(ACCEPTED_EXTERNAL)
+        ACCEPTED_EXTERNAL.clear()
+        try:
+            after = [row_verdict(r["صفّ_خام"], r["إطلاقُ_خام"])[0] for r in rows]
+        finally:
+            ACCEPTED_EXTERNAL.update(saved)
+        T.append(("القبولُ الخارجيُّ زحزح حكمَ صفٍّ", before != after))
+
     return [dict(محاولة=n, نجحت=bool(ok)) for n, ok in T]
 
 
@@ -499,12 +646,18 @@ def run():
 
     ban = ban_imaa_verdict(rows)
     shawahid = shawahid_census(matn_folded, corpus_folded)
+    hadith, hadith_seals = hadith_folded()
+    external = external_verification(shawahid["صفوف"], hadith)
     tally = Counter(r["حكم"] for r in rows)
 
     measured = {
         "دعاوى": len(CLAIMS), "صفوف": len(rows),
         "مُطلِقٌ_منصوص": sum(1 for r in rows if r["مُطلِقٌ_منصوص"]),
         "شواهدُ_مذكورة": shawahid["مذكورة"], "شواهدُ_في_حدِّنا": shawahid["في_حدِّنا"],
+        "شاهدٌ_خارجيٌّ_مقبول": external["مقبول"],
+        "شاهدٌ_خارجيٌّ_معلَّق": external["معلَّق"],
+        "الشواهدُ_المقبولةُ_جملةً": shawahid["في_حدِّنا"] + external["مقبول"],
+        "كتبٌ_مختومةٌ_للتحقُّق": len(HADITH_BOOKS),
         "إطلاقُ_الشرط_صورةً": next(r for r in rows if r["صفّ"] == "الشرط")["إطلاق"]["بالصورة"],
         "إطلاقُ_الشرط_بالعلامة": next(r for r in rows if r["صفّ"] == "الشرط")["إطلاق"]["بالعلامة"],
         "إطلاقُ_الغاية": next(r for r in rows if r["صفّ"] == "الغاية")["إطلاق"]["بالعلامة"],
@@ -518,7 +671,7 @@ def run():
         head = " · ".join(f"{k}: مودَعٌ {a} ⟷ مقيسٌ {b}" for k, (a, b) in list(drift.items())[:4])
         raise DalalaError(E_SEAL, f"حكمٌ مجمَّدٌ خالف مقياسَه — {head}")
 
-    trials = falsify(blob, rows)
+    trials = falsify(blob, rows, hadith)
     if any(t["نجحت"] for t in trials):
         head = " · ".join(t["محاولة"] for t in trials if t["نجحت"])
         raise DalalaError(E_SEAL, f"محاولةُ تكذيبٍ نجحت — {head}")
@@ -539,12 +692,17 @@ def run():
         "صفوف": rows,
         "منعُ_الإيماء": ban,
         "شواهدُ_النبهاني": shawahid,
+        "شهودُ_الحديث": hadith_seals,
+        "تحقُّقُ_الشواهد_الخارجية": external,
         "النواتجُ_الثلاثة": dict(
             انتُزع_مقامُها=measured["مُطلِقٌ_منصوص"],
             لم_يُنتزَع=len(rows) - measured["مُطلِقٌ_منصوص"],
             توزيعُ_الأصناف={k: tally.get(k, 0) for k, _, _ in VERDICT_KINDS},
             شواهدُ_في_حدِّنا=shawahid["في_حدِّنا"],
-            شواهدُ_خارجَ_حدِّنا=shawahid["خارجَ_حدِّنا"]),
+            شواهدُ_خارجَ_حدِّنا=shawahid["خارجَ_حدِّنا"],
+            خارجيٌّ_مقبولٌ_بالتحقُّق=external["مقبول"],
+            خارجيٌّ_معلَّق=external["معلَّق"],
+            المقبولةُ_جملةً=shawahid["في_حدِّنا"] + external["مقبول"]),
         "محاولاتُ_التكذيب": trials,
         "مقيس": measured,
     }
@@ -569,6 +727,15 @@ def show(R):
         f"({k}) {v}" for k, v in out["توزيعُ_الأصناف"].items()))
     print(f"    ③ شواهدُه: في حدِّنا {out['شواهدُ_في_حدِّنا']} "
           f"· خارجَه {out['شواهدُ_خارجَ_حدِّنا']} — تُعلَن ولا تدخل حكمًا")
+    ext = R["تحقُّقُ_الشواهد_الخارجية"]
+    print(f"\n  قبولُ الخارجيِّ بقاعدة النسختين ({len(ext['كتبٌ'])} كتابًا مختومًا):")
+    for v in ext["صفوف"]:
+        mark = "قُبل " if v["حكم"].startswith("مقبول") else "معلَّق"
+        books = "·".join(v["كتبٌ_بنسختيها"]) or "—"
+        print(f"    ({mark}) {v['صفّ']:<10} {books:<14} {v['شاهد'][:38]}")
+    print(f"    المقبولُ {ext['مقبول']} · المعلَّقُ {ext['معلَّق']} "
+          f"· مردودٌ بنسخةٍ واحدة {ext['نسخةٌ_واحدةٌ_مردودة']}")
+    print(f"    الشواهدُ المقبولةُ جملةً: {out['المقبولةُ_جملةً']} من {R['شواهدُ_النبهاني']['مذكورة']}")
     ban = R["منعُ_الإيماء"]
     print(f"\n  منعُ الإيماء: المنفَّذ ({ban['الحكمُ_المنفَّذ']}) "
           f"· بلا قيدٍ ({ban['بلا_قيدٍ']}) · ذو أثر: {'نعم' if ban['ذو_أثر'] else 'لا'}")
