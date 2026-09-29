@@ -377,8 +377,7 @@ def run():
     ladders = {task: ladder(S, task) for task in TASK_KEY}
     tadif, hayaa = ladders["ط١ التضعيف"], ladders["ط٢ الهيئة"]
     split = split_bill(S, "ط٢ الهيئة", "م٤ +التالي")
-    preds = [predict(S, "ط١ التضعيف", tadif["الفائزة"]),
-             predict(S, "ط٢ الهيئة", hayaa["الفائزة"])]
+    preds = {task: predict(S, task, L["الفائزة"]) for task, L in ladders.items()}
     tries = falsify(S)
 
     shadda = sum(1 for s in S if s["مضعَّف"])
@@ -406,12 +405,13 @@ def run():
     assert tadif["حكم"] == hayaa["حكم"] == ACCEPT, (tadif["حكم"], hayaa["حكم"])
     assert split["قسمة"]["داخل"]["للموضع"] == SEALED_TASHKIL["داخلٌ_للموضع"]
     assert split["قسمة"]["خاتمة"]["للموضع"] == SEALED_TASHKIL["خاتمةٌ_للموضع"]
-    assert preds[1]["حادّ"] == SEALED_TASHKIL["حادٌّ_في_الهيئة"], preds[1]["حادّ"]
-    assert preds[1]["مشتبه"] == SEALED_TASHKIL["مشتبهٌ_في_الهيئة"], preds[1]["مشتبه"]
+    ph = preds["ط٢ الهيئة"]
+    assert ph["حادّ"] == SEALED_TASHKIL["حادٌّ_في_الهيئة"], ph["حادّ"]
+    assert ph["مشتبه"] == SEALED_TASHKIL["مشتبهٌ_في_الهيئة"], ph["مشتبه"]
     assert sum(census.values()) == len(S), "الهيئاتُ لا تُصالِح مواضعَها"
     assert (split["قسمة"]["داخل"]["مواضع"] + split["قسمة"]["خاتمة"]["مواضع"]
             == len(S)), "القسمةُ لا تُصالِح مجموعَها"
-    for P in preds:
+    for P in preds.values():
         assert P["تدريب"] + P["اختبار"] == len(S), "القسمةُ المتناوبةُ لا تُصالِح"
         assert P["حادّ"] + P["مشتبه"] == P["اختبار"], "الحادُّ والمشتبهُ لا يُصالِحان"
     broken = [t["محاولة"] for t in tries if t["نجحت"]]
@@ -488,7 +488,7 @@ def show(R):
     print(f"  غلاءُ الخاتمة {d['نسبةُ_الغلاء']}× — {d['حكم']}")
 
     print("\n— التطبيقُ على المحجوب: توزيعُ احتمالاتٍ [شاهدًا] لا حكمًا —")
-    for p in R["التطبيقُ_على_المحجوب"]:
+    for p in R["التطبيقُ_على_المحجوب"].values():
         print(f"  [{p['مهمّة']} · {p['رتبة']}] تدريب {p['تدريب']:,} · اختبار {p['اختبار']:,} "
               f"· إصابة {p['إصابة']:.2%}")
         print(f"    حادٌّ (فارق ≥ {p['عتبة']}) {p['حادّ']:,} إصابتُه {p['إصابةُ_الحادّ']:.2%} · "
