@@ -9,17 +9,61 @@
     },
     "coverage": {
       "awzan_gain": 3098,
+      "awzan_jar": 0,
+      "awzan_shadda": 945,
       "awzan_words": 4043,
-      "header_words": 27,
       "jar_mabni_words": 1588,
-      "rasm_marks": 4578,
-      "raw_minus_positions": 4605,
-      "raw_words": 82406,
-      "scream": 57603,
-      "scream_positions": 52998,
-      "shadda_only_positions": 56096,
-      "shadda_words": 21705,
-      "word_positions": 77801
+      "letter_blocks": 77801,
+      "outside": {
+        "header_words": 27,
+        "mark_forms": {
+          "ۖ": 1682,
+          "ۗ": 603,
+          "ۘ": 22,
+          "ۙ": 68,
+          "ۚ": 1972,
+          "ۛ": 12,
+          "ۜ": 5,
+          "۞": 199,
+          "۩": 15
+        },
+        "rasm_marks": 4578,
+        "total": 4605
+      },
+      "raw_blocks": 82406,
+      "remainder": 55171,
+      "remainder_after_awzan": 52073,
+      "remainder_by_class": {
+        "ث": 17203,
+        "ز": 2642,
+        "ع": 18206,
+        "ق": 17120
+      },
+      "remainder_q_endings": {
+        "ا": 10356,
+        "ب": 10,
+        "ت": 14,
+        "ث": 1,
+        "د": 7,
+        "ذ": 3,
+        "ر": 9,
+        "س": 2,
+        "ص": 3,
+        "ع": 2,
+        "ف": 1,
+        "ق": 2,
+        "ل": 109,
+        "م": 1095,
+        "ن": 2750,
+        "ه": 1,
+        "و": 104,
+        "ى": 579,
+        "ي": 2072
+      },
+      "sealed_scream_raw": 57603,
+      "shadda_jar_both": 663,
+      "shadda_jar_union": 22630,
+      "shadda_words": 21705
     },
     "n_var": 1692,
     "q_rasm": {
@@ -71,6 +115,7 @@
       "ي": 2861
     },
     "rules_cost_bits": 1456,
+    "rules_only_bits": 192,
     "skeletons": 14870,
     "sup_states": {
       "تنوين ضم": 344,
