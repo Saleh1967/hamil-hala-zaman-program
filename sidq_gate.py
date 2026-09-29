@@ -482,7 +482,10 @@ def sidq_station(ma3na, ifrad, ihmal):
 
 # ═══ ⑥ المحطّةُ ④: أينقَذُ التضمّنُ بقراءةِ المدلول؟ ═════════════════════════
 def _ranked_forms(candidates):
-    ranked = AG.imam_ranking(candidates, AG.imam_folded())
+    try:
+        ranked = AG.imam_ranking(candidates, AG.imam_folded())
+    except AG.AqsamError as exc:
+        raise SidqError(exc.code, exc.message) from exc
     order = sorted(candidates, key=lambda c: (-ranked[c], c))
     return order
 
@@ -811,8 +814,7 @@ def run():
     prm = permission_station()
     price = price_station()
     verses, stream, candidates, counts = corpus()
-    _roots, axis, mapped = wad3_map(stream)
-    roots, axis, mapped = _roots, axis, mapped
+    roots, axis, mapped = wad3_map(stream)
     fld = field_station(verses, stream, counts, candidates, roots, axis, mapped)
     text = QG.matn_text()
     ma3na = fasl_ma3na_station(stream, axis, counts)
