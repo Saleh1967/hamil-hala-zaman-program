@@ -11,6 +11,7 @@
 #           pytest test_normalize.py    (يعمل كذلك إن كان pytest حاضرًا)
 import atexit
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -320,6 +321,52 @@ def test_contract_line_is_collided():
         passed = [w for w in out.stdout.split() if w.isdigit()]
         assert rows["مصادماتُ الجلب"] in passed, (
             f"سطرُ العقد يعلن {rows['مصادماتُ الجلب']} مصادمةً للجلب، والتشغيلُ يعطي غيرَها")
+
+
+# ــ ⑨ بنيةُ خطواتِ CI — كلُّ بابٍ يحرس نفسَه، وكلُّ heredoc يُغلَق ــــــــــــ
+def test_ci_steps_are_self_contained():
+    """خطوةُ بابٍ تحمل حرّاسَ بابٍ آخرَ عطبٌ صامت، فتُصادَم بنيتُها لا نصُّها.
+
+    والعلّةُ مقيسةٌ لا متوهَّمة: الدمجُ fc65dcb شبكَ خطوتَي «القسمة» و«الصرف»
+    فبقيت خطوةُ القسمة مبتورةً بلا `PY` — فحذّر bash ومرّت بلا حارسٍ واحد —
+    وصارت خطوةُ الصرف تقرأ `R["البناء"]` من `sarf_v0.json` فتنفجر بـKeyError،
+    وحرّاسُ الصرفِ الاثنا عشرَ نُقلوا إلى ذيلِ خطوةِ النيابة. ثلاثةُ أعطابٍ لا
+    يلتقطها YAML صحيحٌ ولا مُفسِّرُ بايثون، فيلتقطها هذا الحارسُ بثلاثةِ مقاييس:
+    توازنُ الـheredocs في كلِّ خطوة · طباعةٌ خاتمةٌ واحدةٌ لا أكثر · واسمُ البابِ
+    في الطباعةِ هو اسمُ الخطوةِ نفسِها.
+    """
+    path = os.path.join(ROOT, ".github", "workflows", "ci.yml")
+    lines = open(path, encoding="utf-8").read().splitlines()
+
+    heads = [i for i, l in enumerate(lines) if l.startswith("      - name:")]
+    assert heads, "لا خطوةَ في ci.yml — الملفُّ بُدِّل"
+    steps = 0
+    for a, b in zip(heads, heads[1:] + [len(lines)]):
+        name = lines[a].split(":", 1)[1].strip()
+        body = lines[a:b]
+
+        opens = sum(1 for l in body if "<<'PY'" in l)
+        closes = sum(1 for l in body if l.strip() == "PY")
+        assert opens == closes, (
+            f"heredoc غيرُ مغلقٍ في خطوة «{name}»: فُتِح {opens} وأُغلِق {closes}")
+
+        seals = [l.strip() for l in body
+                 if re.match(r'print\("(?:باب|محرّك|مُصدِّر)', l.strip())]
+        assert len(seals) <= 1, (
+            f"خطوة «{name}» تحمل {len(seals)} طباعةً خاتمة — حرّاسُ بابٍ آخرَ فيها")
+        if seals:
+            steps += 1
+            key = name.split("—")[0].strip()
+            assert key in seals[0], (
+                f"خطوة «{name}» تنتهي بطباعةِ بابٍ آخر: {seals[0]}")
+
+    assert steps == 11, f"خطواتُ الأبوابِ المحروسةُ {steps} — خالفت وديعتَها 11"
+    total_open = sum(1 for l in lines if "<<'PY'" in l)
+    total_close = sum(1 for l in lines if l.strip() == "PY")
+    assert total_open == total_close, (
+        f"ci.yml: heredocs مفتوحةٌ {total_open} ⟷ مغلقةٌ {total_close}")
+    print(f"  ✓ ci.yml: {steps} خطوةَ بابٍ تحرس نفسَها · "
+          f"{total_open} heredoc مغلقةً")
 
 
 # ــ المُشغِّلُ عديمُ الاعتماد ــــــــــــــــــــــــــــــــــــــــــــــــــــ
