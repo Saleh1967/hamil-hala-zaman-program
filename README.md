@@ -115,3 +115,8 @@ python algebra_engine.py --json=baselines/results-measured.json --require-corpus
 ### قواعدُ المساهمة
 `CONTRIBUTING.md` — شرطُ دمجٍ لا نصيحة، وكلُّ بندٍ فيه مذكورٌ بالدالّة التي تفحصه.
 وورقةُ التدقيق الخارجي `AUDIT-SEALS.md` **مولَّدةٌ** بـ`python induction/seals.py --audit AUDIT-SEALS.md`.
+
+### تنظيمُ المستودع
+`TANZIM.md` — تصنيفٌ منطقيٌّ للملفّات الحاليّة إلى أربعة أجناس (شهاداتٌ مستقلّة نمط
+`burhan/` · بوّاباتٌ `_gate.py` · طبقاتٌ/محرّكاتٌ · مكتبةٌ مشتركة `induction/`) بلا نقلِ
+ملفّاتٍ ولا مساسٍ بـ`seals.py`/`ci.yml`.

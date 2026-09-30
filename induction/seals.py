@@ -26,6 +26,7 @@ import tempfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
+BURHAN = os.path.join(ROOT, "burhan")
 
 sys.path.insert(0, HERE)
 import deposit_law                                     # المصادقُ المركزيّ نفسُه الذي تستدعيه المحرّكات
@@ -190,11 +191,13 @@ GENERATORS = {
     # وبابُ توحيدِ المقام: مقامُه المجمَّدُ وصورُه مقروءةٌ من وديعتَي الأقسامِ
     # والمدلول — لا جلبَ خارجيًّا له.
     "tawhid_v0.json": ["tawhid_gate.py"],
-    # والموسوعة: لا تقرأ المجمَّدَ ولا شاهدًا خارجيًّا، بل بايتاتِ وديعةِ المدلول
-    # في هذه الشجرة — فمولِّدُها يعمل بلا جلبٍ ألبتّة.
-    "mawsua_v0.json": ["mawsua_gate.py"],
-    "mu3jam_v0.json": ["mu3jam_gate.py"],
-    "masadir_v0.json": ["masadir_gate.py"],
+    # وبابُ الترجيح: مادّتُه مستوردةٌ من وديعة tawhid_v0.json وحدَها (المودَعةِ في
+    # الشجرة) — لا جلبَ خارجيًّا له.
+    "tarjih_v0.json": ["tarjih_gate.py"],
+    # وبابُ الوزن (الشاهدُ الرابع): سلّمُ الأجيال مقروءٌ من burhan_v0.json المودَعة
+    # (لا استيرادَ كودٍ من burhan — انضباطُ استقلاله)، والقياسُ الحيُّ على PREFIX
+    # مباشرةً بختم mujammad.txt — لا جلبَ خارجيًّا له.
+    "wazn_v0.json": ["wazn_gate.py"],
 }
 
 # موضعُ كلِّ وديعةٍ في الشجرة — الأصلُ induction/، وما خرج عنه يُعلَن هنا بمساره.
@@ -213,13 +216,31 @@ DEPOSIT_DIR = {"pairs_v0.json": ROOT, "context_ladder.json": ROOT,
                "sigha_v0.json": ROOT,
                "wasl_v0.json": ROOT, "niyaba_v0.json": ROOT,
                "sarf_v0.json": ROOT, "tawlid_v0.json": ROOT,
-               "tawhid_v0.json": ROOT, "mawsua_v0.json": ROOT,
-               "mu3jam_v0.json": ROOT,
-               "masadir_v0.json": ROOT}
+               "tawhid_v0.json": ROOT, "tarjih_v0.json": ROOT,
+               "wazn_v0.json": ROOT,
+               # ودائعُ CI_COLLIDED لا مولِّدَ لها هنا، لكنّ موضعها في الشجرة حقيقةٌ
+               # كموضع أيّ وديعةٍ أخرى — فتُعلَن هنا أيضًا لا تُفتَرَض بصمتٍ في
+               # induction/ (وهذا هو عينُ العطب الذي رقعه `coverage()` أدناه).
+               "awzan_v0.json": ROOT, "dictionary_v0.json": ROOT,
+               "field112_laws.json": ROOT, "harakat_v0.json": ROOT,
+               "i3lal_v0.json": ROOT, "isnad_v0.json": ROOT,
+               "jar_gate.json": ROOT, "maqayis_v0.json": ROOT,
+               "waqf_v0.json": ROOT,
+               "seals.json": HERE,
+               "burhan_v0.json": BURHAN, "TOKENS-112.json": BURHAN}
 
 
 def deposit_path(deposit):
     return os.path.join(DEPOSIT_DIR.get(deposit, HERE), deposit)
+
+
+def deposit_reldir(deposit):
+    """موضعُ الوديعة المُعلَن، نسبةً إلى ROOT: '.' لجذر الشجرة، أو اسمُ مجلَّدها الفرعيّ.
+
+    هذا هو المرجعُ الذي يصادمه `coverage()` بموضعها الفعليّ — لا اسمُها وحدَه."""
+    d = DEPOSIT_DIR.get(deposit, HERE)
+    rel = os.path.relpath(d, ROOT)
+    return rel
 
 
 # لا وديعةَ بلا عنوان: ما لم يُذكَر في DEPOSIT_DIR يُفترَض في induction/ افتراضًا
@@ -2307,6 +2328,60 @@ SEALS = [
       ("توحيدُ_المقام_v0", "مقيس", "محاولاتُ_تكذيب"), 16,
       "falsify", "ستَّ عشرةَ محاولةً تُشغَّل ولا تُقرَأ — ونجاحُ واحدةٍ يُسقِط الباب", GATE),
 
+    # وبابُ الترجيح: سلّمُ النبهانيّ الخماسيّ (¶444–456) مُعيَّنٌ إلى أجناس hamil
+    # بتصديق صاحب المشروع، والمادّةُ مستوردةٌ من tawhid_v0.json بعينها — لا تنازعَ
+    # جديدًا يُصطنَع. اختبارُ الجمع نجح (حكمٌ مستقرٌّ على السلّم) فصفرٌ يُصعَّد.
+    S("صورٌ متنازعٌ عليها بين الأصناف (ترجيح)", "tarjih_v0.json",
+      ("الترجيح_v0", "مقيس", "صورٌ متنازعٌ عليها بين الأصناف"), 9,
+      "material_station", "مستوردةٌ من tawhid_v0.json حرفيًّا — لا تُصطنَع هنا", GATE),
+    S("صورٌ مشتركةٌ في الدرج الثاني (ترجيح)", "tarjih_v0.json",
+      ("الترجيح_v0", "مقيس", "صورٌ مشتركةٌ في الدرج الثاني"), 11,
+      "material_station", "مستوردةٌ من tawhid_v0.json حرفيًّا — لا تُصطنَع هنا", GATE),
+    S("حكمٌ مستقرٌّ على السلّم (ترجيح)", "tarjih_v0.json",
+      ("الترجيح_v0", "مقيس", "حكمٌ مستقرٌّ على السلّم"), 1,
+      "union_station", "اختبارُ الجمع (¶1063): استقرارٌ على الأدراج الثلاثة معًا", GATE),
+    S("مواضعُ تُحسَم بالسلّم", "tarjih_v0.json",
+      ("الترجيح_v0", "مقيس", "مواضعُ تُحسَم بالسلّم"), 0,
+      "run", "بندٌ متوقَّعٌ قبل القياس: صفرٌ لأنّ الجمعَ نجح — انكسارُه يُسقِط القيد", GATE),
+    S("محاولاتُ تكذيبِ الترجيح", "tarjih_v0.json",
+      ("الترجيح_v0", "مقيس", "محاولاتُ_تكذيب"), 8,
+      "falsify", "ثماني محاولاتٍ تُشغَّل ولا تُقرَأ — ونجاحُ واحدةٍ يُسقِط الباب", GATE),
+
+    # وبابُ الوزن (الشاهدُ الرابع): سلّمُ الأجيال (Φ2-1، أربعُ آلاتٍ) مقروءٌ من
+    # burhan_v0.json بموضعه — لا استيرادَ كودٍ من burhan؛ وR0/R1/R2 اسمٌ جديدٌ
+    # هنا (لم يُوجَد حرفيًّا في burhan) مبنيٌّ على بنية اختبارها الثلاثيّ. R0
+    # يصادم dictionary_v0.json حرفيًّا، R1 خمولٌ (Δ=0)، R2 توسيعٌ حقيقيٌّ يجب أن
+    # يتحرّك — عبورُه هو الشاهدُ الرابعُ الذي يربط ربحَ الأوزان بسلّم التوليد.
+    S("G1 أجيال (وزن)", "wazn_v0.json",
+      ("الوزن_v0", "مقيس", "G1"), 112,
+      "generation_station", "مقروءةٌ من burhan_v0.json — أربعُ آلاتٍ متّفقة", GATE),
+    S("G2 أجيال (وزن)", "wazn_v0.json",
+      ("الوزن_v0", "مقيس", "G2"), 11760,
+      "generation_station", "مقروءةٌ من burhan_v0.json — أربعُ آلاتٍ متّفقة", GATE),
+    S("G3 أجيال (وزن)", "wazn_v0.json",
+      ("الوزن_v0", "مقيس", "G3"), 1251264,
+      "generation_station", "مقروءةٌ من burhan_v0.json — أربعُ آلاتٍ متّفقة", GATE),
+    S("مكسبُ الأوزان R0 (وزن)", "wazn_v0.json",
+      ("الوزن_v0", "مقيس", "awzan_gain (R0)"), 3098,
+      "wazn_station", "يصادم dictionary_v0.json/coverage/awzan_gain حرفيًّا", GATE),
+    S("كلفةُ القواعد بالبت R0 (وزن)", "wazn_v0.json",
+      ("الوزن_v0", "مقيس", "rules_cost_bits (R0)"), 1456,
+      "wazn_station", "يصادم dictionary_v0.json/rules_cost_bits حرفيًّا", GATE),
+    S("الشاهدُ الرابعُ عبر بوّابتَه (وزن)", "wazn_v0.json",
+      ("الوزن_v0", "مقيس", "الشاهدُ_الرابعُ_عبرَ_بوّابتَه"), True,
+      "wazn_station", "R2 (توسيعٌ حقيقيّ) حرّك رقمًا — لا عمى؛ الرابطُ قائم", GATE),
+    S("محاولاتُ تكذيبِ الوزن", "wazn_v0.json",
+      ("الوزن_v0", "مقيس", "محاولاتُ_تكذيب"), 11,
+      "falsify", "إحدى عشرةَ محاولةً تُشغَّل ولا تُقرَأ — ونجاحُ واحدةٍ يُسقِط الباب", GATE),
+    S("Δ(كلفةُ الجدول) R2 مصحَّحٌ (وزن)", "wazn_v0.json",
+      ("الوزن_v0", "مقيس", "Δ(R2)"), [12, 32],
+      "wazn_station", "تصحيحُ ازدواج عدّ PREFIX: عضوٌ سابعٌ واحدٌ = 32 بتًّا لا 64", GATE),
+    S("حكمُ فاتورةِ R2 (وزن)", "wazn_v0.json",
+      ("الوزن_v0", "فاتورةُ_R2", "حكمُ_الفاتورة"), "يُرفَض",
+      "invoice_r2", "Δ=ΔL(D|M)+ΔL(M) عبر deposit_law.price/verdict — يُرفَض لا يُخفى", GATE),
+    S("الفاتورةُ مقبولة؟ (وزن)", "wazn_v0.json",
+      ("الوزن_v0", "مقيس", "الفاتورةُ_مقبولة"), False,
+      "invoice_r2", "الحركةُ (Δ≠0) أُثبتت، والربحُ سقط بحَكَمٍ آخر — فرقٌ معلَنٌ لا مطويّ", GATE),
     # ═══ بابُ المعجم: الجسرُ الثلاثيُّ يُقاس ولا يُستشهَد به ═══
     S("مقامُ وسم الموادّ", "mu3jam_v0.json",
       ("المعجم_v0", "مقيس", "كلماتُ المقام"), 77801,
@@ -2484,24 +2559,39 @@ def regenerate(deposit, outdir):
         return json.load(fh)
 
 
-def coverage(verbose=True, _found=None, _ci=None):
-    """حارسُ التغطية الذاتي: كلُّ وديعةِ JSON في الشجرة مبوَّبةٌ — أو يسقط CI من لحظة ولادتها.
+def coverage(verbose=True, _found=None, _ci=None, _locations=None):
+    """حارسُ التغطية الذاتي: كلُّ وديعةِ JSON في الشجرة مبوَّبةٌ **بموضعها** — أو يسقط CI.
 
     العلّةُ التي يقتلها: `pairs_v0.json` و`context_ladder.json` عاشتا خارج كلِّ بوّابةٍ
     فتعفّنتا صامتتين (محرّكاهما لم يعودا يستوردان أصلًا، وإحداهما لم تكن تُولَّد مرّتين
     على النسق نفسِه). فالعدُّ هنا ذاتيٌّ: لا قائمةَ ودائعَ مكتوبةً بيدٍ تُقارَن بقائمةٍ
     أخرى مكتوبةٍ بيد، بل **مسحُ الشجرة** يُقابَل بالمبوَّب. ودعوى «مبوَّبٌ في ci.yml»
     لا تُصدَّق بكتابتها هنا، بل تُفتَّش في بايتات ci.yml.
+
+    والعلّةُ الثانيةُ **الحيّةُ** حتى رقعتها: الحارسُ كان يجمع **الاسمَ وحدَه** (بمسحٍ
+    مسطَّحٍ عبر os.walk يُذيب المجلَّد) ويُهمل موضعَ كلِّ وديعةٍ المُعلَنَ في
+    `DEPOSIT_DIR`/`deposit_reldir` — فوديعةٌ خرجت عن مجلَّدها المرصود (أو تكرّر
+    اسمُها في مجلَّدٍ آخر) كانت تمرّ صامتةً ما دام الاسمُ موجودًا **في مكانٍ ما**
+    من الشجرة. فالمصادمةُ الآن على **الزوج (اسمٌ، مجلَّد)** لا الاسم فقط: كلُّ
+    وديعةٍ مبوَّبةٍ (GENERATORS ∪ CI_COLLIDED) يُصادَم موضعُها الفعليُّ في الشجرة
+    بموضعها المُعلَن — ومخالفتُه «الوجهُ المقلوب» صريخٌ بالاسم، لا افتراضٌ صامت.
     """
     problems = []
-    if _found is None:
-        _found = set()
+    if _found is None or _locations is None:
+        scanned_names, scanned_locations = set(), {}
         for base, dirs, files in os.walk(ROOT):
             dirs[:] = [d for d in dirs if d not in (".git", "__pycache__", ".github")]
+            reldir = os.path.relpath(base, ROOT)
             for fn in files:
                 if fn.endswith(".json"):
-                    _found.add(fn)
+                    scanned_names.add(fn)
+                    scanned_locations.setdefault(fn, set()).add(reldir)
+        if _found is None:
+            _found = scanned_names
+        if _locations is None:
+            _locations = scanned_locations
     found = set(_found)
+    locations = _locations
 
     if _ci is None:
         with open(os.path.join(ROOT, ".github", "workflows", "ci.yml"), encoding="utf-8") as fh:
@@ -2519,13 +2609,23 @@ def coverage(verbose=True, _found=None, _ci=None):
     for dep in sorted(gated - found):
         problems.append(f"وديعةٌ مبوَّبةٌ غائبةٌ عن الشجرة: «{dep}»")
 
+    # حارسُ الموضع: الاسمُ وحدَه لا يكفي — موضعُها المُعلَن يُصادَم بموضعها الفعليّ.
+    for dep in sorted(gated & found):
+        expected = deposit_reldir(dep)
+        actual = locations.get(dep, set())
+        if expected not in actual:
+            elsewhere = "، ".join(sorted(actual)) if actual else "لا موضعَ لها البتّة"
+            problems.append(
+                f"الوجهُ المقلوب: «{dep}» مُعلَنٌ في «{expected}» والشجرةُ لا تحويها هناك "
+                f"(وُجدت في: {elsewhere})")
+
     if verbose:
         print(f"— التغطية: {len(found)} وديعةً في الشجرة · {len(GENERATORS)} بمولِّدٍ هنا "
               f"· {len(CI_COLLIDED)} بخطوةٍ في ci.yml —")
         for p in problems:
             print(f"::error::{p}")
         if not problems:
-            print("    ✓ لا يتيمَ: كلُّ وديعةٍ مبوَّبة")
+            print("    ✓ لا يتيمَ ولا وجهَ مقلوب: كلُّ وديعةٍ مبوَّبةٌ في موضعها")
     return problems
 
 
@@ -2615,6 +2715,15 @@ SANAD_BY_DEPOSIT = {
     # محسوبةٌ على تلك المواضع بأعيانها — فسندُه المجمَّد. والصورُ مقروءةٌ من
     # وديعتين لكلٍّ منهما سندُها في موضعه.
     "tawhid_v0.json": "مجمَّد",
+    # وبابُ الترجيح: لا يقيس على المجمَّد ولا يقرأ شاهدًا — مادّتُه كلُّها بايتاتُ
+    # tawhid_v0.json المودَعة في هذه الشجرة تُقرأ بموضعها المُعلَن حرفيًّا، فسندُه
+    # «شجرةٌ مودَعة» لا «مجمَّد».
+    "tarjih_v0.json": "شجرةٌ مودَعة",
+    # وبابُ الوزن: القياسُ الرأسُ (R0/R1/R2) حيٌّ على PREFIX في awzan_engine.py
+    # ببذرةِ ختم mujammad.txt — فسندُه «مجمَّد» كالباب الذي يقيسه (dictionary_v0.json)؛
+    # وسلّمُ الأجيال المقروء من burhan_v0.json محطّةُ تحقُّقٍ ثانويّةٌ موثَّقةٌ في
+    # docstring الملفّ لا سندًا مستقلًّا (فليست عمليّةَ قياسٍ جديدةً بل مصادمة).
+    "wazn_v0.json": "مجمَّد",
     # والموسوعة: لا رقمَ فيها يُقاس على المجمَّد رأسًا — كلُّ خانةٍ إمّا قيمةٌ مقروءةٌ
     # بمسارها من بايتات madlul_v0.json وإمّا دَينٌ بلا رقم، وأعدادُها عدٌّ على تلك
     # الخانات. فسندُها شجرةٌ مودَعةٌ لا المجمَّد — ولا يُدَّعى لها ما ليس لها.
