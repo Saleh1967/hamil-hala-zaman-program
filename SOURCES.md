@@ -230,6 +230,8 @@ bash test_fetch_source.sh     # 0 إن طابق كلُّ مخرجٍ عقدَه
 | مصادماتُ التقشير | 19 | `test_normalize.py` | تشغيلُه بلا اعتماد |
 | أختامُ [بوّابة] المصدَّرة | 597 | `induction/seals.py` · `SEALS` | `induction/export_seals.py` بإزاحاتها |
 | أختامٌ بسندٍ مُعلَن | 597 | `induction/seals.py` · `SANAD_BY_DEPOSIT`/`SANAD` | `sanad_ledger` في `contracts` |
+| أختامُ [بوّابة] المصدَّرة | 577 | `induction/seals.py` · `SEALS` | `induction/export_seals.py` بإزاحاتها |
+| أختامٌ بسندٍ مُعلَن | 577 | `induction/seals.py` · `SANAD_BY_DEPOSIT`/`SANAD` | `sanad_ledger` في `contracts` |
 
 **وفاتورةُ هذا السطر أنّه قابلٌ للسقوط.** يحرسه `test_normalize.py` في المصادمة
 `test_contract_line_is_collided`: تُقرأ الأعدادُ من بايتات هذه الوثيقة نفسِها
