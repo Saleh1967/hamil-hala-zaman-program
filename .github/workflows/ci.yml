@@ -2660,6 +2660,51 @@ jobs:
               sys.exit(1)
           print("بابُ الترجيح: خمسةُ حرّاسٍ ✓")
           PY
+      - name: بابُ الشاهد الرابع (الوزن) — سلّمُ الأجيال مربوطًا بمكسب الأوزان، ومصادمة wazn_v0.json
+        run: |
+          set -euo pipefail          # بلا pipefail يبتلع `| tee` سقوطَ الباب
+          python wazn_gate.py --json /tmp/wazn.json | tee -a measurement.txt
+          python - <<'PY'
+          import json, sys
+          A = json.load(open("wazn_v0.json", encoding="utf-8"))
+          B = json.load(open("/tmp/wazn.json", encoding="utf-8"))
+          if A != B:
+              print("::error::wazn_v0.json المودَعةُ خالفت ما ينتجه البابُ — صريخ")
+              sys.exit(1)
+          R = B["الوزن_v0"]
+          # ① القيدُ Φ2-1 وسلّمُ الأجيال (G1..G3) مقروءان من burhan_v0.json — يُصادمان.
+          G = json.load(open("burhan/burhan_v0.json", encoding="utf-8"))["البرهان_v0"]["شهادات"]
+          if G["CERT-GENERATIONS"]["حكم"] != "خضراء" or G["CERT-INERTNESS"]["حكم"] != "خضراء":
+              print("::error::شهادتا burhan (الأجيال/الخمول) لم تعودا خضراوين")
+              sys.exit(1)
+          if (R["مقيس"]["G1"], R["مقيس"]["G2"], R["مقيس"]["G3"]) != (112, 11760, 1251264):
+              print("::error::سلّمُ الأجيال G1..G3 خالف المتوقَّعَ المُعلَن")
+              sys.exit(1)
+          # ② R0 يصادم dictionary_v0.json حرفيًّا — لا رقمَ خارجَ المُقفَل.
+          D = json.load(open("dictionary_v0.json", encoding="utf-8"))["المعجم_v0"]
+          if R["مقيس"]["awzan_gain (R0)"] != D["coverage"]["awzan_gain"]:
+              print("::error::awzan_gain (R0) خالف dictionary_v0.json")
+              sys.exit(1)
+          if R["مقيس"]["rules_cost_bits (R0)"] != D["rules_cost_bits"]:
+              print("::error::rules_cost_bits (R0) خالف dictionary_v0.json")
+              sys.exit(1)
+          # ③ R1 خمولٌ (Δ=0) وR2 تحرّكٌ حقيقيّ (Δ≠0) — لا عمى ولا كذبَ ترتيب.
+          if tuple(R["مقيس"]["Δ(R1)"]) != (0, 0):
+              print("::error::R1 (ترتيبٌ فقط) تحرّك — تسرُّبٌ من ترتيب التسجيل")
+              sys.exit(1)
+          if tuple(R["مقيس"]["Δ(R2)"]) == (0, 0):
+              print("::error::R2 (توسيعٌ حقيقيّ) لم يتحرّك — البوّابةُ عمياء")
+              sys.exit(1)
+          # ④ الشاهدُ الرابعُ يربط ربحَ الأوزان بسلّم التوليد لأنّ R2 عبرت بوّابتَها.
+          if not R["الشاهدُ_الرابعُ_يربط"]:
+              print("::error::الشاهدُ الرابعُ لم يربط رغم عبور R2 — تسجيلٌ خالف حكمَه")
+              sys.exit(1)
+          # ⑤ محاولاتُ التكذيب تُشغَّل ولا تُقرَأ.
+          if len(R["محاولاتُ_التكذيب"]) < 8 or any("لم يرفض" in t["نتيجة"] for t in R["محاولاتُ_التكذيب"]):
+              print("::error::محاولاتُ تكذيبِ الوزن دون ثمانٍ أو نجحت واحدةٌ")
+              sys.exit(1)
+          print("بابُ الشاهد الرابع (الوزن): خمسةُ حرّاسٍ ✓")
+          PY
       - name: محطّةُ التعلُّم — قواعدُ النبهانيِّ بالفاتورة حَكَمًا، ومصادمة ta3allum_v0.json
         run: |
           set -euo pipefail          # بلا pipefail يبتلع `| tee` سقوطَ المحطّة
