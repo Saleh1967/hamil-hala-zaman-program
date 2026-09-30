@@ -21,6 +21,12 @@ jobs:
     steps:
       - name: سحب المستودع
         uses: actions/checkout@v4
+        with:
+          # التاريخُ كاملًا: بابُ التوقيع يقرأ توقيعَ إيداعٍ مثبَّتٍ بأربعين
+          # محرفًا في البيان، والسحبُ الضحلُ لا يحمله — فيسقط البابُ بـ5
+          # «إيداعٌ غائبٌ عن التاريخ» بلا ذنبِ توقيع. والعمقُ شرطُ قياسٍ
+          # ههنا لا تحسينَ أداء.
+          fetch-depth: 0
 
       - name: تهيئة بايثون
         uses: actions/setup-python@v5
@@ -3484,6 +3490,99 @@ jobs:
                 f"· ديونٌ بلا رقم {M['ديونٌ بلا رقم']} · محاولاتُ التكذيب "
                 f"{M['محاولاتُ_تكذيب']}")
           PY
+
+      - name: بابُ التوقيع — سلسلةُ التوقيع، ومصادمة tawqi3_v0.json وTAWQI3.md
+        run: |
+          set -euo pipefail          # بلا pipefail يبتلع `| tee` سقوطَ الباب
+          # لا جلبَ لهذا البابِ ولا شبكة: مقامُه كائناتُ git في هذه الشجرة
+          # ومفتاحٌ عامٌّ مودَعٌ فيها. وعمقُ السحب `fetch-depth: 0` مُعلَنٌ في
+          # خطوة السحب أعلاه، وهو شرطُ قياسٍ ههنا لا تحسينُ أداء.
+          command -v gpgv >/dev/null || { echo "::error::gpgv غائبٌ عن العامل"; exit 1; }
+          cp TAWQI3.md /tmp/tawqi3.committed.md
+          python tawqi3_gate.py --json /tmp/tawqi3.json --doc /tmp/tawqi3.md \
+            | tee -a measurement.txt
+          python - <<'PY'
+          import json, subprocess, sys
+
+          def die(msg):
+              print(f"::error::{msg}")
+              sys.exit(1)
+
+          a = json.load(open("tawqi3_v0.json", encoding="utf-8"))
+          b = json.load(open("/tmp/tawqi3.json", encoding="utf-8"))
+          if a != b:
+              die("tawqi3_v0.json المودَعةُ خالفت ما ينتجه البابُ — صريخ")
+          A = a["التوقيع_v0"]; M = A["مقيس"]
+
+          # ① لا سلسلةَ مقطوعةٌ ولا سطرَ self بلا توقيع ولا إيداعَ غائب.
+          if A["سقوط"]:
+              die("بابُ التوقيع سقط: " + " · ".join(A["سقوط"]))
+          if M["موقَّعٌ مقطوع"] or M["غيرُ موقَّع"] or M["إيداعٌ غائب"]:
+              die("سطرٌ على طريق self بلا توقيعٍ موصول — بابُ المالك لا يدخل منه غيرُه")
+
+          # ② العدُّ مستنفِدٌ لا انتقاء: الأحكامُ الأربعةُ تستغرق سطورَ self كلَّها.
+          if (M["موقَّعٌ موصول"] + M["موقَّعٌ مقطوع"] + M["غيرُ موقَّع"]
+                  + M["إيداعٌ غائب"] != M["سطورٌ على طريق self"]):
+              die("الأحكامُ لم تستنفد سطورَ self — مصدرٌ طُوِي خارجَ الحكم")
+
+          # ③ سطورُ self في الوديعة هي سطورُ self في البيان نفسِه — لا نسخةَ ثانية.
+          rows = [l.rstrip("\n").split("\t")
+                  for l in open("sources_manifest.tsv", encoding="utf-8")
+                  if l.strip() and not l.startswith("#")]
+          selves = [r for r in rows if r[1] == "self"]
+          if len(selves) != M["سطورٌ على طريق self"]:
+              die("عدَّةُ سطور self في الوديعة خالفت البيانَ")
+
+          # ④ الحلقاتُ خمسٌ لكلِّ مصدرٍ ومقيسةٌ كلُّها — لا حكمَ على حلقةٍ واحدة.
+          for src in A["المصادر"]:
+              if len(src["حلقات"]) != M["حلقاتٌ مقيسةٌ لكلِّ مصدر"]:
+                  die(f"«{src['مصدر']}»: حلقاتُه {len(src['حلقات'])} لا خمسٌ")
+
+          # ⑤ التوقيعُ موصولٌ بالبايتات المختومة لا بالإيداع وحدَه: الحلقتان
+          #    الرابعةُ والخامسةُ تُصادَمان بحقول البيان نفسِها.
+          by_id = {r[0]: r for r in selves}
+          for src in A["المصادر"]:
+              row = by_id[src["مصدر"]]
+              if src["إيداع"] != row[2] or src["ملفّ"] != row[4]:
+                  die(f"«{src['مصدر']}»: إيداعُه أو مسارُه انفصل عن البيان")
+              blob = subprocess.run(
+                  ("git", "rev-parse", f"{row[2]}:{row[4]}"),
+                  capture_output=True, text=True)
+              if blob.returncode != 0 or blob.stdout.strip() != row[5]:
+                  die(f"«{src['مصدر']}»: شجرةُ الإيداع لا تُعطي الكائنَ المختوم")
+
+          # ⑥ المفتاحُ مثبَّتٌ بوجهَين، وبصمتُه في بايتات الباب لا في هذا السطر.
+          import hashlib
+          import tawqi3_gate as TG
+          raw = open("keys/github-web-flow.asc", "rb").read()
+          if (len(raw) != A["المفتاح"]["بايتات"]
+                  or hashlib.sha256(raw).hexdigest() != A["المفتاح"]["sha256"]
+                  or A["المفتاح"]["sha256"] != TG.KEYRING_SHA256
+                  or A["المفتاح"]["بصمةُ الموقِّع"] != TG.SIGNING_FPR):
+              die("المفتاحُ المودَعُ انفصل عن تثبيته — يُصادَم قبل أن يُستعمَل")
+
+          # ⑦ الديونُ تُسمّى ولا تُسعَّر، والوكالةُ مذكورةٌ بحرفها لا تُطوى.
+          debts = A["الديون"]
+          if len(debts) != M["ديونٌ مسمّاة"] or any(
+                  isinstance(v, (int, float)) for d in debts for v in d.values()):
+              die("دَينٌ حمل رقمًا أو طُوِيت الديون — ما لم يُقَس لا يُسعَّر")
+          if not any("وكالةٌ لا أصالة" in d["دَين"] for d in debts):
+              die("دَينُ «التوقيعُ وكالةٌ لا أصالة» طُوِي — وهو أثقلُ ديون الباب")
+
+          # ⑧ محاولاتُ التكذيب تُشغَّل ولا تُقرَأ: نجاحُ واحدةٍ يُسقِط البابَ.
+          T = A["محاولاتُ_التكذيب"]
+          if len(T) != M["محاولاتُ_تكذيب"] or any(t["نجحت"] for t in T):
+              die("محاولةُ تكذيبٍ نجحت أو نقصت العدَّةُ — البابُ ساقط")
+          print(f"بابُ التوقيع: ثمانيةُ حرّاسٍ ✓ — موصولٌ {M['موقَّعٌ موصول']} "
+                f"من {M['سطورٌ على طريق self']} · حلقاتٌ "
+                f"{M['حلقاتٌ مقيسةٌ لكلِّ مصدر']} لكلِّ مصدر · ديونٌ "
+                f"{M['ديونٌ مسمّاة']} · محاولاتُ التكذيب {M['محاولاتُ_تكذيب']}")
+          PY
+          cmp -s TAWQI3.md /tmp/tawqi3.md || {
+            echo "::error::TAWQI3.md المودَعةُ خالفت ما يولّده البابُ — تُعاد بـ--doc"
+            diff /tmp/tawqi3.committed.md /tmp/tawqi3.md | head -40
+            exit 1
+          }
 
       - name: إيداع تقرير القياس
         if: always()
