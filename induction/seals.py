@@ -26,6 +26,7 @@ import tempfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
+BURHAN = os.path.join(ROOT, "burhan")
 
 sys.path.insert(0, HERE)
 import deposit_law                                     # المصادقُ المركزيّ نفسُه الذي تستدعيه المحرّكات
@@ -208,11 +209,30 @@ DEPOSIT_DIR = {"pairs_v0.json": ROOT, "context_ladder.json": ROOT,
                "sigha_v0.json": ROOT,
                "wasl_v0.json": ROOT, "niyaba_v0.json": ROOT,
                "sarf_v0.json": ROOT, "tawlid_v0.json": ROOT,
-               "tawhid_v0.json": ROOT}
+               "tawhid_v0.json": ROOT,
+               # ودائعُ CI_COLLIDED لا مولِّدَ لها هنا، لكنّ موضعها في الشجرة حقيقةٌ
+               # كموضع أيّ وديعةٍ أخرى — فتُعلَن هنا أيضًا لا تُفتَرَض بصمتٍ في
+               # induction/ (وهذا هو عينُ العطب الذي رقعه `coverage()` أدناه).
+               "awzan_v0.json": ROOT, "dictionary_v0.json": ROOT,
+               "field112_laws.json": ROOT, "harakat_v0.json": ROOT,
+               "i3lal_v0.json": ROOT, "isnad_v0.json": ROOT,
+               "jar_gate.json": ROOT, "maqayis_v0.json": ROOT,
+               "waqf_v0.json": ROOT,
+               "seals.json": HERE,
+               "burhan_v0.json": BURHAN, "TOKENS-112.json": BURHAN}
 
 
 def deposit_path(deposit):
     return os.path.join(DEPOSIT_DIR.get(deposit, HERE), deposit)
+
+
+def deposit_reldir(deposit):
+    """موضعُ الوديعة المُعلَن، نسبةً إلى ROOT: '.' لجذر الشجرة، أو اسمُ مجلَّدها الفرعيّ.
+
+    هذا هو المرجعُ الذي يصادمه `coverage()` بموضعها الفعليّ — لا اسمُها وحدَه."""
+    d = DEPOSIT_DIR.get(deposit, HERE)
+    rel = os.path.relpath(d, ROOT)
+    return rel
 
 
 # لا وديعةَ بلا عنوان: ما لم يُذكَر في DEPOSIT_DIR يُفترَض في induction/ افتراضًا
@@ -2332,24 +2352,39 @@ def regenerate(deposit, outdir):
         return json.load(fh)
 
 
-def coverage(verbose=True, _found=None, _ci=None):
-    """حارسُ التغطية الذاتي: كلُّ وديعةِ JSON في الشجرة مبوَّبةٌ — أو يسقط CI من لحظة ولادتها.
+def coverage(verbose=True, _found=None, _ci=None, _locations=None):
+    """حارسُ التغطية الذاتي: كلُّ وديعةِ JSON في الشجرة مبوَّبةٌ **بموضعها** — أو يسقط CI.
 
     العلّةُ التي يقتلها: `pairs_v0.json` و`context_ladder.json` عاشتا خارج كلِّ بوّابةٍ
     فتعفّنتا صامتتين (محرّكاهما لم يعودا يستوردان أصلًا، وإحداهما لم تكن تُولَّد مرّتين
     على النسق نفسِه). فالعدُّ هنا ذاتيٌّ: لا قائمةَ ودائعَ مكتوبةً بيدٍ تُقارَن بقائمةٍ
     أخرى مكتوبةٍ بيد، بل **مسحُ الشجرة** يُقابَل بالمبوَّب. ودعوى «مبوَّبٌ في ci.yml»
     لا تُصدَّق بكتابتها هنا، بل تُفتَّش في بايتات ci.yml.
+
+    والعلّةُ الثانيةُ **الحيّةُ** حتى رقعتها: الحارسُ كان يجمع **الاسمَ وحدَه** (بمسحٍ
+    مسطَّحٍ عبر os.walk يُذيب المجلَّد) ويُهمل موضعَ كلِّ وديعةٍ المُعلَنَ في
+    `DEPOSIT_DIR`/`deposit_reldir` — فوديعةٌ خرجت عن مجلَّدها المرصود (أو تكرّر
+    اسمُها في مجلَّدٍ آخر) كانت تمرّ صامتةً ما دام الاسمُ موجودًا **في مكانٍ ما**
+    من الشجرة. فالمصادمةُ الآن على **الزوج (اسمٌ، مجلَّد)** لا الاسم فقط: كلُّ
+    وديعةٍ مبوَّبةٍ (GENERATORS ∪ CI_COLLIDED) يُصادَم موضعُها الفعليُّ في الشجرة
+    بموضعها المُعلَن — ومخالفتُه «الوجهُ المقلوب» صريخٌ بالاسم، لا افتراضٌ صامت.
     """
     problems = []
-    if _found is None:
-        _found = set()
+    if _found is None or _locations is None:
+        scanned_names, scanned_locations = set(), {}
         for base, dirs, files in os.walk(ROOT):
             dirs[:] = [d for d in dirs if d not in (".git", "__pycache__", ".github")]
+            reldir = os.path.relpath(base, ROOT)
             for fn in files:
                 if fn.endswith(".json"):
-                    _found.add(fn)
+                    scanned_names.add(fn)
+                    scanned_locations.setdefault(fn, set()).add(reldir)
+        if _found is None:
+            _found = scanned_names
+        if _locations is None:
+            _locations = scanned_locations
     found = set(_found)
+    locations = _locations
 
     if _ci is None:
         with open(os.path.join(ROOT, ".github", "workflows", "ci.yml"), encoding="utf-8") as fh:
@@ -2367,13 +2402,23 @@ def coverage(verbose=True, _found=None, _ci=None):
     for dep in sorted(gated - found):
         problems.append(f"وديعةٌ مبوَّبةٌ غائبةٌ عن الشجرة: «{dep}»")
 
+    # حارسُ الموضع: الاسمُ وحدَه لا يكفي — موضعُها المُعلَن يُصادَم بموضعها الفعليّ.
+    for dep in sorted(gated & found):
+        expected = deposit_reldir(dep)
+        actual = locations.get(dep, set())
+        if expected not in actual:
+            elsewhere = "، ".join(sorted(actual)) if actual else "لا موضعَ لها البتّة"
+            problems.append(
+                f"الوجهُ المقلوب: «{dep}» مُعلَنٌ في «{expected}» والشجرةُ لا تحويها هناك "
+                f"(وُجدت في: {elsewhere})")
+
     if verbose:
         print(f"— التغطية: {len(found)} وديعةً في الشجرة · {len(GENERATORS)} بمولِّدٍ هنا "
               f"· {len(CI_COLLIDED)} بخطوةٍ في ci.yml —")
         for p in problems:
             print(f"::error::{p}")
         if not problems:
-            print("    ✓ لا يتيمَ: كلُّ وديعةٍ مبوَّبة")
+            print("    ✓ لا يتيمَ ولا وجهَ مقلوب: كلُّ وديعةٍ مبوَّبةٌ في موضعها")
     return problems
 
 
