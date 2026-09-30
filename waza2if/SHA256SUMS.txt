@@ -1,0 +1,2 @@
+e3308a577a7b8dd34e40d1a3b83a751e7ef23bed021dba7b7660ea676330f42a  waza2if.py
+1ee2a8439cf4a2bb7bf186963e93cde5ccfdb39a91d343dff3ed518cb44a79a0  waza2if_v0.json
