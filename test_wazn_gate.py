@@ -85,13 +85,56 @@ def test_run_prefix_r0_matches_sealed_dictionary_numbers():
 
 # ــ بوّابةُ الوزن الكاملة ـــــــــــــــــــــــــــــــــــــــــــــــ
 def test_wazn_station_r1_is_idle_and_r2_moves():
-    rows, يربط = G.wazn_station()
+    rows, يربط, invoice = G.wazn_station()
     assert rows[0]["الرتبة"] == "R0" and rows[0]["Δ"] == (0, 0)
     assert rows[1]["الرتبة"] == "R1" and rows[1]["Δ"] == (0, 0)
     assert rows[1]["الحكم"] == "خضراء"
     assert rows[2]["الرتبة"] == "R2" and rows[2]["Δ"] != (0, 0)
     assert rows[2]["الحكم"] == "خضراء"
     assert يربط is True
+    assert invoice["حكمُ_الفاتورة"] in ("يُقبَل", "يُرفَض")
+
+
+def test_wazn_station_r2_delta_table_is_32_not_64():
+    # تصحيحُ ازدواج العدّ: عضوٌ سابعٌ واحدٌ ⟵ 32 بتًّا لا 64.
+    rows, _, _ = G.wazn_station()
+    assert rows[2]["Δ"] == (12, 32)
+
+
+def test_rules_bits_other_matches_sealed_dictionary():
+    assert G.rules_bits_other_sealed() == G.RULES_BITS_OTHER == 192
+
+
+def test_rules_bits_other_screams_on_mismatch():
+    old = G.RULES_BITS_OTHER
+    G.RULES_BITS_OTHER = 1
+    try:
+        G.rules_bits_other_sealed()
+        raise AssertionError("كان ينبغي أن يصرخ على تخالف rules_only_bits")
+    except G.WaznError as exc:
+        assert exc.code == G.E_SEAL
+    finally:
+        G.RULES_BITS_OTHER = old
+
+
+# ــ فاتورةُ R2 الكاملة (Δ = ΔL(D|M) + ΔL(M)، حَكَمُها deposit_law.verdict) ـــ
+def test_invoice_r2_rejects_because_data_cost_exceeds_gain():
+    r0 = G.run_prefix(G.prefix_members("R0"))
+    r2 = G.run_prefix(G.prefix_members("R2"))
+    inv = G.invoice_r2(r0["_raw"], r2["_raw"])
+    assert inv["كلفةُ_الجدول"] == 32
+    assert inv["كسبُ_البيانات"] > 0          # كلفةٌ لا ربحٌ — سالبٌ لو كان ربحًا حقيقيًّا
+    assert inv["Δ"] > 0
+    assert inv["حكمُ_الفاتورة"] == "يُرفَض"
+    assert inv["حارسُ_الانحلال"]["منحلٌّ"] is False
+
+
+def test_invoice_r2_is_deterministic():
+    r0 = G.run_prefix(G.prefix_members("R0"))
+    r2 = G.run_prefix(G.prefix_members("R2"))
+    a = G.invoice_r2(r0["_raw"], r2["_raw"])
+    b = G.invoice_r2(r0["_raw"], r2["_raw"])
+    assert a == b
 
 
 # ــ حكمُ run() الكامل على المادّة الحقيقيّة ـــــــــــــــــــــــــــــ
@@ -104,9 +147,11 @@ def test_run_matches_declared_expectation_on_real_tree():
     assert A["مقيس"]["awzan_gain (R0)"] == 3098
     assert A["مقيس"]["rules_cost_bits (R0)"] == 1456
     assert A["مقيس"]["Δ(R1)"] == [0, 0]
-    assert A["مقيس"]["Δ(R2)"] != [0, 0]
+    assert A["مقيس"]["Δ(R2)"] == [12, 32]
     assert A["مقيس"]["الشاهدُ_الرابعُ_عبرَ_بوّابتَه"] is True
-    assert A["مقيس"]["محاولاتُ_تكذيب"] == 8
+    assert A["مقيس"]["الفاتورةُ_مقبولة"] is False
+    assert A["فاتورةُ_R2"]["حكمُ_الفاتورة"] == "يُرفَض"
+    assert A["مقيس"]["محاولاتُ_تكذيب"] == 11
 
 
 def test_run_screams_if_r0_diverges_from_sealed_gain():
@@ -124,7 +169,7 @@ def test_run_screams_if_r0_diverges_from_sealed_gain():
 # ــ جميعُ محاولات التكذيب الداخليّة ترفض (لا نجاحَ زائفًا) ـــــــــــــــ
 def test_all_internal_falsify_trials_reject():
     trials = G.falsify(verbose=False)
-    assert len(trials) == 8
+    assert len(trials) == 11
     assert all(v.startswith("رفض ✓") for v in trials.values()), trials
 
 
