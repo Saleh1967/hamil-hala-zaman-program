@@ -2983,16 +2983,19 @@ jobs:
           print("الجولة ٣ ✓ — بابٌ ساقطٌ بأرضيته · شاهدٌ يُعرَض ولا يُحتسَب")
           PY
 
-      - name: بيتُ البرهان — ثماني شهاداتٍ مستقلّةٍ وختمٌ يتحقّق، ومصادمة burhan_v0.json وTOKENS-112.json
+      - name: بيتُ البرهان — ثماني شهاداتٍ مستقلّةٍ وختمٌ يتحقّق، ومصادمة burhan_v0.json وTOKENS-112.json وTHE-PROOF.md
         run: |
           set -e
           cp burhan/burhan_v0.json /tmp/burhan.committed.json
           cp burhan/TOKENS-112.json /tmp/tokens.committed.json
+          cp burhan/THE-PROOF.md /tmp/proof.committed.md
           python burhan/run_all.py --check
           cmp burhan/burhan_v0.json /tmp/burhan.committed.json \
             || { echo "::error::وديعةُ البرهان المودَعةُ خالفت ما تنتجه الشهادات"; exit 1; }
           cmp burhan/TOKENS-112.json /tmp/tokens.committed.json \
             || { echo "::error::جدولُ G0 المودَعُ خالف ما ينتجه المولِّد"; exit 1; }
+          cmp burhan/THE-PROOF.md /tmp/proof.committed.md \
+            || { echo "::error::THE-PROOF.md المودَعةُ خالفت ما تُولِّده الوديعة — وثيقةٌ حُرِّرت بيد"; exit 1; }
           python - <<'PY'
           import json, sys
           D = json.load(open("burhan/burhan_v0.json", encoding="utf-8"))["البرهان_v0"]
@@ -3106,7 +3109,17 @@ jobs:
               die("مفتوحاتُ البرهان طُوِيت")
           if len(D["ثوابتُ_مُصادَمةٌ_عبر_الملفّات"]) < 8:
               die("الثوابتُ المكرَّرةُ لا تُصادَم — بابُ الانزياح الصامت مفتوح")
-          print("بيتُ البرهان: اثنا عشرَ حارسًا ✓")
+          # ⑬ الوثيقةُ مشتقّةٌ لا محرَّرة: كلُّ رقمٍ فيها يجب أن يوجد في الوديعة نفسِها،
+          #     وإلّا كانت الوثيقةُ مصدرَ رقمٍ — وذاك بابُ الرواية على القياس.
+          proof = open("burhan/THE-PROOF.md", encoding="utf-8").read()
+          for n in (D["شهادات"]["CERT-CORPUS"]["مقيس"]["كلمات"],
+                    D["شهادات"]["CERT-W2"]["بنود"]["③ الخاتمة"]["خاتمةٌ_بسكونٍ_ذرّيّ"],
+                    D["شهادات"]["CERT-SUKUN"]["لقاءُ_ساكنَين_بالأساس"]["الفلترُ الميدانيّ"]):
+              if f"{n:,}" not in proof:
+                  die(f"الوثيقةُ لا تحمل العددَ {n:,} — انفصلت عن الوديعة")
+          if len(D["مفتوحات"]) != proof.count("\n- "):
+              die("مفتوحاتُ الوديعة لا تُطابق ما تسرده الوثيقة")
+          print("بيتُ البرهان: ثلاثةَ عشرَ حارسًا ✓")
           PY
 
       - name: إيداع تقرير القياس
