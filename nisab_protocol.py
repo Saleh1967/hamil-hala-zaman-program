@@ -238,7 +238,15 @@ def importers():
 
 
 # ② الحارسُ يَنفُذ عند الاستيراد — لا عند أوّل استعمالٍ قد لا يقع البتّة.
-require_the_protocol()
+try:
+    require_the_protocol()
+except ProtocolError as _exc:                  # pragma: no cover — يَصرُخ ثمّ يَقف
+    # الصريخُ بمخرجه المُعلَن لا بأثرِ مكدَّسٍ مبهم: فمَن استورد البروتوكولَ
+    # على موقعٍ محرَّفٍ أو غائبٍ يجب أن يَقف **بالعدد نفسِه** الذي أعلنه هذا
+    # الملفُّ في ترويسته، وإلّا كانت المخارجُ المُعلَنةُ دعوى لا عقدًا.
+    import sys as _sys
+    print(f"صريخ: {_exc.message}", file=_sys.stderr)
+    raise SystemExit(_exc.code) from None
 
 
 if __name__ == "__main__":
