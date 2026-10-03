@@ -282,27 +282,13 @@ def test_contract_line_is_collided():
             rows[cells[0]] = cells[1]
     assert rows, "لا جدولَ في سطر العقد — الحارسُ بلا مادّة"
 
-    manifest = [ln.rstrip("\n").split("\t") for ln in
-                open(os.path.join(ROOT, "sources_manifest.tsv"), encoding="utf-8")
-                if ln.strip() and not ln.startswith("#")]
-    states = [r[8] for r in manifest]
-    got = {
-        "حقولُ البيان": len({len(r) for r in manifest}) == 1 and len(manifest[0]),
-        "شهودٌ مختومون": states.count("مختوم"),
-        "معذورون بالاسم": states.count("معذور"),
-        "مصادماتُ التقشير": sum(1 for n in globals() if n.startswith("test_")),
-    }
-    sys.path.insert(0, os.path.join(ROOT, "induction"))
-    import seals as S                                  # noqa: PLC0415 — يُحمَّل عند الحاجة
-    got["أختامُ [بوّابة] المصدَّرة"] = sum(1 for s in S.SEALS if s["صنف"] == S.GATE)
-    # وسندُ كلِّ ختمٍ يحكم: العددان يتساويان بالبناء أو ثَمَّ ختمٌ بلا سند.
-    got["أختامٌ بسندٍ مُعلَن"] = sum(1 for s in S.SEALS
-                                     if s["صنف"] == S.GATE and S.sanad_of(s))
-
-    for key, value in got.items():
-        assert key in rows, f"بندٌ غائبٌ عن سطر العقد: {key}"
-        assert rows[key] == str(value), (
-            f"سطرُ العقد يعلن «{key} = {rows[key]}» وموضعُه يعطي {value}")
+    # الحَكَمُ واحدٌ يُستدعى ولا يُنسَخ (CONTRIBUTING.md §٦): الاشتقاقُ في
+    # `contract_line.measure` وهو نفسُه الذي يكتب الخاناتِ بـ`--write`، فلا
+    # تنفرد بيدٌ بخانةٍ لتمريرِ اختبارٍ يُقاس بمنطقٍ ثانٍ منسوخ.
+    import contract_line as CL                          # noqa: PLC0415 — عند الحاجة
+    for key, written, derived in CL.drifts(doc):
+        raise AssertionError(
+            f"سطرُ العقد يعلن «{key} = {written}» وموضعُه يعطي {derived}")
 
     # المخارجُ المعلنةُ في السطر هي مخارجُ الطبقتين بأعيانها، لا وصفًا لها.
     assert rows["مخارجُ التقشير"] == "`0·2·5·6·7`" and (
