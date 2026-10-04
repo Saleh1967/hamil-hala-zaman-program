@@ -12,6 +12,7 @@ on:
       - 'test_normalize.py'
       - 'corpora/**'
       - 'rukhsa_check.py'
+      - 'rukhsa/**'
       - 'RUKHSA.md'
       - 'LICENSE'
       - '.github/workflows/sources-exit-codes.yml'
@@ -25,6 +26,7 @@ on:
       - 'test_normalize.py'
       - 'corpora/**'
       - 'rukhsa_check.py'
+      - 'rukhsa/**'
       - 'RUKHSA.md'
       - 'LICENSE'
       - '.github/workflows/sources-exit-codes.yml'
@@ -86,3 +88,11 @@ jobs:
           # خاناته صفرُ بايتاتِ المصادر — فمتى دخلت الشجرةَ بايتةٌ من مصدرٍ
           # صار المستودعُ مدَّعيًا إذنًا لم يُمنَح، فيسقط ههنا لا بعد النشر.
           python rukhsa_check.py --check --falsify
+
+      - name: جبرُ الترخيص — ثلاثُ شهاداتٍ وختمُ بيتها
+        run: |
+          set -u
+          # موضوعُه موضوعُ سطر الترخيص وأوسعُ منه: السطرُ يَعُدُّ ما في الشجرة،
+          # والبيتُ يَحكم على ما لم يُقَس بحاملٍ ثلاثيٍّ لا يقرأ الجهلَ إذنًا.
+          # والمصادمةُ الكاملةُ للوديعة في ci.yml؛ وههنا تشغيلُ الشهادات وختمُ البيت.
+          python rukhsa/run_all.py --check
