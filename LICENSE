@@ -1,0 +1,67 @@
+Copyright (c) 2026 Saleh1967 (صالح الغانم)
+
+هذه الرخصةُ تشمل ما أنشأه هذا المشروعُ وحدَه، ولا تشمل بايتاتٍ لا يملكها —
+والمستثنى مسمًّى بأعيانه ومقيسٌ ببصماته في `RUKHSA.md`، ويصادمُه
+`python rukhsa_check.py --check`.
+
+This license covers only what this project authored. Bytes it does not own are
+excluded; each exclusion is named and fingerprint-measured in `RUKHSA.md` and
+collided by `python rukhsa_check.py --check`.
+
+═══════════════════════════════════════════════════════════════════════════════
+① الشيفرة (`*.py` · `*.sh` · `*.yml`) — رخصةُ MIT
+   Source code (`*.py`, `*.sh`, `*.yml`) — MIT License
+═══════════════════════════════════════════════════════════════════════════════
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+═══════════════════════════════════════════════════════════════════════════════
+② الوثائقُ والودائع (`*.md` · `*.json` · `*.tsv`) — رخصةُ CC BY 4.0
+   Documents and measured deposits (`*.md`, `*.json`, `*.tsv`) — CC BY 4.0
+═══════════════════════════════════════════════════════════════════════════════
+
+Licensed under the Creative Commons Attribution 4.0 International License
+(CC BY 4.0): https://creativecommons.org/licenses/by/4.0/legalcode
+
+You are free to share and adapt this material for any purpose, including
+commercially, provided you give appropriate credit, link to the license, and
+indicate if changes were made.
+
+وهذه الوثائقُ والودائعُ **أرقامٌ مقيسة**، فالنسبةُ ههنا ليست مجاملةً: الرقمُ
+المنقولُ بلا مولِّدِه رقمٌ معرَّضٌ بحكم `CONTRIBUTING.md` §١، فانقلْه بموضعه
+ومولِّده كما نُقِل إليك.
+
+═══════════════════════════════════════════════════════════════════════════════
+③ ما لا تشمله هذه الرخصةُ البتّة
+   What this license does NOT cover
+═══════════════════════════════════════════════════════════════════════════════
+
+- **ثلاثُ حاوياتِ `.docx`** في الشجرة: حقوقُها لمؤلِّفيها وناشريها، لا للمشروع.
+  أُودِعت حامِلةً لبصماتٍ مستردّة، ولا يَمنح هذا المستودعُ فيها إذنًا لم يملكه.
+  أسماؤها وأطوالُها وبصماتُها في `RUKHSA.md`.
+- **نصوصُ المصادر** (OpenITI وغيرُها): **لا بايتةَ منها في هذه الشجرة** —
+  `corpora/sources/` و`corpora/inbox/` مستثناتان في `.gitignore`، والمودَعُ
+  بصماتُها الثلاثُ في `sources_manifest.tsv` لا بايتاتُها. والصفرُ ههنا مقيسٌ
+  في كلِّ تشغيلٍ لا مدَّعًى بنثر.
+- **المجمَّد** (`mujammad.txt`) و**العثمانية** (`uthmani.txt`) و**جدولُ
+  المقاييس**: لا تُودَع في الشجرة؛ يُودَع مِهرُها (`MUJAMMAD.md` ·
+  `UTHMANI.md` · `MAQAYIS.md`).
+
+The exclusions above are not prose: `rukhsa_check.py` measures them from the
+tree on every run and screams if a byte of a source corpus ever enters it.

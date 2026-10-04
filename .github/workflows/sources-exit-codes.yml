@@ -11,6 +11,9 @@ on:
       - 'normalize.py'
       - 'test_normalize.py'
       - 'corpora/**'
+      - 'rukhsa_check.py'
+      - 'RUKHSA.md'
+      - 'LICENSE'
       - '.github/workflows/sources-exit-codes.yml'
   pull_request:
     branches: [main]
@@ -21,6 +24,9 @@ on:
       - 'normalize.py'
       - 'test_normalize.py'
       - 'corpora/**'
+      - 'rukhsa_check.py'
+      - 'RUKHSA.md'
+      - 'LICENSE'
       - '.github/workflows/sources-exit-codes.yml'
   workflow_dispatch:
 
@@ -37,7 +43,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: سحب المستودع
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           # التاريخُ كاملًا: أختامُ طريق self تُقرأ من إيداعٍ مثبَّتٍ بأربعين
           # محرفًا، والسحبُ الضحلُ لا يحمله فيسقط الفحصُ بلا ذنبِ ختم.
@@ -50,7 +56,7 @@ jobs:
         run: bash test_fetch_source.sh
 
       - name: تهيئة بايثون
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: '3.12'
 
@@ -72,3 +78,11 @@ jobs:
             echo "صريخ: ختمُ مصدرٍ محفوظٍ في التاريخ مخالفٌ (خرج $rc) — لا يُدمَج" >&2
             exit "$rc"
           fi
+
+      - name: سطرُ الترخيص — خمسُ خاناتٍ مقيسةٍ وخمسُ محاولاتِ تكذيب
+        run: |
+          set -u
+          # موضوعُه موضوعُ البيان: ما دخل الشجرةَ وما بقي خارجها. وأخطرُ
+          # خاناته صفرُ بايتاتِ المصادر — فمتى دخلت الشجرةَ بايتةٌ من مصدرٍ
+          # صار المستودعُ مدَّعيًا إذنًا لم يُمنَح، فيسقط ههنا لا بعد النشر.
+          python rukhsa_check.py --check --falsify

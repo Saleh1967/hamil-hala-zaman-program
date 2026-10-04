@@ -20,15 +20,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: سحب المستودع
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: تهيئة بايثون
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: '3.12'
 
       - name: تثبيت الاعتماديات
-        run: python -m pip install --upgrade pip numpy
+        # بإصدارةٍ مثبَّتةٍ لا بسقفٍ متحرّك: `requirements.txt` موضعُ الحقيقة
+        # الواحدُ، فلا يتبدّل مقامُ تشغيلٍ على إيداعٍ واحدٍ بلا بايتٍ في الشجرة.
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+          python - <<'PY'
+          import sys, unicodedata, numpy
+          print(f"Python {sys.version.split()[0]} · NumPy {numpy.__version__} "
+                f"· Unicode {unicodedata.unidata_version}")
+          PY
 
       - name: البوّابة بالبصمة — المجمَّد المودَع أوّلًا، ولا قياس على بديلٍ صامت
         env:
@@ -161,38 +170,11 @@ jobs:
           python induction/seals.py --json /tmp/seals.json | tee -a measurement.txt
           # ووديعةُ السجلِّ نفسِها تُصادَم: الحارسُ الذي لا يودِع مخرَجَه لا يُصادَم،
           # فيبقى نجاحُه دعوى طباعةٍ تُقرأ بالعين (العقدُ من PR #10، وهذا موضعُه الواحد).
-          python - <<'PY'
-          import json, sys
-          a = json.load(open("induction/seals.json", encoding="utf-8"))
-          b = json.load(open("/tmp/seals.json", encoding="utf-8"))
-          if a != b:
-              print("::error::seals.json المودَع خالف ما يُنتجه السجلّ — صريخ")
-              sys.exit(1)
-          R = b["سجلُّ_الأختام"]
-          if R["أختامٌ_بلا_مولِّد"]:
-              print(f"::error::أختامٌ بلا مولِّدٍ حيّ: {R['أختامٌ_بلا_مولِّد']} — صريخ")
-              sys.exit(1)
-          if R["ودائعُ_خالفت"] or R["أختامٌ_انحرفت"]:
-              print(f"::error::انحرافٌ: {R['ودائعُ_خالفت']} · {R['أختامٌ_انحرفت']} — صريخ")
-              sys.exit(1)
-          if not all(t["مرفوضة"] for t in R["اختبارُ_التكذيب"]):
-              print("::error::سجلُّ الأختام لا يستطيع أن يرفض — حارسٌ أعمى — صريخ")
-              sys.exit(1)
-          # وعاءُ [مكتشَف]: قياسٌ من مصدرٍ غيرِ مختومٍ يُرجِّح ولا يحكم. والحارسُ ههنا يقرأ
-          # **الوديعةَ المولَّدة** لا النصَّ: أيُّ مكتشَفٍ فقد وسمَه أو ادّعى صنفَ بوّابةٍ يُسقط
-          # الخطوة. والسجلُّ فارغٌ اليوم بإعلانٍ، فالمفحوصُ بنيتُه — ولا يُسكَت عن انزلاقه.
-          disc = R["مكتشَفات"]
-          bad = [d["اسم"] for d in disc
-                 if d["صنف"] != "[مكتشَف]" or d["وسم"] != "غير مختوم"]
-          if bad:
-              print(f"::error::مكتشَفٌ فقد وسمَه أو ادّعى صنفًا حاكمًا: {bad} — صريخ")
-              sys.exit(1)
-          if R["سجلُّ_الترشيح"]["الكلّ"] != len(disc):
-              print("::error::سجلُّ الترشيح يخالف عددَ المكتشَفات — صريخ")
-              sys.exit(1)
-          print(f"أختامٌ حيّةٌ مصادَمة: {R['بوّابات']} بوّابةً · {R['شواهد']} شاهدًا "
-                f"· {len(disc)} مكتشَفًا خارجَ الحكم ✓")
-          PY
+          # والحرّاسُ الستُّ خرجن من بطن هذه الخطوة إلى `test_seals_record.py`: ما سكن
+          # في قلب خطوةِ تشغيلٍ لا يُشغَّل محلّيًّا ولا يُسأَل «هل تستطيع أن ترفض؟».
+          # و`--falsify` يسألهنّ ههنا نفسَه: ستُّ مدخلاتٍ محرَّفةٍ تُردّ كلُّها.
+          python test_seals_record.py induction/seals.json /tmp/seals.json --falsify \
+            | tee -a measurement.txt
 
       - name: ورقةُ التدقيق الخارجي — AUDIT-SEALS.md مولَّدةٌ لا محرَّرةٌ بيد
         run: |
@@ -3314,7 +3296,7 @@ jobs:
 
       - name: إيداع تقرير القياس
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: measurement
           path: measurement.txt
