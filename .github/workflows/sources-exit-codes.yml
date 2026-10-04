@@ -11,6 +11,9 @@ on:
       - 'normalize.py'
       - 'test_normalize.py'
       - 'corpora/**'
+      - 'rukhsa_check.py'
+      - 'RUKHSA.md'
+      - 'LICENSE'
       - '.github/workflows/sources-exit-codes.yml'
   pull_request:
     branches: [main]
@@ -21,6 +24,9 @@ on:
       - 'normalize.py'
       - 'test_normalize.py'
       - 'corpora/**'
+      - 'rukhsa_check.py'
+      - 'RUKHSA.md'
+      - 'LICENSE'
       - '.github/workflows/sources-exit-codes.yml'
   workflow_dispatch:
 
@@ -72,3 +78,11 @@ jobs:
             echo "صريخ: ختمُ مصدرٍ محفوظٍ في التاريخ مخالفٌ (خرج $rc) — لا يُدمَج" >&2
             exit "$rc"
           fi
+
+      - name: سطرُ الترخيص — خمسُ خاناتٍ مقيسةٍ وخمسُ محاولاتِ تكذيب
+        run: |
+          set -u
+          # موضوعُه موضوعُ البيان: ما دخل الشجرةَ وما بقي خارجها. وأخطرُ
+          # خاناته صفرُ بايتاتِ المصادر — فمتى دخلت الشجرةَ بايتةٌ من مصدرٍ
+          # صار المستودعُ مدَّعيًا إذنًا لم يُمنَح، فيسقط ههنا لا بعد النشر.
+          python rukhsa_check.py --check --falsify
