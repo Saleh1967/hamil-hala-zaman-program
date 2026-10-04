@@ -1,9 +1,12 @@
-# rukhsa/cert_hawiyat.py — شهادةُ الحاويات: «أتبقى الثلاثُ في الشجرة؟» سؤالُ مالكٍ،
-# وهذه الشهادةُ تُحوِّله من رأيٍ إلى **فارقٍ مقيس**: ما الذي يتبدّل إن خرجت، وما الذي لا؟
+# rukhsa/cert_hawiyat.py — شهادةُ الحاويات: «أتبقى الثلاثُ في الشجرة؟» كان سؤالَ مالكٍ،
+# **وقد أجاب**: أُخرِجت بصكٍّ موقَّعٍ على بايتاتها (`rukhsa/ikhraj.py`، ٢٠٢٦-١٠-٠٤).
+# فصارت هذه الشهادةُ تقيس فارقَ **فعلٍ وقع** لا فارقَ فرضٍ مظنون.
 #
-# والطريقةُ قياسٌ مضادٌّ للواقع (counterfactual): تُبنى شجرةٌ ثانيةٌ T′ = T ناقصَ الحاويات،
-# ويُحسَب حكمُ كلِّ ملفٍّ في الشجرتين، ثمّ يُصادَم الحكمان صفًّا إلى صفّ. فالدعوى
-# «خروجُها لا يُغيِّر حكمَ الرخصة» تصير **عددًا** لا طمأنينة.
+# والطريقةُ هي هي، ووجهُها انقلب: الشجرةُ اليوم T بلا حاويات، وتُبنى الشجرةُ المضادّةُ
+# T⁺ = T **زائدَ** الحاويات كما كانت قبل الصكّ — فهي الفرضُ الآن، وما كان فرضًا صار
+# واقعًا. ثمّ يُحسَب حكمُ كلِّ ملفٍّ في الشجرتين ويُصادَم صفًّا إلى صفّ: فالدعوى
+# «خروجُها لا يُغيِّر حكمَ الرخصة» تصير **عددًا** لا طمأنينة — ويبقى قابلًا للتكذيب
+# بعد التنفيذ كما كان قبله.
 #
 # وثلاثةُ أعدادٍ تُغلِق البابَ على الرأي:
 #   ① حكمُ الملفّات الباقيةِ في T′ يطابق حكمَها في T — بعدد المطابقات لا بالقول.
@@ -14,11 +17,17 @@
 #      البايتات من **إيداعٍ مثبَّتٍ في التاريخ** لا من شجرة العمل — ويُقاس ذلك
 #      بوجود كائنات git أنفسِها، لا بالثقة بالوصف.
 #
-# فالقرارُ يبقى للمالك كما هو، لكنّه يصير قرارًا **على فاتورةٍ معلومة** لا على ظنّ.
+#   ④ والصكُّ نفسُه مقيسٌ ههنا: ما أُذِن فيه، وما نُفِّذ، وما بقي مستردًّا — تُقرأ
+#      قيمُه من `ikhraj.py` بالاستيراد لا بالنقل، فلا يتخلّف رقمٌ عن مصدره.
+#
+# فالقرارُ كان للمالك، وقد مضى؛ وهذه فاتورتُه **معدودةً بعد التنفيذ** لا موعودةً قبله.
 import argparse, hashlib, json, os, subprocess, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
+
+sys.path.insert(0, HERE)
+import ikhraj                      # صكُّ الإخراج — يُستدعى ولا يُنسَخ (§٦)
 
 BOT = "⊥"
 SUS = "⊘"
@@ -51,11 +60,15 @@ ORIGIN_VERDICT = {
 }
 
 # المتوقَّعُ قبل التشغيل — أحكامٌ لا أعداد، فالأعدادُ تتبدّل بكلِّ إيداعٍ والأحكامُ لا.
+# وما عدا الأحكامِ ثلاثةُ أصفارٍ: صفرُ حاويةٍ في الرأس (الصكُّ منفَّذ)، وصفرُ حكمٍ
+# تبدّل بخروجها (البرهانُ قائمٌ بعد التنفيذ)، وصفرُ حاويةٍ انقطع استردادُها.
 EXPECTED = {
     "حكمُ الشجرة اليوم": BOT,
-    "حكمُ الشجرة بعد خروج الحاويات": BOT,
+    "حكمُ الشجرة لو عادت الحاويات": BOT,
     "حكمُ الشجرة بعد خروج كلِّ ما لا يُملَك": SUS,
     "أحكامٌ تبدّلت بخروج الحاويات": 0,
+    "حاوياتٌ في الرأس": 0,
+    "حاوياتٌ في الصكِّ لم تُستردّ": 0,
 }
 
 
@@ -146,43 +159,71 @@ def retrieval(rows, containers):
     return measured
 
 
+def screams(fn, arg):
+    """أيصرخ الحارسُ على الصورة المكذِّبة؟ — يُشغَّل ليُقاس، ولا يُفترَض جوابُه."""
+    try:
+        fn(arg)
+    except ikhraj.Scream:
+        return True
+    return False
+
+
+def back_in_head(census):
+    """نسخةٌ من قياس الصكِّ أُعيدت فيها حاويةٌ إلى الرأس — صورةٌ لا شجرة."""
+    broken = json.loads(json.dumps(census, ensure_ascii=False))
+    broken["صفوف"][0]["في الرأس"] = True
+    broken["خانات"]["حاوياتٌ في الرأس"] = 1
+    return broken
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--json")
     args = ap.parse_args()
 
     files = tracked()
-    containers = [p for p in files if p.lower().endswith(CONTAINER_EXT)]
-    counterfactual = [p for p in files if p not in set(containers)]
+    # الحاوياتُ تُسمّى من الصكِّ لا من مشطِ الشجرة: فبعد التنفيذ لا يجدها المشطُ،
+    # ولو عُدَّت بالمشط لصار البرهانُ يخفت كلّما نجح — وهذا عمًى لا نجاح.
+    writ = [e["المسار"] for e in ikhraj.CONTAINERS]
+    in_head = [p for p in files if p.lower().endswith(CONTAINER_EXT)]
+    # الشجرةُ المضادّةُ T⁺: الرأسُ اليومَ زائدَ ما أُخرِج — أي الشجرةُ قبل الصكّ.
+    restored = sorted(set(files) | set(writ))
+
     unowned = [p for p in files if verdict_of(p) == BOT]
     owned_only = [p for p in files if verdict_of(p) != BOT]
 
     fails = []
 
-    # ① المصادمةُ صفًّا إلى صفّ: حكمُ كلِّ ملفٍّ باقٍ في T′ يطابق حكمَه في T.
+    # ① المصادمةُ صفًّا إلى صفّ: حكمُ كلِّ ملفٍّ باقٍ في T يطابق حكمَه في T⁺.
     here = {p: verdict_of(p) for p in files}
-    there = {p: verdict_of(p) for p in counterfactual}
-    shifted = [p for p in counterfactual if here[p] != there[p]]
+    there = {p: verdict_of(p) for p in restored}
+    shifted = [p for p in files if here[p] != there[p]]
     if shifted:
         fails.append(f"حكمُ {len(shifted)} ملفًّا تبدّل بخروج الحاويات — البرهانُ ساقط")
 
     # ② حزمُ الشجرات الثلاث — والطريقُ إلى ⊤ مقيسٌ بشِقَّيه لا مُدَّعًى بأحدهما.
     tree_now = fold(here.values())
-    tree_without = fold(there.values())
+    tree_restored = fold(there.values())
     tree_owned = fold([here[p] for p in owned_only])
     silent = [p for p in owned_only if here[p] == SUS]
 
+    # صكُّ الإخراج مقيسٌ بدالّته هو — لا رقمَ يُنقَل عنه ههنا.
+    writ_census = ikhraj.census(files)
+    unretrieved = [r["المعرِّف"] for r in writ_census["صفوف"] if not r["مستردّة"]]
+
     measured = {
         "ملفّاتُ الشجرة": len(files),
-        "حاوياتٌ في شجرة العمل": len(containers),
-        "بايتاتُ الحاويات": sum(size_of(p) for p in containers),
+        "حاوياتٌ في الصكّ": len(writ),
+        "حاوياتٌ في الرأس": len(in_head),
+        "حاوياتٌ في الصكِّ لم تُستردّ": len(unretrieved),
+        "بايتاتُ الحاويات التي خرجت": sum(e["الطول"] for e in ikhraj.CONTAINERS),
         "ملفّاتٌ لا يملكها المشروع": len(unowned),
         "بايتاتُ ما لا يملكه المشروع": sum(size_of(p) for p in unowned),
-        "أحكامٌ صُودِمت بين الشجرتين": len(counterfactual),
+        "أحكامٌ صُودِمت بين الشجرتين": len(files),
         "أحكامٌ تبدّلت بخروج الحاويات": len(shifted),
         "ملفّاتٌ مسكوتٌ عنها في نصِّ المنحة": len(silent),
         "حكمُ الشجرة اليوم": tree_now,
-        "حكمُ الشجرة بعد خروج الحاويات": tree_without,
+        "حكمُ الشجرة لو عادت الحاويات": tree_restored,
         "حكمُ الشجرة بعد خروج كلِّ ما لا يُملَك": tree_owned,
     }
     for name, want in EXPECTED.items():
@@ -191,7 +232,7 @@ def main():
 
     # ③ الاستردادُ — طريقُ `self` يقرأ من التاريخ لا من شجرة العمل.
     rows = manifest_self_rows()
-    recovery = retrieval(rows, set(containers))
+    recovery = retrieval(rows, set(writ))
     present = sum(1 for r in recovery if r["كائنُه حاضرٌ في التاريخ"])
     matched = sum(1 for r in recovery if r["بصمةُ الكائن تطابق البيان"])
     if not rows:
@@ -207,8 +248,12 @@ def main():
     trials = {
         "بلوبٌ مختلَقٌ لا وجودَ له في التاريخ":
             int(not object_exists("0" * 40)),
-        "شجرةٌ مضادّةٌ أُبقيت فيها الحاويات":
-            sum(1 for p in files if p in set(containers)),
+        "شجرةٌ مضادّةٌ أُعيدت إليها الحاويات":
+            sum(1 for p in restored if p.lower().endswith(CONTAINER_EXT)),
+        # صورةٌ مكذِّبةٌ تُبنى ولا تُدَّعى: حاويةٌ تُعاد إلى الرأس في نسخةٍ من
+        # القياس، ثمّ يُسأَل حارسُ الصكِّ نفسُه — أيصرخ؟ فإن سكت فهو أعمى.
+        "صكٌّ يُدَّعى منفَّذًا وحاويةٌ في الرأس":
+            int(screams(ikhraj.guards, back_in_head(writ_census))),
         "حكمُ ملفٍّ لا سطرَ لنسبته في السجلّ":
             int(verdict_of("وهمٌ.bin") == SUS),
     }
@@ -221,6 +266,13 @@ def main():
         "الأساس": "بايتاتُ الشجرة وكائناتُ تاريخها — لا شبكةَ ولا نقلَ عن وصف",
         "مقيس": measured,
         "متوقَّعٌ_قبل_التشغيل": EXPECTED,
+        "صكُّ_الإخراج": {
+            "المالك": ikhraj.WRIT["المالك"],
+            "التاريخ": ikhraj.WRIT["التاريخ"],
+            "نصُّ_الإذن": ikhraj.WRIT["نصُّ_الإذن"],
+            "حدُّ_الإذن": ikhraj.WRIT["حدُّ_الإذن"],
+            "خانات": writ_census["خانات"],
+        },
         "استردادُ_طريقِ_self": {"سطور": len(rows), "كائناتٌ حاضرة": present,
                                 "بصماتٌ طابقت البيان": matched,
                                 "استنساخٌ ضحلّ": shallow, "تفصيل": recovery},
@@ -232,24 +284,29 @@ def main():
                                                   "أسماء": silent},
         },
         "خلاصةٌ_مقيسة": (
-            "خروجُ الحاويات لا يُبدِّل حكمَ ملفٍّ واحدٍ من الباقي، ولا يبلغ بالشجرة ⊤ — "
-            "فبقاؤها قرارُ مالكٍ لا يقتضيه الجبرُ ولا يمنعه، وفاتورتُه معدودةٌ ههنا"),
+            "الحاوياتُ أُخرِجت بصكٍّ موقَّعٍ على بايتاتها، وبايتاتُها مستردَّةٌ من "
+            "التاريخ مصادَمةً بختمها الثلاثيّ. وخروجُها لم يُبدِّل حكمَ ملفٍّ واحدٍ "
+            "من الباقي ولم يبلغ بالشجرة ⊤ — فكان قرارَ مالكٍ لا يقتضيه الجبرُ ولا "
+            "يمنعه، وقد مضى على فاتورةٍ معدودةٍ لا مظنونة"),
         "محاولاتُ_التكذيب": trials,
         "حكم": "خضراء" if not fails else "ساقطة",
         "مآخذ": fails,
     }
 
-    print("— CERT-HAWIYAT: الحاوياتُ قياسًا مضادًّا للواقع —")
-    print(f"    T: {len(files)} ملفًّا ⟶ {tree_now} · T′ (بلا حاويات): "
-          f"{len(counterfactual)} ملفًّا ⟶ {tree_without} · "
+    print("— CERT-HAWIYAT: الحاوياتُ قياسًا مضادًّا للواقع بعد التنفيذ —")
+    print(f"    T (اليوم، بلا حاويات): {len(files)} ملفًّا ⟶ {tree_now} · "
+          f"T⁺ (لو عادت): {len(restored)} ملفًّا ⟶ {tree_restored} · "
           f"T″ (بلا ما لا يُملَك): {len(owned_only)} ملفًّا ⟶ {tree_owned}")
-    print(f"    أحكامٌ صُودِمت: {len(counterfactual)} · تبدّل منها "
-          f"{len(shifted)} — فخروجُها لا يمسّ حكمَ غيرِها")
+    print(f"    أحكامٌ صُودِمت: {len(files)} · تبدّل منها "
+          f"{len(shifted)} — فخروجُها لم يمسّ حكمَ غيرِها")
+    print(f"    صكُّ الإخراج: {measured['حاوياتٌ في الصكّ']} مأذونًا فيها · "
+          f"{measured['حاوياتٌ في الرأس']} في الرأس · "
+          f"{measured['بايتاتُ الحاويات التي خرجت']:,} بايتةً خرجت")
     print(f"    استردادُ self: {present}/{len(rows)} كائنًا في التاريخ · "
           f"{matched} بصمةً طابقت البيان")
     for f in fails:
         print(f"::error::{f}")
-    print("    ✓ القرارُ قرارُ مالكٍ — والفاتورةُ معدودةٌ لا مظنونة"
+    print("    ✓ الصكُّ منفَّذٌ — والفاتورةُ معدودةٌ لا مظنونة"
           if not fails else "    ✗ سقطت")
 
     if args.json:

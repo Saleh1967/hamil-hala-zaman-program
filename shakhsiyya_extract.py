@@ -53,8 +53,10 @@
 #   SHAKHSIYYA_EMIT_OWNER=1 python shakhsiyya_extract.py --emit   كتابةُ الوديعتين بيد المالك
 import argparse
 import hashlib
+import io
 import json
 import os
+import subprocess
 import sys
 import unicodedata
 import xml.etree.ElementTree as ET
@@ -136,12 +138,45 @@ class ExtractError(Exception):
 
 
 # ــ ① الحاوية بالبصمة أوّلًا، ولا استخراجَ على بديلٍ صامت ــــــــــــــــــــــــــــ
+def container_from_history():
+    """بايتاتُ الحاوية من كائن تاريخ هذا المستودع — بلا شبكةٍ وبلا شجرةِ عمل.
+
+    الحاويةُ أُخرِجت من الرأس بصكِّ المالك (`rukhsa/ikhraj.py`)، وبايتاتُها
+    باقيةٌ في التاريخ. والكائنُ يُطلَب ببصمته الأربعينيّة المختومة أعلاه لا
+    بمسارٍ في شجرةٍ قد تتبدّل — فالمطلوبُ بايتاتٌ بعينها لا ملفٌّ باسمه.
+    """
+    run = subprocess.run(["git", "-C", ROOT, "cat-file", "blob", CONTAINER_BLOB],
+                         capture_output=True)
+    if run.returncode != 0:
+        raise ExtractError(
+            E_CONTAINER,
+            f"كائنُ الحاوية {CONTAINER_BLOB[:7]} غائبٌ عن التاريخ — "
+            "استنساخٌ ضحلٌّ لا يحمله؛ يُجلَب بـ«git fetch --unshallow»")
+    return run.stdout
+
+
 def read_container(path=None):
-    path = path or os.path.join(ROOT, CONTAINER)
-    try:
-        raw = open(path, "rb").read()
-    except OSError as exc:
-        raise ExtractError(E_CONTAINER, f"تعذّرت قراءةُ الحاوية «{path}»: {exc}")
+    """البايتاتُ من موضعٍ مُعلَن: مسارٌ بيد المستعمِل، أو الرأس، أو التاريخ.
+
+    والطرقُ الثلاثةُ تلتقي عند حارسٍ واحد: الطولُ وsha256 يُصادَمان قبل أن
+    يُقرَأ منها محرف — فلا يُغني طريقٌ عن ختمٍ ولا يُرخّص أحدُها بديلًا صامتًا.
+    """
+    tree = os.path.join(ROOT, CONTAINER)
+    if path:
+        source = path
+    elif os.path.exists(tree):
+        source = tree
+    else:
+        source = f"git:{CONTAINER_BLOB}"
+
+    if source.startswith("git:"):
+        raw = container_from_history()
+    else:
+        try:
+            raw = open(source, "rb").read()
+        except OSError as exc:
+            raise ExtractError(E_CONTAINER,
+                               f"تعذّرت قراءةُ الحاوية «{source}»: {exc}")
     if len(raw) != CONTAINER_BYTES:
         raise ExtractError(E_CONTAINER,
                            f"ليست الحاويةَ المختومة — الطول {len(raw)} "
@@ -151,7 +186,7 @@ def read_container(path=None):
         raise ExtractError(E_CONTAINER,
                            f"ليست الحاويةَ المختومة — البصمة {got} خالفت "
                            f"{CONTAINER_SHA256}")
-    return raw, path
+    return raw, source
 
 
 def _decode(part, blob):
@@ -225,9 +260,11 @@ def _tally():
 
 def extract(path=None):
     """الحاويةُ ⟵ (تيارُ المتن · تيارُ الحواشي · دفترُ المقصيِّ معدودًا)."""
-    raw, path = read_container(path)
+    raw, source = read_container(path)
     tally = _tally()
-    with zipfile.ZipFile(path) as box:
+    # الصندوقُ يُفتَح على البايتات المصادَمةِ نفسِها لا على مسارٍ يُقرَأ ثانيةً:
+    # فبين القياسِ والقراءةِ لا يتسلّل ملفٌّ ثانٍ، وتستوي الطرقُ الثلاثة.
+    with zipfile.ZipFile(io.BytesIO(raw)) as box:
         names = box.namelist()
         tally["أجزاءٌ_مقصاةٌ_إنتاجًا"] = sum(
             1 for n in names if n.startswith(PART_CHROME))
