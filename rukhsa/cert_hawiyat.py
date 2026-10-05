@@ -144,6 +144,10 @@ def retrieval(rows, containers):
     وطريقُ `self` يقرأ من إيداعٍ مثبَّتٍ بأربعين محرفًا؛ فما دام الكائنُ في
     التاريخ بقي المصدرُ مستردًّا ولو خرج الملفُّ من شجرة العمل. والقيدُ المقابلُ
     معلَنٌ لا مطويّ: استنساخٌ ضحلٌ لا يحمل التاريخَ فلا يحمل الكائن.
+
+    ولا يُودَع ههنا وصفُ المضيف (أضحلٌ استنساخُه أم كامل): ذلك خاصّةُ الآلة
+    التي شُغِّل عليها القياسُ لا خاصّةُ البايتات المقيسة، وإيداعُه يجعل الوديعةَ
+    تتبدّل بتبدُّل المضيف فتسقط مصادمتُها بلا ذنبِ رقم.
     """
     measured = []
     for r in rows:
@@ -151,7 +155,7 @@ def retrieval(rows, containers):
         exists = object_exists(r["البلوب"])
         measured.append({
             "المعرِّف": r["المعرِّف"],
-            "مسارُه حاويةٌ في شجرة العمل": in_worktree,
+            "مسارُه حاويةٌ سمّاها الصكّ": in_worktree,
             "كائنُه حاضرٌ في التاريخ": exists,
             "بصمةُ الكائن تطابق البيان": blob_sha256(r["البلوب"]) == r["sha256"]
             if exists else False,
@@ -237,10 +241,18 @@ def main():
     matched = sum(1 for r in recovery if r["بصمةُ الكائن تطابق البيان"])
     if not rows:
         fails.append("لا سطرَ `self` في البيان — الشهادةُ بلا مادّة")
-    shallow = subprocess.run(["git", "-C", ROOT, "rev-parse", "--is-shallow-repository"],
-                             capture_output=True, text=True).stdout.strip() == "true"
-    if present != len(rows) and not shallow:
-        fails.append(f"استنساخٌ كاملٌ وفيه {len(rows) - present} كائنًا غائبًا عن التاريخ")
+    # والغيابُ صريخٌ على كلِّ حال: كان يُعذَر بضحالة الاستنساخ، فكان العذرُ
+    # يُبدِّل **أرقامَ الوديعة** بتبدُّل المضيف — وديعةٌ تتبدّل بالمضيف لا تُصادَم.
+    # فالحكمُ الآن واحد: إمّا أن يُقاس التاريخُ كاملًا، وإمّا أن تسقط الشهادةُ
+    # مسمّيةً العلّةَ والدواء. وضحالةُ الاستنساخ تُسمّى في الصريخ ولا تُودَع.
+    if present != len(rows):
+        shallow = subprocess.run(
+            ["git", "-C", ROOT, "rev-parse", "--is-shallow-repository"],
+            capture_output=True, text=True).stdout.strip() == "true"
+        fails.append(
+            f"{len(rows) - present} كائنًا غائبًا عن التاريخ"
+            + (" — والاستنساخُ ضحلّ: `git fetch --unshallow` أو `fetch-depth: 0`"
+               if shallow else " — والاستنساخُ كاملٌ فالغيابُ عطبٌ لا قيدُ مضيف"))
     if matched != present:
         fails.append(f"{present - matched} كائنًا حاضرًا خالفت بصمتُه البيان")
 
@@ -274,8 +286,7 @@ def main():
             "خانات": writ_census["خانات"],
         },
         "استردادُ_طريقِ_self": {"سطور": len(rows), "كائناتٌ حاضرة": present,
-                                "بصماتٌ طابقت البيان": matched,
-                                "استنساخٌ ضحلّ": shallow, "تفصيل": recovery},
+                                "بصماتٌ طابقت البيان": matched, "تفصيل": recovery},
         "الطريقُ_إلى_⊤": {
             "حذفُ ما لا يُملَك": {"ملفّات": len(unowned),
                                   "بايتات": measured["بايتاتُ ما لا يملكه المشروع"],
