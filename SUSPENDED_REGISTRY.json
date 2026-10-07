@@ -1,5 +1,12 @@
 {
   "principle": "suspension without deletion: history stays in git; nothing returns except by re_admit_requires",
+  "violations_by_kind": {
+    "measures": 75,
+    "normalizes": 29,
+    "reads_text": 71,
+    "script": 6,
+    "writes_text": 67
+  },
   "sole_entry_exit": "Saleh1967/Alghanem gate.api (enter, exit); here only src/entry.py (certificate atoms -> cells)",
   "count": 81,
   "units": [
@@ -8,6 +15,19 @@
       "previous_path": "alama_layer.py",
       "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "normalizes",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "normalization is the gate's residue rules (A116.Residue); map each rule to a named residue edit or drop it",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -19,6 +39,19 @@
       "previous_path": "algebra_engine.py",
       "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "normalizes",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "normalization is the gate's residue rules (A116.Residue); map each rule to a named residue edit or drop it",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -30,6 +63,19 @@
       "previous_path": "aqsam_gate.py",
       "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "normalizes",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "normalization is the gate's residue rules (A116.Residue); map each rule to a named residue edit or drop it",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -41,6 +87,19 @@
       "previous_path": "awzan_engine.py",
       "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "normalizes",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "normalization is the gate's residue rules (A116.Residue); map each rule to a named residue edit or drop it",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -52,6 +111,19 @@
       "previous_path": "burhan/cert_boundary.py",
       "reason": "certificate scripts reading the corpus text directly (normalize, partition, sukun…)",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "normalizes",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "normalization is the gate's residue rules (A116.Residue); map each rule to a named residue edit or drop it",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -63,6 +135,19 @@
       "previous_path": "burhan/cert_corpus.py",
       "reason": "certificate scripts reading the corpus text directly (normalize, partition, sukun…)",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "normalizes",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "normalization is the gate's residue rules (A116.Residue); map each rule to a named residue edit or drop it",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -74,6 +159,19 @@
       "previous_path": "burhan/cert_fingerprints.py",
       "reason": "certificate scripts reading the corpus text directly (normalize, partition, sukun…)",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "normalizes",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "normalization is the gate's residue rules (A116.Residue); map each rule to a named residue edit or drop it",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -85,6 +183,17 @@
       "previous_path": "burhan/cert_generations.py",
       "reason": "certificate scripts reading the corpus text directly (normalize, partition, sukun…)",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -96,6 +205,17 @@
       "previous_path": "burhan/cert_inertness.py",
       "reason": "certificate scripts reading the corpus text directly (normalize, partition, sukun…)",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -107,6 +227,19 @@
       "previous_path": "burhan/cert_normalize.py",
       "reason": "certificate scripts reading the corpus text directly (normalize, partition, sukun…)",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "normalizes",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "normalization is the gate's residue rules (A116.Residue); map each rule to a named residue edit or drop it",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -118,6 +251,17 @@
       "previous_path": "burhan/cert_partition.py",
       "reason": "certificate scripts reading the corpus text directly (normalize, partition, sukun…)",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -129,6 +273,19 @@
       "previous_path": "burhan/cert_sukun.py",
       "reason": "certificate scripts reading the corpus text directly (normalize, partition, sukun…)",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "normalizes",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "normalization is the gate's residue rules (A116.Residue); map each rule to a named residue edit or drop it",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -140,6 +297,17 @@
       "previous_path": "burhan/run_all.py",
       "reason": "certificate scripts reading the corpus text directly (normalize, partition, sukun…)",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -151,6 +319,17 @@
       "previous_path": "context_ladder.py",
       "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -162,6 +341,15 @@
       "previous_path": "contract_line.py",
       "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
       "suspended_at": "2026-10-07",
+      "claim": "مولِّدُ «سطر العقد» في `SOURCES.md` — خاناتٌ تُشتقُّ من مواضعها لا تُكتَب بيد.",
+      "violation": [
+        "reads_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -173,6 +361,19 @@
       "previous_path": "dalalat_gate.py",
       "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "normalizes",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "normalization is the gate's residue rules (A116.Residue); map each rule to a named residue edit or drop it",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -184,6 +385,19 @@
       "previous_path": "dall_gate.py",
       "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "normalizes",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "normalization is the gate's residue rules (A116.Residue); map each rule to a named residue edit or drop it",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -195,6 +409,17 @@
       "previous_path": "dictionary_engine.py",
       "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -206,6 +431,17 @@
       "previous_path": "duyun_gate.py",
       "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -217,6 +453,13 @@
       "previous_path": "fetch_corpus.sh",
       "reason": "shell scripts fetching/normalizing corpora outside the gate",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "script"
+      ],
+      "readmission_path": [
+        "replace by a guarded tool reading only deposits; or drop"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -228,6 +471,13 @@
       "previous_path": "fetch_maqayis.sh",
       "reason": "shell scripts fetching/normalizing corpora outside the gate",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "script"
+      ],
+      "readmission_path": [
+        "replace by a guarded tool reading only deposits; or drop"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -239,6 +489,13 @@
       "previous_path": "fetch_source.sh",
       "reason": "shell scripts fetching/normalizing corpora outside the gate",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "script"
+      ],
+      "readmission_path": [
+        "replace by a guarded tool reading only deposits; or drop"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -250,6 +507,13 @@
       "previous_path": "fetch_uthmani.sh",
       "reason": "shell scripts fetching/normalizing corpora outside the gate",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "script"
+      ],
+      "readmission_path": [
+        "replace by a guarded tool reading only deposits; or drop"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -261,6 +525,19 @@
       "previous_path": "field112_laws.py",
       "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "normalizes",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "normalization is the gate's residue rules (A116.Residue); map each rule to a named residue edit or drop it",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -272,6 +549,13 @@
       "previous_path": ".github/workflows/sources-exit-codes.yml",
       "reason": "ran the suspended engines and fetched corpora; replaced by ci.yml (registry + guard + pytest)",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "script"
+      ],
+      "readmission_path": [
+        "replace by a guarded tool reading only deposits; or drop"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -283,6 +567,17 @@
       "previous_path": "harakat_layer.py",
       "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -294,6 +589,17 @@
       "previous_path": "i3lal_layer.py",
       "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -305,6 +611,17 @@
       "previous_path": "ihala_gate.py",
       "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -316,6 +633,19 @@
       "previous_path": "imla_layer.py",
       "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "normalizes",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "normalization is the gate's residue rules (A116.Residue); map each rule to a named residue edit or drop it",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -327,6 +657,17 @@
       "previous_path": "induction/deposit_law.py",
       "reason": "induction engine and seals peeling text outside the gate",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -338,6 +679,17 @@
       "previous_path": "induction/export_seals.py",
       "reason": "induction engine and seals peeling text outside the gate",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -349,6 +701,19 @@
       "previous_path": "induction/hiyad.py",
       "reason": "induction engine and seals peeling text outside the gate",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "normalizes",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "normalization is the gate's residue rules (A116.Residue); map each rule to a named residue edit or drop it",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -360,6 +725,19 @@
       "previous_path": "induction/induction_engine.py",
       "reason": "induction engine and seals peeling text outside the gate",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "normalizes",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "normalization is the gate's residue rules (A116.Residue); map each rule to a named residue edit or drop it",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -371,6 +749,19 @@
       "previous_path": "induction/jami3_mani3.py",
       "reason": "induction engine and seals peeling text outside the gate",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "normalizes",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "normalization is the gate's residue rules (A116.Residue); map each rule to a named residue edit or drop it",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -382,6 +773,17 @@
       "previous_path": "induction/mirror.py",
       "reason": "induction engine and seals peeling text outside the gate",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -393,6 +795,17 @@
       "previous_path": "induction/online_peel.py",
       "reason": "induction engine and seals peeling text outside the gate",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -404,6 +817,17 @@
       "previous_path": "induction/seals.py",
       "reason": "induction engine and seals peeling text outside the gate",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -415,6 +839,17 @@
       "previous_path": "induction/tensor_law.py",
       "reason": "induction engine and seals peeling text outside the gate",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -426,6 +861,17 @@
       "previous_path": "isnad_layer.py",
       "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -437,6 +883,17 @@
       "previous_path": "jar_gate.py",
       "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -448,6 +905,17 @@
       "previous_path": "jumla_gate.py",
       "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -459,6 +927,17 @@
       "previous_path": "jumla_links.py",
       "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -470,6 +949,17 @@
       "previous_path": "mabna_gate.py",
       "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -481,6 +971,19 @@
       "previous_path": "madlul_gate.py",
       "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "normalizes",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "normalization is the gate's residue rules (A116.Residue); map each rule to a named residue edit or drop it",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -492,6 +995,19 @@
       "previous_path": "manhaj_gate.py",
       "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "normalizes",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "normalization is the gate's residue rules (A116.Residue); map each rule to a named residue edit or drop it",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -503,6 +1019,19 @@
       "previous_path": "maqayis_layer.py",
       "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "normalizes",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "normalization is the gate's residue rules (A116.Residue); map each rule to a named residue edit or drop it",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -514,6 +1043,17 @@
       "previous_path": "masadir_gate.py",
       "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -525,6 +1065,17 @@
       "previous_path": "mawsua_gate.py",
       "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -536,6 +1087,17 @@
       "previous_path": "mihwar_gate.py",
       "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -547,6 +1109,17 @@
       "previous_path": "mu3jam_gate.py",
       "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -558,6 +1131,17 @@
       "previous_path": "nisab_gate.py",
       "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -569,6 +1153,17 @@
       "previous_path": "niyaba_gate.py",
       "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -580,6 +1175,19 @@
       "previous_path": "normalize.py",
       "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "normalizes",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "normalization is the gate's residue rules (A116.Residue); map each rule to a named residue edit or drop it",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -591,6 +1199,17 @@
       "previous_path": "pairs_engine.py",
       "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -602,6 +1221,17 @@
       "previous_path": "qisma_gate.py",
       "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -613,6 +1243,19 @@
       "previous_path": "rukhsa/cert_hawiyat.py",
       "reason": "licence/ownership scripts reading text and git objects outside the gate",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "normalizes",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "normalization is the gate's residue rules (A116.Residue); map each rule to a named residue edit or drop it",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -624,6 +1267,17 @@
       "previous_path": "rukhsa/cert_jabr.py",
       "reason": "licence/ownership scripts reading text and git objects outside the gate",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -635,6 +1289,19 @@
       "previous_path": "rukhsa/cert_sijill.py",
       "reason": "licence/ownership scripts reading text and git objects outside the gate",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "normalizes",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "normalization is the gate's residue rules (A116.Residue); map each rule to a named residue edit or drop it",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -646,6 +1313,15 @@
       "previous_path": "rukhsa/ikhraj.py",
       "reason": "licence/ownership scripts reading text and git objects outside the gate",
       "suspended_at": "2026-10-07",
+      "claim": "إخراجُ الحاويات — صكُّ تفويضٍ موقَّعٌ بالبايتات، وبرهانُ استردادٍ قبل الحذف.",
+      "violation": [
+        "normalizes",
+        "measures"
+      ],
+      "readmission_path": [
+        "normalization is the gate's residue rules (A116.Residue); map each rule to a named residue edit or drop it",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -657,6 +1333,17 @@
       "previous_path": "rukhsa/run_all.py",
       "reason": "licence/ownership scripts reading text and git objects outside the gate",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -668,6 +1355,17 @@
       "previous_path": "rukhsa_check.py",
       "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
       "suspended_at": "2026-10-07",
+      "claim": "مُصادِمُ سطرِ الترخيص — الرخصةُ دعوًى، والدعوى تُصادَم ببايتات الشجرة.",
+      "violation": [
+        "reads_text",
+        "normalizes",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "normalization is the gate's residue rules (A116.Residue); map each rule to a named residue edit or drop it",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -679,6 +1377,17 @@
       "previous_path": "sarf_gate.py",
       "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -690,6 +1399,19 @@
       "previous_path": "shakhsiyya_extract.py",
       "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "normalizes",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "normalization is the gate's residue rules (A116.Residue); map each rule to a named residue edit or drop it",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -701,6 +1423,17 @@
       "previous_path": "sigha_gate.py",
       "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -712,6 +1445,17 @@
       "previous_path": "sources_census.py",
       "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -723,6 +1467,17 @@
       "previous_path": "ta3allum_gate.py",
       "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -734,6 +1489,17 @@
       "previous_path": "tamakkun_gate.py",
       "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -745,6 +1511,17 @@
       "previous_path": "tarjih_gate.py",
       "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -756,6 +1533,17 @@
       "previous_path": "tashkil_layer.py",
       "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -767,6 +1555,17 @@
       "previous_path": "tawhid_gate.py",
       "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -778,6 +1577,19 @@
       "previous_path": "tawlid_gate.py",
       "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "normalizes",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "normalization is the gate's residue rules (A116.Residue); map each rule to a named residue edit or drop it",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -789,6 +1601,13 @@
       "previous_path": "test_coverage_guard.py",
       "reason": "tests of suspended modules, or expectations derived from the code under test",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "measures"
+      ],
+      "readmission_path": [
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -800,6 +1619,13 @@
       "previous_path": "test_fetch_source.sh",
       "reason": "tests of suspended modules, or expectations derived from the code under test",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "script"
+      ],
+      "readmission_path": [
+        "replace by a guarded tool reading only deposits; or drop"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -811,6 +1637,17 @@
       "previous_path": "test_normalize.py",
       "reason": "tests of suspended modules, or expectations derived from the code under test",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "normalizes",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "normalization is the gate's residue rules (A116.Residue); map each rule to a named residue edit or drop it",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -822,6 +1659,15 @@
       "previous_path": "test_seals_record.py",
       "reason": "tests of suspended modules, or expectations derived from the code under test",
       "suspended_at": "2026-10-07",
+      "claim": "مصادمةُ وديعةِ سجلِّ الأختام — ستُّ حرّاسٍ كُنَّ مضمَّنةً في `ci.yml` فنُقلت ههنا.",
+      "violation": [
+        "reads_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -833,6 +1679,13 @@
       "previous_path": "test_tarjih_gate.py",
       "reason": "tests of suspended modules, or expectations derived from the code under test",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "measures"
+      ],
+      "readmission_path": [
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -844,6 +1697,13 @@
       "previous_path": "test_wazn_gate.py",
       "reason": "tests of suspended modules, or expectations derived from the code under test",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "measures"
+      ],
+      "readmission_path": [
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -855,6 +1715,17 @@
       "previous_path": "wad3_gate.py",
       "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -866,6 +1737,19 @@
       "previous_path": "waqf_layer.py",
       "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "normalizes",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "normalization is the gate's residue rules (A116.Residue); map each rule to a named residue edit or drop it",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -877,6 +1761,17 @@
       "previous_path": "wasl_gate.py",
       "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
@@ -888,6 +1783,19 @@
       "previous_path": "wazn_gate.py",
       "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
       "suspended_at": "2026-10-07",
+      "claim": "",
+      "violation": [
+        "reads_text",
+        "normalizes",
+        "writes_text",
+        "measures"
+      ],
+      "readmission_path": [
+        "input only as gate certificates (gate.enter -> atoms -> cells); no bytes read here",
+        "normalization is the gate's residue rules (A116.Residue); map each rule to a named residue edit or drop it",
+        "outputs are atoms returned to gate.exit, or generated tables checked with --check",
+        "re-measure on the corpus certificate deposit (18,179 forms) and a held-out reference"
+      ],
       "re_admit_requires": [
         "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
         "tests with expectations independent of the code, mutation-tested (20/20 method)",
