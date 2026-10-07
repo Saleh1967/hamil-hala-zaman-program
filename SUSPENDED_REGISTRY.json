@@ -1,0 +1,898 @@
+{
+  "principle": "suspension without deletion: history stays in git; nothing returns except by re_admit_requires",
+  "sole_entry_exit": "Saleh1967/Alghanem gate.api (enter, exit); here only src/entry.py (certificate atoms -> cells)",
+  "count": 81,
+  "units": [
+    {
+      "path": "suspended/alama_layer.py",
+      "previous_path": "alama_layer.py",
+      "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/algebra_engine.py",
+      "previous_path": "algebra_engine.py",
+      "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/aqsam_gate.py",
+      "previous_path": "aqsam_gate.py",
+      "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/awzan_engine.py",
+      "previous_path": "awzan_engine.py",
+      "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/burhan/cert_boundary.py",
+      "previous_path": "burhan/cert_boundary.py",
+      "reason": "certificate scripts reading the corpus text directly (normalize, partition, sukun…)",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/burhan/cert_corpus.py",
+      "previous_path": "burhan/cert_corpus.py",
+      "reason": "certificate scripts reading the corpus text directly (normalize, partition, sukun…)",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/burhan/cert_fingerprints.py",
+      "previous_path": "burhan/cert_fingerprints.py",
+      "reason": "certificate scripts reading the corpus text directly (normalize, partition, sukun…)",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/burhan/cert_generations.py",
+      "previous_path": "burhan/cert_generations.py",
+      "reason": "certificate scripts reading the corpus text directly (normalize, partition, sukun…)",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/burhan/cert_inertness.py",
+      "previous_path": "burhan/cert_inertness.py",
+      "reason": "certificate scripts reading the corpus text directly (normalize, partition, sukun…)",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/burhan/cert_normalize.py",
+      "previous_path": "burhan/cert_normalize.py",
+      "reason": "certificate scripts reading the corpus text directly (normalize, partition, sukun…)",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/burhan/cert_partition.py",
+      "previous_path": "burhan/cert_partition.py",
+      "reason": "certificate scripts reading the corpus text directly (normalize, partition, sukun…)",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/burhan/cert_sukun.py",
+      "previous_path": "burhan/cert_sukun.py",
+      "reason": "certificate scripts reading the corpus text directly (normalize, partition, sukun…)",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/burhan/run_all.py",
+      "previous_path": "burhan/run_all.py",
+      "reason": "certificate scripts reading the corpus text directly (normalize, partition, sukun…)",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/context_ladder.py",
+      "previous_path": "context_ladder.py",
+      "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/contract_line.py",
+      "previous_path": "contract_line.py",
+      "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/dalalat_gate.py",
+      "previous_path": "dalalat_gate.py",
+      "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/dall_gate.py",
+      "previous_path": "dall_gate.py",
+      "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/dictionary_engine.py",
+      "previous_path": "dictionary_engine.py",
+      "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/duyun_gate.py",
+      "previous_path": "duyun_gate.py",
+      "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/fetch_corpus.sh",
+      "previous_path": "fetch_corpus.sh",
+      "reason": "shell scripts fetching/normalizing corpora outside the gate",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/fetch_maqayis.sh",
+      "previous_path": "fetch_maqayis.sh",
+      "reason": "shell scripts fetching/normalizing corpora outside the gate",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/fetch_source.sh",
+      "previous_path": "fetch_source.sh",
+      "reason": "shell scripts fetching/normalizing corpora outside the gate",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/fetch_uthmani.sh",
+      "previous_path": "fetch_uthmani.sh",
+      "reason": "shell scripts fetching/normalizing corpora outside the gate",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/field112_laws.py",
+      "previous_path": "field112_laws.py",
+      "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/github-workflows/sources-exit-codes.yml",
+      "previous_path": ".github/workflows/sources-exit-codes.yml",
+      "reason": "ran the suspended engines and fetched corpora; replaced by ci.yml (registry + guard + pytest)",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/harakat_layer.py",
+      "previous_path": "harakat_layer.py",
+      "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/i3lal_layer.py",
+      "previous_path": "i3lal_layer.py",
+      "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/ihala_gate.py",
+      "previous_path": "ihala_gate.py",
+      "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/imla_layer.py",
+      "previous_path": "imla_layer.py",
+      "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/induction/deposit_law.py",
+      "previous_path": "induction/deposit_law.py",
+      "reason": "induction engine and seals peeling text outside the gate",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/induction/export_seals.py",
+      "previous_path": "induction/export_seals.py",
+      "reason": "induction engine and seals peeling text outside the gate",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/induction/hiyad.py",
+      "previous_path": "induction/hiyad.py",
+      "reason": "induction engine and seals peeling text outside the gate",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/induction/induction_engine.py",
+      "previous_path": "induction/induction_engine.py",
+      "reason": "induction engine and seals peeling text outside the gate",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/induction/jami3_mani3.py",
+      "previous_path": "induction/jami3_mani3.py",
+      "reason": "induction engine and seals peeling text outside the gate",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/induction/mirror.py",
+      "previous_path": "induction/mirror.py",
+      "reason": "induction engine and seals peeling text outside the gate",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/induction/online_peel.py",
+      "previous_path": "induction/online_peel.py",
+      "reason": "induction engine and seals peeling text outside the gate",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/induction/seals.py",
+      "previous_path": "induction/seals.py",
+      "reason": "induction engine and seals peeling text outside the gate",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/induction/tensor_law.py",
+      "previous_path": "induction/tensor_law.py",
+      "reason": "induction engine and seals peeling text outside the gate",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/isnad_layer.py",
+      "previous_path": "isnad_layer.py",
+      "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/jar_gate.py",
+      "previous_path": "jar_gate.py",
+      "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/jumla_gate.py",
+      "previous_path": "jumla_gate.py",
+      "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/jumla_links.py",
+      "previous_path": "jumla_links.py",
+      "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/mabna_gate.py",
+      "previous_path": "mabna_gate.py",
+      "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/madlul_gate.py",
+      "previous_path": "madlul_gate.py",
+      "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/manhaj_gate.py",
+      "previous_path": "manhaj_gate.py",
+      "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/maqayis_layer.py",
+      "previous_path": "maqayis_layer.py",
+      "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/masadir_gate.py",
+      "previous_path": "masadir_gate.py",
+      "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/mawsua_gate.py",
+      "previous_path": "mawsua_gate.py",
+      "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/mihwar_gate.py",
+      "previous_path": "mihwar_gate.py",
+      "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/mu3jam_gate.py",
+      "previous_path": "mu3jam_gate.py",
+      "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/nisab_gate.py",
+      "previous_path": "nisab_gate.py",
+      "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/niyaba_gate.py",
+      "previous_path": "niyaba_gate.py",
+      "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/normalize.py",
+      "previous_path": "normalize.py",
+      "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/pairs_engine.py",
+      "previous_path": "pairs_engine.py",
+      "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/qisma_gate.py",
+      "previous_path": "qisma_gate.py",
+      "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/rukhsa/cert_hawiyat.py",
+      "previous_path": "rukhsa/cert_hawiyat.py",
+      "reason": "licence/ownership scripts reading text and git objects outside the gate",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/rukhsa/cert_jabr.py",
+      "previous_path": "rukhsa/cert_jabr.py",
+      "reason": "licence/ownership scripts reading text and git objects outside the gate",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/rukhsa/cert_sijill.py",
+      "previous_path": "rukhsa/cert_sijill.py",
+      "reason": "licence/ownership scripts reading text and git objects outside the gate",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/rukhsa/ikhraj.py",
+      "previous_path": "rukhsa/ikhraj.py",
+      "reason": "licence/ownership scripts reading text and git objects outside the gate",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/rukhsa/run_all.py",
+      "previous_path": "rukhsa/run_all.py",
+      "reason": "licence/ownership scripts reading text and git objects outside the gate",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/rukhsa_check.py",
+      "previous_path": "rukhsa_check.py",
+      "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/sarf_gate.py",
+      "previous_path": "sarf_gate.py",
+      "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/shakhsiyya_extract.py",
+      "previous_path": "shakhsiyya_extract.py",
+      "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/sigha_gate.py",
+      "previous_path": "sigha_gate.py",
+      "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/sources_census.py",
+      "previous_path": "sources_census.py",
+      "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/ta3allum_gate.py",
+      "previous_path": "ta3allum_gate.py",
+      "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/tamakkun_gate.py",
+      "previous_path": "tamakkun_gate.py",
+      "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/tarjih_gate.py",
+      "previous_path": "tarjih_gate.py",
+      "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/tashkil_layer.py",
+      "previous_path": "tashkil_layer.py",
+      "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/tawhid_gate.py",
+      "previous_path": "tawhid_gate.py",
+      "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/tawlid_gate.py",
+      "previous_path": "tawlid_gate.py",
+      "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/test_coverage_guard.py",
+      "previous_path": "test_coverage_guard.py",
+      "reason": "tests of suspended modules, or expectations derived from the code under test",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/test_fetch_source.sh",
+      "previous_path": "test_fetch_source.sh",
+      "reason": "tests of suspended modules, or expectations derived from the code under test",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/test_normalize.py",
+      "previous_path": "test_normalize.py",
+      "reason": "tests of suspended modules, or expectations derived from the code under test",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/test_seals_record.py",
+      "previous_path": "test_seals_record.py",
+      "reason": "tests of suspended modules, or expectations derived from the code under test",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/test_tarjih_gate.py",
+      "previous_path": "test_tarjih_gate.py",
+      "reason": "tests of suspended modules, or expectations derived from the code under test",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/test_wazn_gate.py",
+      "previous_path": "test_wazn_gate.py",
+      "reason": "tests of suspended modules, or expectations derived from the code under test",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/wad3_gate.py",
+      "previous_path": "wad3_gate.py",
+      "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/waqf_layer.py",
+      "previous_path": "waqf_layer.py",
+      "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/wasl_gate.py",
+      "previous_path": "wasl_gate.py",
+      "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    },
+    {
+      "path": "suspended/wazn_gate.py",
+      "previous_path": "wazn_gate.py",
+      "reason": "gate/layer/engine reading text directly (algebra_engine: parse_stream falls on 22% of forms — measured; peel112/peel256 hand tables; corpus differs from the Alghanem corpus by size 1,306,770 vs 1,319,901 bytes); superseded by Saleh1967/Alghanem gate/ and SLGE readers",
+      "suspended_at": "2026-10-07",
+      "re_admit_requires": [
+        "entry and exit only through the Alghanem gate: cells come from a Certificate (src/entry.py: atoms -> cells), never from text",
+        "tests with expectations independent of the code, mutation-tested (20/20 method)",
+        "ADR recorded in docs/adr/"
+      ]
+    }
+  ]
+}
